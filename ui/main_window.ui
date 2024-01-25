@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>900</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Trickal Manager</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="Sidebar" name="sidebar" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>250</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QStackedWidget" name="stacked_window">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="currentIndex">
+       <number>2</number>
+      </property>
+      <widget class="QWidget" name="page_home"/>
+      <widget class="QWidget" name="page_hero">
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="HeroWindow" name="hero_window" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="page_equip_1">
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <widget class="EquipWindow1" name="equip_window_1" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="page_equip_2"/>
+      <widget class="QWidget" name="page_equip_3"/>
+      <widget class="QWidget" name="page_crayon_1"/>
+      <widget class="QWidget" name="page_crayon_2"/>
+      <widget class="QWidget" name="page_food_1"/>
+      <widget class="QWidget" name="page_food_2"/>
+      <widget class="QWidget" name="page_food_3"/>
+      <widget class="QWidget" name="page_lab_1"/>
+      <widget class="QWidget" name="page_lab_2"/>
+      <widget class="QWidget" name="page_lab_3"/>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Sidebar</class>
+   <extends>QWidget</extends>
+   <header>ui/wrapper.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>HeroWindow</class>
+   <extends>QWidget</extends>
+   <header>ui/wrapper.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EquipWindow1</class>
+   <extends>QWidget</extends>
+   <header>ui/wrapper.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

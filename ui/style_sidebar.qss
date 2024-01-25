@@ -1,0 +1,12 @@
+#sidebar_name_label{
+    font: bold 18pt "ONE Mobile POP";
+}
+
+QPushButton{
+    font: 15pt "ONE Mobile POP";
+}
+
+#equip_sub QPushButton, #crayon_sub QPushButton, #food_sub QPushButton, #lab_sub QPushButton{
+    font: 11pt "ONE Mobile POP";
+}
+
