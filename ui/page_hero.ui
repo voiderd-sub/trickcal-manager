@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>hero_window</class>
- <widget class="QWidget" name="hero_window">
+ <class>page_hero</class>
+ <widget class="QWidget" name="page_hero">
   <property name="geometry">
    <rect>
     <x>0</x>

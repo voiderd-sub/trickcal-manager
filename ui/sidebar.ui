@@ -14,21 +14,6 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_5">
-   <property name="spacing">
-    <number>6</number>
-   </property>
-   <property name="leftMargin">
-    <number>9</number>
-   </property>
-   <property name="topMargin">
-    <number>9</number>
-   </property>
-   <property name="rightMargin">
-    <number>9</number>
-   </property>
-   <property name="bottomMargin">
-    <number>9</number>
-   </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <property name="spacing">
@@ -565,6 +550,43 @@
     </spacer>
    </item>
    <item>
+    <widget class="QGroupBox" name="account_group">
+     <property name="title">
+      <string>계정</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_6">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QComboBox" name="account_list">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="account_select_btn">
+          <property name="text">
+           <string>선택</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="account_setting_btn">
+        <property name="text">
+         <string>계정 관리하기</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QPushButton" name="setting_btn">
      <property name="text">
       <string>설정</string>
@@ -586,9 +608,9 @@
  <resources/>
  <connections/>
  <buttongroups>
+  <buttongroup name="crayon_group"/>
   <buttongroup name="main_menu_group"/>
   <buttongroup name="equip_group"/>
-  <buttongroup name="crayon_group"/>
   <buttongroup name="lab_group"/>
   <buttongroup name="food_group"/>
  </buttongroups>

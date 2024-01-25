@@ -6,6 +6,10 @@ QPushButton{
     font: 15pt "ONE Mobile POP";
 }
 
+#account_group, #account_select_btn, #account_list, #account_setting_btn {
+    font: 11pt "ONE Mobile POP";
+}
+
 #equip_sub QPushButton, #crayon_sub QPushButton, #food_sub QPushButton, #lab_sub QPushButton{
     font: 11pt "ONE Mobile POP";
 }

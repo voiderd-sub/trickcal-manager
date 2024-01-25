@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'hero_window.ui'
+## Form generated from reading UI file 'page_hero.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.6.1
 ##
@@ -20,16 +20,16 @@ from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplicat
     QSizePolicy, QSpacerItem, QTableWidget, QTableWidgetItem,
     QVBoxLayout, QWidget)
 
-class Ui_hero_window(object):
-    def setupUi(self, hero_window):
-        if not hero_window.objectName():
-            hero_window.setObjectName(u"hero_window")
-        hero_window.resize(500, 500)
-        self.horizontalLayout = QHBoxLayout(hero_window)
+class Ui_page_hero(object):
+    def setupUi(self, page_hero):
+        if not page_hero.objectName():
+            page_hero.setObjectName(u"page_hero")
+        page_hero.resize(500, 500)
+        self.horizontalLayout = QHBoxLayout(page_hero)
         self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.hero_table_container = QWidget(hero_window)
+        self.hero_table_container = QWidget(page_hero)
         self.hero_table_container.setObjectName(u"hero_table_container")
         self.hero_table_container.setMinimumSize(QSize(300, 0))
         self.gridLayout = QGridLayout(self.hero_table_container)
@@ -70,7 +70,7 @@ class Ui_hero_window(object):
 
         self.horizontalLayout.addWidget(self.hero_table_container)
 
-        self.button_area = QWidget(hero_window)
+        self.button_area = QWidget(page_hero)
         self.button_area.setObjectName(u"button_area")
         sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
@@ -134,25 +134,25 @@ class Ui_hero_window(object):
         self.horizontalLayout.addWidget(self.button_area)
 
 
-        self.retranslateUi(hero_window)
+        self.retranslateUi(page_hero)
 
-        QMetaObject.connectSlotsByName(hero_window)
+        QMetaObject.connectSlotsByName(page_hero)
     # setupUi
 
-    def retranslateUi(self, hero_window):
-        hero_window.setWindowTitle(QCoreApplication.translate("hero_window", u"Form", None))
+    def retranslateUi(self, page_hero):
+        page_hero.setWindowTitle(QCoreApplication.translate("page_hero", u"Form", None))
         ___qtablewidgetitem = self.hero_table.horizontalHeaderItem(0)
-        ___qtablewidgetitem.setText(QCoreApplication.translate("hero_window", u"\uc774\ubbf8\uc9c0", None));
+        ___qtablewidgetitem.setText(QCoreApplication.translate("page_hero", u"\uc774\ubbf8\uc9c0", None));
         ___qtablewidgetitem1 = self.hero_table.horizontalHeaderItem(1)
-        ___qtablewidgetitem1.setText(QCoreApplication.translate("hero_window", u"\uc774\ub984", None));
+        ___qtablewidgetitem1.setText(QCoreApplication.translate("page_hero", u"\uc774\ub984", None));
         ___qtablewidgetitem2 = self.hero_table.horizontalHeaderItem(2)
-        ___qtablewidgetitem2.setText(QCoreApplication.translate("hero_window", u"\ud604\uc7ac \ub4f1\uae09", None));
-        self.update_btn.setText(QCoreApplication.translate("hero_window", u"\uc0ac\ub3c4 \ub370\uc774\ud130 \uc5c5\ub370\uc774\ud2b8", None))
-        self.star_1_btn.setText(QCoreApplication.translate("hero_window", u"1\uc131 \uc804\ubd80 \ubcf4\uc720 \uc911", None))
-        self.star_2_btn.setText(QCoreApplication.translate("hero_window", u"2\uc131 \uc804\ubd80 \ubcf4\uc720 \uc911", None))
-        self.all_check_btn.setText(QCoreApplication.translate("hero_window", u"\uc804 \uc0ac\ub3c4 \ubcf4\uc720 \uc911", None))
-        self.all_uncheck_btn.setText(QCoreApplication.translate("hero_window", u"\uc804\ubd80 \ubbf8\ubcf4\uc720", None))
-        self.save_btn.setText(QCoreApplication.translate("hero_window", u"\uc800\uc7a5", None))
-        self.undo_btn.setText(QCoreApplication.translate("hero_window", u"\ubcc0\uacbd\uc0ac\ud56d \ucde8\uc18c", None))
+        ___qtablewidgetitem2.setText(QCoreApplication.translate("page_hero", u"\ud604\uc7ac \ub4f1\uae09", None));
+        self.update_btn.setText(QCoreApplication.translate("page_hero", u"\uc0ac\ub3c4 \ub370\uc774\ud130 \uc5c5\ub370\uc774\ud2b8", None))
+        self.star_1_btn.setText(QCoreApplication.translate("page_hero", u"1\uc131 \uc804\ubd80 \ubcf4\uc720 \uc911", None))
+        self.star_2_btn.setText(QCoreApplication.translate("page_hero", u"2\uc131 \uc804\ubd80 \ubcf4\uc720 \uc911", None))
+        self.all_check_btn.setText(QCoreApplication.translate("page_hero", u"\uc804 \uc0ac\ub3c4 \ubcf4\uc720 \uc911", None))
+        self.all_uncheck_btn.setText(QCoreApplication.translate("page_hero", u"\uc804\ubd80 \ubbf8\ubcf4\uc720", None))
+        self.save_btn.setText(QCoreApplication.translate("page_hero", u"\uc800\uc7a5", None))
+        self.undo_btn.setText(QCoreApplication.translate("page_hero", u"\ubcc0\uacbd\uc0ac\ud56d \ucde8\uc18c", None))
     # retranslateUi
 

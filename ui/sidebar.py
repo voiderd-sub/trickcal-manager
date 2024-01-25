@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QButtonGroup, QHBoxLayout, QLabel,
-    QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QButtonGroup, QComboBox, QGroupBox,
+    QHBoxLayout, QLabel, QPushButton, QSizePolicy,
+    QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_sidebar(object):
     def setupUi(self, sidebar):
@@ -25,9 +25,7 @@ class Ui_sidebar(object):
             sidebar.setObjectName(u"sidebar")
         sidebar.resize(280, 700)
         self.verticalLayout_5 = QVBoxLayout(sidebar)
-        self.verticalLayout_5.setSpacing(6)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.verticalLayout_5.setContentsMargins(9, 9, 9, 9)
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -268,6 +266,38 @@ class Ui_sidebar(object):
 
         self.verticalLayout_5.addItem(self.verticalSpacer)
 
+        self.account_group = QGroupBox(sidebar)
+        self.account_group.setObjectName(u"account_group")
+        self.verticalLayout_6 = QVBoxLayout(self.account_group)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.account_list = QComboBox(self.account_group)
+        self.account_list.setObjectName(u"account_list")
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.account_list.sizePolicy().hasHeightForWidth())
+        self.account_list.setSizePolicy(sizePolicy)
+
+        self.horizontalLayout_2.addWidget(self.account_list)
+
+        self.account_select_btn = QPushButton(self.account_group)
+        self.account_select_btn.setObjectName(u"account_select_btn")
+
+        self.horizontalLayout_2.addWidget(self.account_select_btn)
+
+
+        self.verticalLayout_6.addLayout(self.horizontalLayout_2)
+
+        self.account_setting_btn = QPushButton(self.account_group)
+        self.account_setting_btn.setObjectName(u"account_setting_btn")
+
+        self.verticalLayout_6.addWidget(self.account_setting_btn)
+
+
+        self.verticalLayout_5.addWidget(self.account_group)
+
         self.setting_btn = QPushButton(sidebar)
         self.setting_btn.setObjectName(u"setting_btn")
         icon6 = QIcon()
@@ -303,6 +333,9 @@ class Ui_sidebar(object):
         self.lab_sub_btn_1.setText(QCoreApplication.translate("sidebar", u"\uc5f0\uad6c \ud604\ud669 \ubc0f \ubaa9\ud45c \uc124\uc815", None))
         self.lab_sub_btn_2.setText(QCoreApplication.translate("sidebar", u"\ubcf4\uc720 \uc5f0\uad6c \uc7ac\ub8cc", None))
         self.lab_sub_btn_3.setText(QCoreApplication.translate("sidebar", u"\ud30c\ubc0d \ub3d9\uc120 \uacc4\uc0b0", None))
+        self.account_group.setTitle(QCoreApplication.translate("sidebar", u"\uacc4\uc815", None))
+        self.account_select_btn.setText(QCoreApplication.translate("sidebar", u"\uc120\ud0dd", None))
+        self.account_setting_btn.setText(QCoreApplication.translate("sidebar", u"\uacc4\uc815 \uad00\ub9ac\ud558\uae30", None))
         self.setting_btn.setText(QCoreApplication.translate("sidebar", u"\uc124\uc815", None))
     # retranslateUi
 

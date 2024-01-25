@@ -15,18 +15,6 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
-     <number>0</number>
-    </property>
     <item>
      <widget class="Sidebar" name="sidebar" native="true">
       <property name="sizePolicy">
@@ -58,23 +46,11 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page_home"/>
-      <widget class="QWidget" name="page_hero">
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-         <widget class="HeroWindow" name="hero_window" native="true"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="page_equip_1">
-       <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="0">
-         <widget class="EquipWindow1" name="equip_window_1" native="true"/>
-        </item>
-       </layout>
-      </widget>
+      <widget class="PageHero" name="page_hero"/>
+      <widget class="PageEquip1" name="page_equip_1"/>
       <widget class="QWidget" name="page_equip_2"/>
       <widget class="QWidget" name="page_equip_3"/>
       <widget class="QWidget" name="page_crayon_1"/>
@@ -98,13 +74,13 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>HeroWindow</class>
+   <class>PageHero</class>
    <extends>QWidget</extends>
    <header>ui/wrapper.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>EquipWindow1</class>
+   <class>PageEquip1</class>
    <extends>QWidget</extends>
    <header>ui/wrapper.h</header>
    <container>1</container>

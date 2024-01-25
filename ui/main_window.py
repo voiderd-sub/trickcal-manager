@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout, QMainWindow,
-    QSizePolicy, QStackedWidget, QWidget)
+from PySide6.QtWidgets import (QApplication, QHBoxLayout, QMainWindow, QSizePolicy,
+    QStackedWidget, QWidget)
 
-from ui.wrapper import (EquipWindow1, HeroWindow, Sidebar)
+from ui.wrapper import (PageEquip1, PageHero, Sidebar)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -29,7 +29,6 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.sidebar = Sidebar(self.centralwidget)
         self.sidebar.setObjectName(u"sidebar")
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
@@ -52,25 +51,11 @@ class Ui_MainWindow(object):
         self.page_home = QWidget()
         self.page_home.setObjectName(u"page_home")
         self.stacked_window.addWidget(self.page_home)
-        self.page_hero = QWidget()
+        self.page_hero = PageHero(self.stacked_window)
         self.page_hero.setObjectName(u"page_hero")
-        self.gridLayout = QGridLayout(self.page_hero)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.hero_window = HeroWindow(self.page_hero)
-        self.hero_window.setObjectName(u"hero_window")
-
-        self.gridLayout.addWidget(self.hero_window, 0, 0, 1, 1)
-
         self.stacked_window.addWidget(self.page_hero)
-        self.page_equip_1 = QWidget()
+        self.page_equip_1 = PageEquip1(self.stacked_window)
         self.page_equip_1.setObjectName(u"page_equip_1")
-        self.gridLayout_2 = QGridLayout(self.page_equip_1)
-        self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.equip_window_1 = EquipWindow1(self.page_equip_1)
-        self.equip_window_1.setObjectName(u"equip_window_1")
-
-        self.gridLayout_2.addWidget(self.equip_window_1, 0, 0, 1, 1)
-
         self.stacked_window.addWidget(self.page_equip_1)
         self.page_equip_2 = QWidget()
         self.page_equip_2.setObjectName(u"page_equip_2")
@@ -109,7 +94,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stacked_window.setCurrentIndex(2)
+        self.stacked_window.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
