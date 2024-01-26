@@ -608,10 +608,10 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="crayon_group"/>
-  <buttongroup name="main_menu_group"/>
-  <buttongroup name="equip_group"/>
-  <buttongroup name="lab_group"/>
   <buttongroup name="food_group"/>
+  <buttongroup name="main_menu_group"/>
+  <buttongroup name="lab_group"/>
+  <buttongroup name="equip_group"/>
+  <buttongroup name="crayon_group"/>
  </buttongroups>
 </ui>

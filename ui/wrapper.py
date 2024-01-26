@@ -1,8 +1,9 @@
-from PySide6.QtCore import Qt, QRegularExpression
+from PySide6.QtCore import Qt, QRegularExpression, QSortFilterProxyModel
 from PySide6.QtGui import QPixmap, QValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import (QApplication, QHeaderView, QSizePolicy, QLabel, QCheckBox,
                                QTableWidgetItem, QVBoxLayout, QWidget, QComboBox, QMainWindow,
-                               QListWidgetItem)
+                               QListWidgetItem, QCompleter, QAbstractItemView,
+                               QPushButton, QToolButton)
 
 from ui.sidebar import Ui_sidebar
 from ui.page_hero import Ui_page_hero
@@ -11,6 +12,14 @@ from ui.account_settings import Ui_AccountSettings
 
 from functools import partial
 import sqlite3
+
+
+"""
+!WARNING!
+Be sure to call in the following order: setParent -> setupUi -> setStyle -> setInitialState
+Fatal bugs occur when the order is changed
+"""
+
 
 class NonScrollComboBox(QComboBox):
     def wheelEvent(self, event):
@@ -52,8 +61,9 @@ class Sidebar(Ui_sidebar, QWidget):
         super().__init__()
         self.setParent(parent)
         self.setupUi(self)              # Settings in Qt Designer
-        self.setInitialState()        # Settings in main.py
         self.setStyle("ui/style_sidebar.qss")
+        self.setInitialState()        # Settings in main.py
+        
     
     def setStyle(self, path):
         with open(path, "r") as f:
@@ -129,8 +139,8 @@ class AccountSettings(Ui_AccountSettings, QMainWindow):
     def __init__(self):
         super(AccountSettings, self).__init__()
         self.setupUi(self)
-        self.setInitialState()
         self.setStyle("ui/style_account_settings.qss")
+        self.setInitialState()
 
     def setStyle(self, path):
         with open(path, "r") as f:
@@ -176,8 +186,8 @@ class PageHero(Ui_page_hero, QWidget):
         super().__init__()
         self.setParent(parent)
         self.setupUi(self)              # Settings in Qt Designer
-        self.setInitialState()        # Settings in main.py
         self.setStyle("ui/style_page_hero.qss")
+        self.setInitialState()        # Settings in main.py
     
     def setStyle(self, path):
         with open(path, "r") as f:
@@ -202,9 +212,11 @@ class PageHero(Ui_page_hero, QWidget):
 
         for idx, (id, name_en, name_kr, star_in, star_ex) in enumerate(cur):
             table.insertRow(idx)
+            table.setRowHeight(idx, 130)
             label = QLabel(table)
             label.setText("")
             label.setScaledContents(True)
+            label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
             pixmap = QPixmap()
             pixmap.load(f"icon/hero/{name_en}.png")
             label.setPixmap(pixmap)
@@ -222,12 +234,15 @@ class PageHero(Ui_page_hero, QWidget):
 
             self.hero_name_to_id[name_kr] = id
             self.hero_name_to_original_star_ex[name_kr] = "미보유" if star_ex is None else str(star_ex)
-
-        table.setColumnWidth(0, 100)
+        
+        
         for col in range(1,3):
             table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Stretch)
         table.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)
+        table.verticalHeader().hide()
         table.horizontalHeader().setSectionResizeMode(0,QHeaderView.Fixed)
+        table.resizeColumnsToContents()
+        table.setColumnWidth(0, 130)
 
         self.star_1_btn.clicked.connect(partial(self.setSpecificStarValues, 1))
         self.star_2_btn.clicked.connect(partial(self.setSpecificStarValues, 2))
@@ -295,14 +310,120 @@ class PageHero(Ui_page_hero, QWidget):
 class PageEquip1(Ui_page_equip_1, QWidget):
     def __init__(self, parent):
         super().__init__()
-        self.setupUi(self)              # Settings in Qt Designer
-        self.setInitialState()        # Settings in main.py
-        self.setStyle("ui/style_page_equip_1.qss")
         self.setParent(parent)
+        self.setupUi(self)              # Settings in Qt Designer
+        self.setStyle("ui/style_page_equip_1.qss")
+        self.setInitialState()        # Settings in main.py
+        
     
     def setStyle(self, path):
         with open(path, "r") as f:
             self.setStyleSheet(f.read())
 
     def setInitialState(self):
-        return
+        main_window = self.window()
+        cur: sqlite3.Cursor = main_window.conn_master.cursor()
+
+        # load hero_equip data from db
+        self.name_to_equip_data = dict()
+        cur.execute("SELECT count(DISTINCT(rank)) FROM equipment")
+        max_rank = cur.fetchone()[0]
+
+        cur.execute("""
+            select h.name_kr, he.rank, he."order", e.name
+            from hero h
+            join hero_equip he on (h.id = he.hero_id)
+            join equipment e on (he.equipment_id=e.id)
+            order by h.personality asc, h.star_intrinsic desc, h.name_kr asc, he.rank asc, e.id asc
+        """)
+        for (hero_name, rank, order, equip_name) in cur:
+            if not hero_name in self.name_to_equip_data:
+                self.name_to_equip_data[hero_name] = {k: list() for k in range(1, max_rank+1)}
+            self.name_to_equip_data[hero_name][rank].append(equip_name)
+
+        # set up rank_table
+        table = self.rank_table
+        table.setRowCount(max_rank)
+        table.setColumnCount(13)
+        table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        horizontal_header = table.horizontalHeader()
+        horizontal_header.hide()
+        table.verticalHeader().hide()
+
+        # load names from db (with right order)
+        cur.execute("""
+            select name_kr
+            from hero h
+            order by personality asc, star_intrinsic desc, name_kr asc
+        """)  
+        names = ["".join(i) for i in cur.fetchall()]
+
+        self.hero_select.addItems(names)
+        self.hero_select.currentIndexChanged.connect(self.updateCurrentEquipTalbe)
+
+        # set current equip table
+        data = self.name_to_equip_data[self.hero_select.currentText()]
+        for (rank, item_name_list) in data.items():
+            btn = QPushButton()
+            btn.setText(f"Rank {rank}")
+            btn.setCheckable(True)
+            table.setCellWidget(rank-1, 0, btn)
+            for col_idx, name in enumerate(item_name_list):
+                mini_btn = QToolButton()
+                mini_btn.setCheckable(True)
+                mini_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                table.setCellWidget(rank-1, col_idx*2+1, mini_btn)
+                # when mini_btn clicked, if all mini_btns in the same row are checked, check the button in the first column
+                # also, check mini_btn itself
+                mini_btn.clicked.connect(partial(self.checkButton, btn))
+
+                item = QTableWidgetItem(name)
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                table.setItem(rank-1, col_idx*2+2, item)
+            btn.clicked.connect(partial(self.checkAll, btn))
+
+        for i in range(13):
+            if i%2==0:
+                horizontal_header.setSectionResizeMode(i, QHeaderView.Stretch)
+            else:
+                horizontal_header.setSectionResizeMode(i, QHeaderView.Fixed)
+
+        for col_idx in range(6):
+            table.setColumnWidth(col_idx*2+1, 30)
+
+        table.keyPressEvent = lambda event: self.changeHeroSelectIndex(1) if event.key()==Qt.Key.Key_Right else self.changeHeroSelectIndex(-1) if event.key()==Qt.Key.Key_Left else None
+
+
+    # Update the table according to the current index of self.hero_select
+    def updateCurrentEquipTalbe(self):
+        data = self.name_to_equip_data[self.hero_select.currentText()]
+        table = self.rank_table
+
+        for (rank, item_name_list) in data.items():
+            for col_idx, name in enumerate(item_name_list):
+                item = QTableWidgetItem(name)
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                table.setItem(rank-1, col_idx*2+2, item)
+
+    # When a button is in the checked state, all checkboxes in the same row are checked.
+    # When a button becomes unchecked, all checkboxes in the same row are unchecked.
+    def checkAll(self, btn):
+        table = self.rank_table
+        row = table.indexAt(btn.pos()).row()
+        for col_idx in range(1, 13, 2):
+            table.cellWidget(row, col_idx).setChecked(btn.isChecked())
+    
+    def checkButton(self, btn):
+        table = self.rank_table
+        row = table.indexAt(btn.pos()).row()
+        for col_idx in range(1, 13, 2):
+            if not table.cellWidget(row, col_idx).isChecked():
+                btn.setChecked(False)
+                return
+        btn.setChecked(True)
+
+
+    # Change the index only when it is within a valid index range.
+    def changeHeroSelectIndex(self, num):
+        if 0<=self.hero_select.currentIndex()+num<self.hero_select.count():
+            self.hero_select.setCurrentIndex(self.hero_select.currentIndex()+num)

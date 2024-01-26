@@ -76,7 +76,7 @@ PRAGMA journal_mode=wal;
                 f.write(
 """
 account_list:
-    - userdata
+    - user 1
 cur_user_idx: 0
 """)
         

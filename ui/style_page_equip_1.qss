@@ -2,3 +2,7 @@ QWidget{
     font: 10pt "ONE Mobile POP";
 }
 
+#hero_select{
+    font: 12pt "ONE Mobile POP";
+}
+
