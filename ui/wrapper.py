@@ -367,6 +367,7 @@ class PageEquip1(Ui_page_equip_1, QWidget):
             btn = QPushButton()
             btn.setText(f"Rank {rank}")
             btn.setCheckable(True)
+            btn.setStyleSheet('font: 12pt "ONE Mobile POP";')
             table.setCellWidget(rank-1, 0, btn)
             for col_idx, name in enumerate(item_name_list):
                 mini_btn = QToolButton()
@@ -381,16 +382,24 @@ class PageEquip1(Ui_page_equip_1, QWidget):
                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 table.setItem(rank-1, col_idx*2+2, item)
             btn.clicked.connect(partial(self.checkAll, btn))
+            table.setRowHeight(rank-1, 50)
+        self.go_left_btn.setEnabled(False)
 
         for i in range(13):
             if i%2==0:
                 horizontal_header.setSectionResizeMode(i, QHeaderView.Stretch)
             else:
                 horizontal_header.setSectionResizeMode(i, QHeaderView.Fixed)
-
         for col_idx in range(6):
             table.setColumnWidth(col_idx*2+1, 30)
 
+        # When you click self.go_left_btn/self.go_right_btn,
+        # increment/decrement self.hero_select's index by 1
+        self.go_left_btn.clicked.connect(partial(self.changeHeroSelectIndex, -1))
+        self.go_right_btn.clicked.connect(partial(self.changeHeroSelectIndex, 1))
+
+        # Pressing the right/left arrow key while focusing on the table
+        # has the same effect as clicking go_right/left_btn
         table.keyPressEvent = lambda event: self.changeHeroSelectIndex(1) if event.key()==Qt.Key.Key_Right else self.changeHeroSelectIndex(-1) if event.key()==Qt.Key.Key_Left else None
 
 
@@ -404,6 +413,11 @@ class PageEquip1(Ui_page_equip_1, QWidget):
                 item = QTableWidgetItem(name)
                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 table.setItem(rank-1, col_idx*2+2, item)
+
+        cur_idx = self.hero_select.currentIndex()
+        self.go_left_btn.setEnabled(cur_idx!=0)
+        self.go_right_btn.setEnabled(cur_idx!=self.hero_select.count()-1)
+    
 
     # When a button is in the checked state, all checkboxes in the same row are checked.
     # When a button becomes unchecked, all checkboxes in the same row are unchecked.

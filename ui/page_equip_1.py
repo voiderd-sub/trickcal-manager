@@ -20,6 +20,8 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
     QPushButton, QRadioButton, QSizePolicy, QSpacerItem,
     QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
+from ui.extended_combobox import ExtendedComboBox
+
 class Ui_page_equip_1(object):
     def setupUi(self, page_equip_1):
         if not page_equip_1.objectName():
@@ -27,7 +29,7 @@ class Ui_page_equip_1(object):
         page_equip_1.resize(800, 633)
         self.verticalLayout_5 = QVBoxLayout(page_equip_1)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.hero_select = QComboBox(page_equip_1)
+        self.hero_select = ExtendedComboBox(page_equip_1)
         self.hero_select.setObjectName(u"hero_select")
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -41,12 +43,35 @@ class Ui_page_equip_1(object):
 
         self.verticalLayout_5.addItem(self.verticalSpacer)
 
-        self.rank_table = QTableWidget(page_equip_1)
-        if (self.rank_table.columnCount() < 6):
-            self.rank_table.setColumnCount(6)
-        self.rank_table.setObjectName(u"rank_table")
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.go_left_btn = QPushButton(page_equip_1)
+        self.go_left_btn.setObjectName(u"go_left_btn")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.go_left_btn.sizePolicy().hasHeightForWidth())
+        self.go_left_btn.setSizePolicy(sizePolicy1)
+        self.go_left_btn.setMaximumSize(QSize(30, 16777215))
 
-        self.verticalLayout_5.addWidget(self.rank_table)
+        self.horizontalLayout.addWidget(self.go_left_btn)
+
+        self.rank_table = QTableWidget(page_equip_1)
+        self.rank_table.setObjectName(u"rank_table")
+        self.rank_table.setColumnCount(0)
+
+        self.horizontalLayout.addWidget(self.rank_table)
+
+        self.go_right_btn = QPushButton(page_equip_1)
+        self.go_right_btn.setObjectName(u"go_right_btn")
+        sizePolicy1.setHeightForWidth(self.go_right_btn.sizePolicy().hasHeightForWidth())
+        self.go_right_btn.setSizePolicy(sizePolicy1)
+        self.go_right_btn.setMaximumSize(QSize(30, 16777215))
+
+        self.horizontalLayout.addWidget(self.go_right_btn)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout)
 
         self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
@@ -56,11 +81,11 @@ class Ui_page_equip_1(object):
 
         self.widget = QWidget(page_equip_1)
         self.widget.setObjectName(u"widget")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
-        self.widget.setSizePolicy(sizePolicy1)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
+        self.widget.setSizePolicy(sizePolicy2)
         self.horizontalLayout_4 = QHBoxLayout(self.widget)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.gridLayout_4 = QGridLayout()
@@ -243,6 +268,8 @@ class Ui_page_equip_1(object):
 
     def retranslateUi(self, page_equip_1):
         page_equip_1.setWindowTitle(QCoreApplication.translate("page_equip_1", u"Form", None))
+        self.go_left_btn.setText(QCoreApplication.translate("page_equip_1", u"<", None))
+        self.go_right_btn.setText(QCoreApplication.translate("page_equip_1", u">", None))
         self.label.setText(QCoreApplication.translate("page_equip_1", u"\ud604\uc7ac \ub7ad\ud06c :", None))
         self.label_4.setText(QCoreApplication.translate("page_equip_1", u"\ubaa9\ud45c \ub7ad\ud06c :", None))
         self.check_complete.setText(QCoreApplication.translate("page_equip_1", u"\uc721\uc131 \uc644\ub8cc!", None))
