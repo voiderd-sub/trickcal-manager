@@ -338,7 +338,7 @@
   <customwidget>
    <class>ExtendedComboBox</class>
    <extends>QComboBox</extends>
-   <header>ui/extended_combobox.h</header>
+   <header>widgets/wrapper/extended_combobox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

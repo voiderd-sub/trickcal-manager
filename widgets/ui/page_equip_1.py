@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
     QPushButton, QRadioButton, QSizePolicy, QSpacerItem,
     QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
-from ui.extended_combobox import ExtendedComboBox
+from widgets.wrapper.extended_combobox import ExtendedComboBox
 
 class Ui_page_equip_1(object):
     def setupUi(self, page_equip_1):

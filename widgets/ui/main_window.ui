@@ -70,19 +70,19 @@
   <customwidget>
    <class>Sidebar</class>
    <extends>QWidget</extends>
-   <header>ui/wrapper.h</header>
+   <header>widgets/wrapper/sidebar.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PageHero</class>
    <extends>QWidget</extends>
-   <header>ui/wrapper.h</header>
+   <header>widgets/wrapper/page_hero.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PageEquip1</class>
    <extends>QWidget</extends>
-   <header>ui/wrapper.h</header>
+   <header>widgets/wrapper/page_equip_1.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

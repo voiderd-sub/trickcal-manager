@@ -18,13 +18,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QMainWindow, QSizePolicy,
     QStackedWidget, QWidget)
 
-from ui.wrapper import (PageEquip1, PageHero, Sidebar)
+from widgets.wrapper.page_equip_1 import PageEquip1
+from widgets.wrapper.page_hero import PageHero
+from widgets.wrapper.sidebar import Sidebar
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1100, 700)
+        MainWindow.resize(1200, 800)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
