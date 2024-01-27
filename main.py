@@ -1,6 +1,6 @@
 from PySide6 import QtWidgets
-from ui.main_window import Ui_MainWindow
-from ui.wrapper import AccountSettings
+from widgets.ui.main_window import Ui_MainWindow
+from widgets.wrapper.account_settings import AccountSettings
 
 from functools import partial
 import sqlite3, yaml, os.path
