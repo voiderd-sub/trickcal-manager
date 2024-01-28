@@ -7,10 +7,10 @@ class AccountSettings(Ui_AccountSettings, QMainWindow):
     def __init__(self):
         super(AccountSettings, self).__init__()
         self.setupUi(self)
-        self.setStyle("widgets/style/style_account_settings.qss")
+        self.setStyleFromPath("widgets/style/style_account_settings.qss")
         self.setInitialState()
 
-    def setStyle(self, path):
+    def setStyleFromPath(self, path):
         with open(path, "r") as f:
             self.setStyleSheet(f.read())
     

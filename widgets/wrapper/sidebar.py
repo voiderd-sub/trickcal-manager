@@ -9,11 +9,11 @@ class Sidebar(Ui_sidebar, QWidget):
         super().__init__()
         self.setParent(parent)
         self.setupUi(self)              # Settings in Qt Designer
-        self.setStyle("widgets/style/style_sidebar.qss")
+        self.setStyleFromPath("widgets/style/style_sidebar.qss")
         self.setInitialState()        # Settings in main.py
         
     
-    def setStyle(self, path):
+    def setStyleFromPath(self, path):
         with open(path, "r") as f:
             self.setStyleSheet(f.read())
 

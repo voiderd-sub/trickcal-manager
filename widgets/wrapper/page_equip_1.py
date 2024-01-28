@@ -1,10 +1,12 @@
 from widgets.ui.page_equip_1 import Ui_page_equip_1
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (QHeaderView, QSizePolicy, QTableWidgetItem, QWidget, QAbstractItemView,
-                                    QPushButton, QToolButton)
+from PySide6.QtWidgets import (QHeaderView, QSizePolicy, QWidget, QAbstractItemView,
+                                    QPushButton, QButtonGroup)
 
 import sqlite3
 from functools import partial
+
+from widgets.wrapper.misc import wrapStyle
 
 
 class PageEquip1(Ui_page_equip_1, QWidget):
@@ -12,11 +14,11 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         super().__init__()
         self.setParent(parent)
         self.setupUi(self)              # Settings in Qt Designer
-        self.setStyle("widgets/style/style_page_equip_1.qss")
+        self.setStyleFromPath("widgets/style/style_page_equip_1.qss")
         self.setInitialState()        # Settings in main.py
         
     
-    def setStyle(self, path):
+    def setStyleFromPath(self, path):
         with open(path, "r") as f:
             self.setStyleSheet(f.read())
 
@@ -43,8 +45,8 @@ class PageEquip1(Ui_page_equip_1, QWidget):
 
         # set up rank_table
         table = self.rank_table
-        table.setRowCount(max_rank)
-        table.setColumnCount(13)
+        table.setRowCount(max_rank+1)
+        table.setColumnCount(7)
         table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         horizontal_header = table.horizontalHeader()
         horizontal_header.hide()
@@ -54,7 +56,7 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         cur.execute("""
             select name_kr
             from hero h
-            order by personality asc, star_intrinsic desc, name_kr asc
+            order by name_kr asc
         """)  
         names = ["".join(i) for i in cur.fetchall()]
 
@@ -67,31 +69,37 @@ class PageEquip1(Ui_page_equip_1, QWidget):
             btn = QPushButton()
             btn.setText(f"Rank {rank}")
             btn.setCheckable(True)
-            btn.setStyleSheet('font: 12pt "ONE Mobile POP";')
+            btn.setStyleSheet('font: 14pt "ONE Mobile POP";')
             table.setCellWidget(rank-1, 0, btn)
             for col_idx, name in enumerate(item_name_list):
-                mini_btn = QToolButton()
+                mini_btn = QPushButton()
+                mini_btn.setStyle(wrapStyle())
+                mini_btn.setStyleSheet('font: 11pt "ONE Mobile POP";')
                 mini_btn.setCheckable(True)
+                mini_btn.setText(name)
                 mini_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-                table.setCellWidget(rank-1, col_idx*2+1, mini_btn)
-                # when mini_btn clicked, if all mini_btns in the same row are checked, check the button in the first column
-                # also, check mini_btn itself
-                mini_btn.clicked.connect(partial(self.checkButton, btn))
-
-                item = QTableWidgetItem(name)
-                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                table.setItem(rank-1, col_idx*2+2, item)
-            btn.clicked.connect(partial(self.checkAll, btn))
+                table.setCellWidget(rank-1, col_idx+1, mini_btn)
+                mini_btn.clicked.connect(partial(self.checkButton, mini_btn))
+            btn.clicked.connect(partial(self.checkAll, rank-1))
             table.setRowHeight(rank-1, 50)
+        btn = QPushButton()
+        btn.setText(f"MAX")
+        btn.setCheckable(True)
+        btn.setStyleSheet('font: 14pt "ONE Mobile POP";')
+        table.setCellWidget(max_rank, 0, btn)
+        btn.clicked.connect(partial(self.checkAll, max_rank))
+        table.setRowHeight(max_rank, 50)
+
         self.go_left_btn.setEnabled(False)
 
-        for i in range(13):
-            if i%2==0:
-                horizontal_header.setSectionResizeMode(i, QHeaderView.Stretch)
-            else:
-                horizontal_header.setSectionResizeMode(i, QHeaderView.Fixed)
-        for col_idx in range(6):
-            table.setColumnWidth(col_idx*2+1, 30)
+        # make qbuttongroup with all buttons in the first column
+        rank_btn_group = QButtonGroup(self)
+        for row_idx in range(max_rank+1):
+            rank_btn_group.addButton(table.cellWidget(row_idx, 0))
+
+        horizontal_header.setSectionResizeMode(0, QHeaderView.Fixed)
+        for col_idx in range(1, 7):
+            horizontal_header.setSectionResizeMode(col_idx, QHeaderView.Stretch)
 
         # When you click self.go_left_btn/self.go_right_btn,
         # increment/decrement self.hero_select's index by 1
@@ -110,31 +118,45 @@ class PageEquip1(Ui_page_equip_1, QWidget):
 
         for (rank, item_name_list) in data.items():
             for col_idx, name in enumerate(item_name_list):
-                item = QTableWidgetItem(name)
-                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                table.setItem(rank-1, col_idx*2+2, item)
+                mini_btn: QPushButton = table.cellWidget(rank-1, col_idx+1)
+                mini_btn.setText(name)
 
         cur_idx = self.hero_select.currentIndex()
         self.go_left_btn.setEnabled(cur_idx!=0)
         self.go_right_btn.setEnabled(cur_idx!=self.hero_select.count()-1)
     
 
-    # When a button is in the checked state, all checkboxes in the same row are checked.
-    # When a button becomes unchecked, all checkboxes in the same row are unchecked.
-    def checkAll(self, btn):
+    # Function for button in the first column (set rank)
+    def checkAll(self, row_idx):
         table = self.rank_table
-        row = table.indexAt(btn.pos()).row()
-        for col_idx in range(1, 13, 2):
-            table.cellWidget(row, col_idx).setChecked(btn.isChecked())
+        num_cols = table.columnCount()
+        for col_idx in range(1, num_cols):
+            for row in range(row_idx):
+                table.cellWidget(row, col_idx).setChecked(True)
+            for row in range(row_idx, table.rowCount()-1):
+                table.cellWidget(row, col_idx).setChecked(False)
+        table.cellWidget(table.rowCount()-1, 0).setChecked(False)
     
+    
+    # Function for buttons in 2nd to last column
     def checkButton(self, btn):
         table = self.rank_table
-        row = table.indexAt(btn.pos()).row()
-        for col_idx in range(1, 13, 2):
-            if not table.cellWidget(row, col_idx).isChecked():
-                btn.setChecked(False)
-                return
-        btn.setChecked(True)
+        cur_row = table.indexAt(btn.pos()).row()
+        num_cols = table.columnCount()
+        if btn.isChecked():
+            for col_idx in range(1, num_cols):
+                for row_idx in range(cur_row):
+                    table.cellWidget(row_idx, col_idx).setChecked(True)
+            for col_idx in range(1, num_cols):
+                if not table.cellWidget(cur_row, col_idx).isChecked():
+                    table.cellWidget(cur_row, 0).setChecked(True)
+                    return
+            table.cellWidget(cur_row+1, 0).setChecked(True)
+        else:
+            table.cellWidget(cur_row, 0).setChecked(True)
+            for col_idx in range(1, num_cols):
+                for row_idx in range(cur_row+1, table.rowCount()-1):
+                    table.cellWidget(row_idx, col_idx).setChecked(False)
 
 
     # Change the index only when it is within a valid index range.

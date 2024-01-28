@@ -50,11 +50,11 @@ class PageHero(Ui_page_hero, QWidget):
         super().__init__()
         self.setParent(parent)
         self.setupUi(self)              # Settings in Qt Designer
-        self.setStyle("widgets/style/style_page_hero.qss")
+        self.setStyleFromPath("widgets/style/style_page_hero.qss")
         self.setInitialState()        # Settings in main.py
 
 
-    def setStyle(self, path):
+    def setStyleFromPath(self, path):
         with open(path, "r") as f:
             self.setStyleSheet(f.read())
 

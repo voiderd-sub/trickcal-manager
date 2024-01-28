@@ -1,7 +1,9 @@
 from PySide6.QtCore import Qt, QSortFilterProxyModel
-from PySide6.QtWidgets import QCompleter, QComboBox
+from PySide6.QtWidgets import QCompleter, QComboBox, QProxyStyle
 from PySide6.QtGui import QFont
 
+
+# Combobox with search-filtering
 class ExtendedComboBox(QComboBox):
     def __init__(self, parent=None):
         super(ExtendedComboBox, self).__init__(parent)
@@ -25,7 +27,7 @@ class ExtendedComboBox(QComboBox):
         self.completer.activated.connect(self.on_completer_activated)
 
         # set the font for the completer popup
-        self.completer.popup().setFont(QFont("ONE Mobile POP", 12))
+        self.completer.popup().setFont(QFont("ONE Mobile POP", 15))
 
 
     # on selection of an item from the completer, select the corresponding item from combobox 
@@ -54,5 +56,14 @@ class ExtendedComboBox(QComboBox):
         if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
             event.ignore()
             return
-
         super(ExtendedComboBox, self).keyPressEvent(event)
+
+
+# Proxy style for wrapping text in QPushButton
+class wrapStyle(QProxyStyle):
+    def __init__(self):
+        super().__init__()
+
+    def drawItemText(self, painter, rect, flags, pal, enabled, text, textRole):
+        flags |= Qt.TextWordWrap
+        super().drawItemText(painter, rect, flags, pal, enabled, text, textRole)
