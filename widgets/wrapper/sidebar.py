@@ -41,9 +41,11 @@ class Sidebar(Ui_sidebar, QWidget):
                 sub.hide()
             btn.clicked.connect(partial(self.showSubmenu, clicked_menu_name=name))
         
-        config = self.window().config
-        self.updateLocalAccountList(config["account_list"], config["cur_account_idx"])
-        self.account_select_btn.clicked.connect(self.changeAccount)
+        self.updateLocalAccountList()
+        # connect changeaccount with account_list only when user select account from account_list
+        self.account_list.activated.connect(self.changeAccount)
+
+        # self.account_list.currentIndexChanged.connect(self.changeAccount)
         self.account_setting_btn.clicked.connect(self.openAccountSettings)
 
 
@@ -70,19 +72,20 @@ class Sidebar(Ui_sidebar, QWidget):
         selected_idx = self.account_list.currentIndex()
         if selected_idx != config["cur_account_idx"]:
             config["cur_account_idx"] = selected_idx
+            print(f"CHANGE ACCOUNT FROM SIDEBAR: {config["account_list"][config["cur_account_idx"]]}")
             main_window.conn_user.close()
             del main_window.conn_user
-            main_window.changeAccount()
+            main_window.changeAccountCascade()
 
 
-    def updateLocalAccountList(self, account_list, idx=0):
+    def updateLocalAccountList(self):
+        config = self.window().config
         self.account_list.clear()
-        self.account_list.addItems(account_list)
-        self.account_list.setCurrentIndex(idx)
+        self.account_list.addItems(config["account_list"])
+        self.account_list.setCurrentIndex(config["cur_account_idx"])
 
 
     def openAccountSettings(self):
         main_window = self.window()
         new_window: AccountSettings = main_window.account_settings
-        new_window.set_tmp_account_list(main_window.config["account_list"])
         new_window.show()

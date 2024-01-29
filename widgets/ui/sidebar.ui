@@ -554,32 +554,21 @@
      <property name="title">
       <string>계정</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_6">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QComboBox" name="account_list">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="account_select_btn">
-          <property name="text">
-           <string>선택</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QComboBox" name="account_list">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="account_setting_btn">
         <property name="text">
-         <string>계정 관리하기</string>
+         <string>계정 관리</string>
         </property>
        </widget>
       </item>
@@ -608,10 +597,10 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="food_group"/>
   <buttongroup name="main_menu_group"/>
-  <buttongroup name="lab_group"/>
-  <buttongroup name="equip_group"/>
+  <buttongroup name="food_group"/>
   <buttongroup name="crayon_group"/>
+  <buttongroup name="equip_group"/>
+  <buttongroup name="lab_group"/>
  </buttongroups>
 </ui>

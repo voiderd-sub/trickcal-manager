@@ -1,6 +1,7 @@
+from typing import Optional
 from PySide6.QtCore import Qt, QSortFilterProxyModel
-from PySide6.QtWidgets import QCompleter, QComboBox, QProxyStyle
-from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QCompleter, QComboBox, QProxyStyle, QStyle, QStyleOption, QWidget
+from PySide6.QtGui import QFont, QPainter
 
 
 # Combobox with search-filtering

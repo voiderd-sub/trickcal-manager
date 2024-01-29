@@ -32,7 +32,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>30</width>
+         <width>36</width>
          <height>20</height>
         </size>
        </property>
@@ -46,12 +46,24 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="font">
+        <font>
+         <family>ONE 모바일POP</family>
+         <pointsize>15</pointsize>
+        </font>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="filter_btn">
+       <property name="font">
+        <font>
+         <family>ONE 모바일POP</family>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="text">
-        <string>사도 목록 필터</string>
+        <string> 사도 목록 필터 </string>
        </property>
       </widget>
      </item>
@@ -65,7 +77,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>30</width>
+         <width>36</width>
          <height>20</height>
         </size>
        </property>
@@ -105,6 +117,12 @@
          <height>16777215</height>
         </size>
        </property>
+       <property name="font">
+        <font>
+         <family>ONE 모바일POP</family>
+         <pointsize>15</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>&lt;</string>
        </property>
@@ -112,6 +130,12 @@
      </item>
      <item>
       <widget class="QTableWidget" name="rank_table">
+       <property name="font">
+        <font>
+         <family>ONE 모바일POP</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="columnCount">
         <number>0</number>
        </property>
@@ -131,6 +155,12 @@
          <height>16777215</height>
         </size>
        </property>
+       <property name="font">
+        <font>
+         <family>ONE 모바일POP</family>
+         <pointsize>15</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>&gt;</string>
        </property>
@@ -142,6 +172,11 @@
     <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
       <spacer name="horizontalSpacer_2">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -155,12 +190,24 @@
      </item>
      <item>
       <widget class="QGroupBox" name="groupBox_mode">
+       <property name="font">
+        <font>
+         <family>ONE 모바일POP</family>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
        <property name="title">
         <string>모드</string>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
          <widget class="QRadioButton" name="radio_cur_mode">
+          <property name="font">
+           <font>
+            <family>ONE 모바일POP</family>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>착용 장비 기록</string>
           </property>
@@ -168,6 +215,12 @@
         </item>
         <item>
          <widget class="QRadioButton" name="radio_goal_mode">
+          <property name="font">
+           <font>
+            <family>ONE 모바일POP</family>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>목표 설정</string>
           </property>
@@ -175,6 +228,12 @@
         </item>
         <item>
          <spacer name="horizontalSpacer_4">
+          <property name="font">
+           <font>
+            <family>ONE 모바일POP</family>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -191,9 +250,21 @@
         </item>
         <item>
          <widget class="QWidget" name="widget" native="true">
+          <property name="font">
+           <font>
+            <family>ONE 모바일POP</family>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
             <widget class="QLabel" name="label_3">
+             <property name="font">
+              <font>
+               <family>ONE 모바일POP</family>
+               <pointsize>11</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>현재 목표 : </string>
              </property>
@@ -213,12 +284,24 @@
                <height>0</height>
               </size>
              </property>
+             <property name="font">
+              <font>
+               <family>ONE 모바일POP</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QPushButton" name="goal_setting_btn">
+             <property name="font">
+              <font>
+               <family>ONE 모바일POP</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
              <property name="text">
-              <string>목표 수정/삭제</string>
+              <string> 목표 수정/삭제 </string>
              </property>
             </widget>
            </item>
@@ -230,6 +313,11 @@
      </item>
      <item>
       <spacer name="horizontalSpacer_3">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -244,43 +332,118 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_6">
+    <layout class="QHBoxLayout" name="horizontalLayout_8">
      <item>
       <widget class="QGroupBox" name="groupBox_setAll">
+       <property name="font">
+        <font>
+         <family>ONE 모바일POP</family>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
        <property name="title">
         <string>일괄 설정하기</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>전체 사도</string>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QWidget" name="widget_2" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QLabel" name="label">
+               <property name="font">
+                <font>
+                 <family>ONE 모바일POP</family>
+                 <pointsize>11</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>전체 사도</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="combo_set_goal">
+               <property name="font">
+                <font>
+                 <family>ONE 모바일POP</family>
+                 <pointsize>11</pointsize>
+                </font>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_2">
+               <property name="font">
+                <font>
+                 <family>ONE 모바일POP</family>
+                 <pointsize>11</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>랭크까지</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="set_check_btn">
+               <property name="font">
+                <font>
+                 <family>ONE 모바일POP</family>
+                 <pointsize>11</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>체크</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="combo_set_goal"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>랭크까지</string>
+           <spacer name="horizontalSpacer_7">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="set_check_btn">
-            <property name="text">
-             <string>체크</string>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
             </property>
-           </widget>
+           </spacer>
           </item>
          </layout>
         </item>
         <item>
          <widget class="QPushButton" name="set_goal_w_stat_btn">
+          <property name="font">
+           <font>
+            <family>ONE 모바일POP</family>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>스탯 별 랭크작 목표 일괄 설정</string>
           </property>
@@ -291,12 +454,47 @@
      </item>
      <item>
       <widget class="QGroupBox" name="groupBox_save_undo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <family>ONE 모바일POP</family>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
        <property name="title">
         <string>저장 / 취소</string>
        </property>
        <layout class="QGridLayout" name="gridLayout">
+        <item row="1" column="1">
+         <widget class="QPushButton" name="undo_cur_btn">
+          <property name="font">
+           <font>
+            <family>ONE 모바일POP</family>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>현재 페이지 변경사항 취소</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0">
          <widget class="QPushButton" name="save_all_btn">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="font">
+           <font>
+            <family>ONE 모바일POP</family>
+            <pointsize>11</pointsize>
+            <strikeout>false</strikeout>
+           </font>
+          </property>
           <property name="text">
            <string>모두 저장</string>
           </property>
@@ -304,6 +502,12 @@
         </item>
         <item row="0" column="1">
          <widget class="QPushButton" name="save_cur_btn">
+          <property name="font">
+           <font>
+            <family>ONE 모바일POP</family>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>현재 페이지 저장</string>
           </property>
@@ -311,15 +515,14 @@
         </item>
         <item row="1" column="0">
          <widget class="QPushButton" name="undo_all_btn">
+          <property name="font">
+           <font>
+            <family>ONE 모바일POP</family>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>변경사항 모두 취소</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QPushButton" name="undo_cur_btn">
-          <property name="text">
-           <string>현재 페이지 변경사항 취소</string>
           </property>
          </widget>
         </item>

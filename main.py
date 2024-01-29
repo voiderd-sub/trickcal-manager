@@ -1,6 +1,7 @@
 from PySide6 import QtWidgets
 from widgets.ui.main_window import Ui_MainWindow
 from widgets.wrapper.account_settings import AccountSettings
+from widgets.wrapper.goal_settings import GoalSettings
 
 from functools import partial
 import sqlite3, yaml, os.path
@@ -21,9 +22,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.userDBInit()
 
         # generate subwindows
-        self.account_settings = AccountSettings()
-        self.account_settings.updateLocalAccountList(self.config["account_list"])
-        self.account_settings.main = self
+        self.account_settings = AccountSettings(parent=self)
+        self.goal_settings = GoalSettings(parent=self)
 
         self.setupUi(self)
         self.setInitialState()
@@ -54,21 +54,41 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         db_path = f"db/{user_name}.db"
 
         if not os.path.isfile(db_path):
-            with sqlite3.connect(db_path) as conn:
-                cur = conn.cursor()
-                cur.executescript(
+            conn = sqlite3.connect(db_path)
+            cur = conn.cursor()
+            cur.executescript(
 """
 CREATE TABLE "user_hero" (						-- 유저가 보유한 사도 리스트 (table에 있으면 보유중)
 	"hero_id"	INTEGER,						-- 사도 id
 	"star_extrinsic"	INTEGER NOT NULL,		-- 현재 별 개수
 	PRIMARY KEY("hero_id")
 );
+CREATE TABLE "user_cur_equip" (                 -- 유저의 현재 장비 장착 상태
+    "hero_id"	INTEGER NOT NULL,               -- 사도 id
+    "rank"	INTEGER NOT NULL,                   -- 사도의 현재 랭크
+    "equips"	TEXT,                           -- 장착한 장비 order값
+    PRIMARY KEY("hero_id")
+);
+CREATE TABLE "user_goal_equip_names" (          -- 유저가 설정한 목표 이름
+    "id"	INTEGER PRIMARY KEY,
+    "name"	TEXT NOT NULL UNIQUE
+);
+INSERT INTO "user_goal_equip_names" (id, name) VALUES (1, '기본 목표');
+CREATE TABLE "user_goal_equip" (                -- 유저가 설정한 목표 상세 내역
+    "goal_id"	INTEGER NOT NULL,               -- 목표 id
+    "hero_id"	INTEGER NOT NULL,               -- 사도 id
+    "rank"	INTEGER NOT NULL,                   -- 목표 랭크
+    "equips"	TEXT,                           -- 목표 장비 order값
+    PRIMARY KEY("goal_id","hero_id")
+);
 PRAGMA journal_mode=wal;
 """)
-                conn.commit()
+            conn.commit()
+            conn.close()
 
         self.conn_user = sqlite3.connect(db_path)
-    
+
+
     def configInit(self):
         config_path = "db/config.yaml"
         if not os.path.isfile(config_path):
@@ -77,21 +97,22 @@ PRAGMA journal_mode=wal;
 """
 account_list:
     - user 1
-cur_user_idx: 0
+cur_account_idx: 0
 """)
         
         with open("db/config.yaml") as f:
             self.config = yaml.load(f, Loader=yaml.FullLoader)
     
     def updateAccountList(self):
-        new_account_list = self.config["account_list"]
-        self.account_settings.updateLocalAccountList(new_account_list)
-        self.sidebar.updateLocalAccountList(new_account_list)
-    
-    def changeAccount(self):
+        self.sidebar.updateLocalAccountList()
+
+    def updateGoalList(self):
+        self.page_equip_1.updateGoalList()
+
+    def changeAccountCascade(self):
         self.userDBInit()
         self.page_hero.updateTable()
-
+        self.page_equip_1.changeAccount()
 
 
 
