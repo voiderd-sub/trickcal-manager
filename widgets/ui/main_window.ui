@@ -46,13 +46,13 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
-      <widget class="QWidget" name="page_home"/>
+      <widget class="PageHome" name="page_home"/>
       <widget class="PageHero" name="page_hero"/>
       <widget class="PageEquip1" name="page_equip_1"/>
-      <widget class="QWidget" name="page_equip_2"/>
-      <widget class="QWidget" name="page_equip_3"/>
+      <widget class="PageEquip2" name="page_equip_2"/>
+      <widget class="PageEquip3" name="page_equip_3"/>
       <widget class="QWidget" name="page_crayon_1"/>
       <widget class="QWidget" name="page_crayon_2"/>
       <widget class="QWidget" name="page_food_1"/>
@@ -83,6 +83,24 @@
    <class>PageEquip1</class>
    <extends>QWidget</extends>
    <header>widgets/wrapper/page_equip_1.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageEquip2</class>
+   <extends>QWidget</extends>
+   <header>widgets/wrapper/page_equip_2.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageEquip3</class>
+   <extends>QWidget</extends>
+   <header>widgets/wrapper/page_equip_3.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageHome</class>
+   <extends>QWidget</extends>
+   <header>widgets/wrapper/page_home.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

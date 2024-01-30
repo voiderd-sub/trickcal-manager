@@ -35,8 +35,8 @@ class GoalSettings(ComboBoxEditor):
         for i in range(self.table.rowCount()):
             old_name, new_name = self.table.item(i, 0).text(), self.table.item(i, 1).text()
             if old_name != self.placeholder_name:
-                old_idx_to_tmp_idx[self.old_name_to_id[old_name]] = 1000 + i
-                tmp_idx_to_new_idx[1000 + i] = i
+                old_idx_to_tmp_idx[self.old_name_to_id[old_name]] = 1000 + (i+1)
+                tmp_idx_to_new_idx[1000 + (i+1)] = (i+1)
                 if new_name == "":
                     new_goal_list.append(old_name)
                 else:

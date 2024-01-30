@@ -1,9 +1,0 @@
-QWidget{
-    font: 10pt "ONE Mobile POP";
-    font-weight: 1
-}
-
-#hero_select{
-    font: 15pt "ONE Mobile POP";
-    font-weight: 1
-}

@@ -1,7 +1,8 @@
-from typing import Optional
 from PySide6.QtCore import Qt, QSortFilterProxyModel
-from PySide6.QtWidgets import QCompleter, QComboBox, QProxyStyle, QStyle, QStyleOption, QWidget
-from PySide6.QtGui import QFont, QPainter
+from PySide6.QtWidgets import QCompleter, QComboBox, QProxyStyle, QStyledItemDelegate, QTableWidget, QItemDelegate, QLineEdit
+from PySide6.QtGui import QFont, QColor
+from PySide6.QtCore import QRegularExpression, Qt
+from PySide6.QtGui import QRegularExpressionValidator
 
 
 # Combobox with search-filtering
@@ -58,6 +59,10 @@ class ExtendedComboBox(QComboBox):
             event.ignore()
             return
         super(ExtendedComboBox, self).keyPressEvent(event)
+    
+
+    def setCompleterFont(self, font_size):
+        self.completer.popup().setFont(QFont("ONE Mobile POP", font_size))
 
 
 # Proxy style for wrapping text in QPushButton
@@ -68,3 +73,65 @@ class wrapStyle(QProxyStyle):
     def drawItemText(self, painter, rect, flags, pal, enabled, text, textRole):
         flags |= Qt.TextWordWrap
         super().drawItemText(painter, rect, flags, pal, enabled, text, textRole)
+
+
+# Delegate for combobox_editor window
+class NumberDelegate(QItemDelegate):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def createEditor(self, parent, option, index):
+        editor = QLineEdit(parent)
+        regex = QRegularExpression("[0-9]*")
+        validator = QRegularExpressionValidator(regex)
+        editor.setValidator(validator)
+        return editor
+
+    def setEditorData(self, editor, index):
+        value = index.model().data(index, Qt.EditRole)
+        line = editor
+        line.setText(str(value))
+
+    def setModelData(self, editor, model, index):
+        line = editor
+        value = line.text()
+        model.setData(index, value)
+
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)
+
+
+class MaterialTableDelegate(QStyledItemDelegate):
+    def initStyleOption(self, option, index):
+        super(MaterialTableDelegate, self).initStyleOption(option, index)
+
+        if not index.model().flags(index) & Qt.ItemIsEnabled:
+            option.backgroundBrush = QColor(200, 200, 200)  # Set the background color for disabled items
+
+    def createEditor(self, parent, option, index):
+        editor = QLineEdit(parent)
+        regex = QRegularExpression("[0-9]*")
+        validator = QRegularExpressionValidator(regex)
+        editor.setValidator(validator)
+        return editor
+
+    def setEditorData(self, editor, index):
+        value = index.model().data(index, Qt.EditRole)
+        line = editor
+        line.setText(str(value))
+
+    def setModelData(self, editor, model, index):
+        line = editor
+        value = line.text()
+        model.setData(index, value)
+
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)
+
+
+class MaterialTableWidget(QTableWidget):
+    def __init__(self, *args, **kwargs):
+        super(MaterialTableWidget, self).__init__(*args, **kwargs)
+
+        # Set the item delegate to the customized delegate
+        self.setItemDelegate(MaterialTableDelegate())

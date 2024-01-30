@@ -19,7 +19,10 @@ from PySide6.QtWidgets import (QApplication, QHBoxLayout, QMainWindow, QSizePoli
     QStackedWidget, QWidget)
 
 from widgets.wrapper.page_equip_1 import PageEquip1
+from widgets.wrapper.page_equip_2 import PageEquip2
+from widgets.wrapper.page_equip_3 import PageEquip3
 from widgets.wrapper.page_hero import PageHero
+from widgets.wrapper.page_home import PageHome
 from widgets.wrapper.sidebar import Sidebar
 
 class Ui_MainWindow(object):
@@ -50,7 +53,7 @@ class Ui_MainWindow(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.stacked_window.sizePolicy().hasHeightForWidth())
         self.stacked_window.setSizePolicy(sizePolicy1)
-        self.page_home = QWidget()
+        self.page_home = PageHome(self.stacked_window)
         self.page_home.setObjectName(u"page_home")
         self.stacked_window.addWidget(self.page_home)
         self.page_hero = PageHero(self.stacked_window)
@@ -59,10 +62,10 @@ class Ui_MainWindow(object):
         self.page_equip_1 = PageEquip1(self.stacked_window)
         self.page_equip_1.setObjectName(u"page_equip_1")
         self.stacked_window.addWidget(self.page_equip_1)
-        self.page_equip_2 = QWidget()
+        self.page_equip_2 = PageEquip2(self.stacked_window)
         self.page_equip_2.setObjectName(u"page_equip_2")
         self.stacked_window.addWidget(self.page_equip_2)
-        self.page_equip_3 = QWidget()
+        self.page_equip_3 = PageEquip3(self.stacked_window)
         self.page_equip_3.setObjectName(u"page_equip_3")
         self.stacked_window.addWidget(self.page_equip_3)
         self.page_crayon_1 = QWidget()
@@ -96,7 +99,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stacked_window.setCurrentIndex(1)
+        self.stacked_window.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

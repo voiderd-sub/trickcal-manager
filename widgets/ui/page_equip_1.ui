@@ -24,6 +24,11 @@
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <spacer name="horizontalSpacer_5">
+       <property name="font">
+        <font>
+         <family>ONE Mobile POP</family>
+        </font>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -48,7 +53,7 @@
        </property>
        <property name="font">
         <font>
-         <family>ONE 모바일POP</family>
+         <family>ONE Mobile POP</family>
          <pointsize>15</pointsize>
         </font>
        </property>
@@ -58,7 +63,7 @@
       <widget class="QPushButton" name="filter_btn">
        <property name="font">
         <font>
-         <family>ONE 모바일POP</family>
+         <family>ONE Mobile POP</family>
          <pointsize>12</pointsize>
         </font>
        </property>
@@ -69,6 +74,11 @@
      </item>
      <item>
       <spacer name="horizontalSpacer_6">
+       <property name="font">
+        <font>
+         <family>ONE Mobile POP</family>
+        </font>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -87,6 +97,11 @@
    </item>
    <item>
     <spacer name="verticalSpacer">
+     <property name="font">
+      <font>
+       <family>ONE Mobile POP</family>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
@@ -119,7 +134,7 @@
        </property>
        <property name="font">
         <font>
-         <family>ONE 모바일POP</family>
+         <family>ONE Mobile POP</family>
          <pointsize>15</pointsize>
         </font>
        </property>
@@ -132,7 +147,7 @@
       <widget class="QTableWidget" name="rank_table">
        <property name="font">
         <font>
-         <family>ONE 모바일POP</family>
+         <family>ONE Mobile POP</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -157,7 +172,7 @@
        </property>
        <property name="font">
         <font>
-         <family>ONE 모바일POP</family>
+         <family>ONE Mobile POP</family>
          <pointsize>15</pointsize>
         </font>
        </property>
@@ -174,6 +189,7 @@
       <spacer name="horizontalSpacer_2">
        <property name="font">
         <font>
+         <family>ONE Mobile POP</family>
          <pointsize>11</pointsize>
         </font>
        </property>
@@ -192,7 +208,7 @@
       <widget class="QGroupBox" name="groupBox_mode">
        <property name="font">
         <font>
-         <family>ONE 모바일POP</family>
+         <family>ONE Mobile POP</family>
          <pointsize>11</pointsize>
         </font>
        </property>
@@ -204,7 +220,7 @@
          <widget class="QRadioButton" name="radio_cur_mode">
           <property name="font">
            <font>
-            <family>ONE 모바일POP</family>
+            <family>ONE Mobile POP</family>
             <pointsize>11</pointsize>
            </font>
           </property>
@@ -217,7 +233,7 @@
          <widget class="QRadioButton" name="radio_goal_mode">
           <property name="font">
            <font>
-            <family>ONE 모바일POP</family>
+            <family>ONE Mobile POP</family>
             <pointsize>11</pointsize>
            </font>
           </property>
@@ -230,7 +246,7 @@
          <spacer name="horizontalSpacer_4">
           <property name="font">
            <font>
-            <family>ONE 모바일POP</family>
+            <family>ONE Mobile POP</family>
             <pointsize>11</pointsize>
            </font>
           </property>
@@ -252,7 +268,7 @@
          <widget class="QWidget" name="widget" native="true">
           <property name="font">
            <font>
-            <family>ONE 모바일POP</family>
+            <family>ONE Mobile POP</family>
             <pointsize>11</pointsize>
            </font>
           </property>
@@ -261,7 +277,7 @@
             <widget class="QLabel" name="label_3">
              <property name="font">
               <font>
-               <family>ONE 모바일POP</family>
+               <family>ONE Mobile POP</family>
                <pointsize>11</pointsize>
               </font>
              </property>
@@ -286,7 +302,7 @@
              </property>
              <property name="font">
               <font>
-               <family>ONE 모바일POP</family>
+               <family>ONE Mobile POP</family>
                <pointsize>12</pointsize>
               </font>
              </property>
@@ -296,7 +312,7 @@
             <widget class="QPushButton" name="goal_setting_btn">
              <property name="font">
               <font>
-               <family>ONE 모바일POP</family>
+               <family>ONE Mobile POP</family>
                <pointsize>12</pointsize>
               </font>
              </property>
@@ -315,6 +331,7 @@
       <spacer name="horizontalSpacer_3">
        <property name="font">
         <font>
+         <family>ONE Mobile POP</family>
          <pointsize>11</pointsize>
         </font>
        </property>
@@ -337,7 +354,7 @@
       <widget class="QGroupBox" name="groupBox_setAll">
        <property name="font">
         <font>
-         <family>ONE 모바일POP</family>
+         <family>ONE Mobile POP</family>
          <pointsize>11</pointsize>
         </font>
        </property>
@@ -349,6 +366,12 @@
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
            <spacer name="horizontalSpacer">
+            <property name="font">
+             <font>
+              <family>ONE Mobile POP</family>
+              <pointsize>11</pointsize>
+             </font>
+            </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -368,17 +391,23 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="font">
+             <font>
+              <family>ONE Mobile POP</family>
+              <pointsize>11</pointsize>
+             </font>
+            </property>
             <layout class="QHBoxLayout" name="horizontalLayout_2">
              <item>
               <widget class="QLabel" name="label">
                <property name="font">
                 <font>
-                 <family>ONE 모바일POP</family>
+                 <family>ONE Mobile POP</family>
                  <pointsize>11</pointsize>
                 </font>
                </property>
                <property name="text">
-                <string>전체 사도</string>
+                <string>현재 모드에서 전체 사도</string>
                </property>
               </widget>
              </item>
@@ -386,7 +415,7 @@
               <widget class="QComboBox" name="combo_set_goal">
                <property name="font">
                 <font>
-                 <family>ONE 모바일POP</family>
+                 <family>ONE Mobile POP</family>
                  <pointsize>11</pointsize>
                 </font>
                </property>
@@ -396,7 +425,7 @@
               <widget class="QLabel" name="label_2">
                <property name="font">
                 <font>
-                 <family>ONE 모바일POP</family>
+                 <family>ONE Mobile POP</family>
                  <pointsize>11</pointsize>
                 </font>
                </property>
@@ -409,7 +438,7 @@
               <widget class="QPushButton" name="set_check_btn">
                <property name="font">
                 <font>
-                 <family>ONE 모바일POP</family>
+                 <family>ONE Mobile POP</family>
                  <pointsize>11</pointsize>
                 </font>
                </property>
@@ -423,6 +452,12 @@
           </item>
           <item>
            <spacer name="horizontalSpacer_7">
+            <property name="font">
+             <font>
+              <family>ONE Mobile POP</family>
+              <pointsize>11</pointsize>
+             </font>
+            </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -440,7 +475,7 @@
          <widget class="QPushButton" name="set_goal_w_stat_btn">
           <property name="font">
            <font>
-            <family>ONE 모바일POP</family>
+            <family>ONE Mobile POP</family>
             <pointsize>11</pointsize>
            </font>
           </property>
@@ -462,7 +497,7 @@
        </property>
        <property name="font">
         <font>
-         <family>ONE 모바일POP</family>
+         <family>ONE Mobile POP</family>
          <pointsize>11</pointsize>
         </font>
        </property>
@@ -474,7 +509,7 @@
          <widget class="QPushButton" name="undo_cur_btn">
           <property name="font">
            <font>
-            <family>ONE 모바일POP</family>
+            <family>ONE Mobile POP</family>
             <pointsize>11</pointsize>
            </font>
           </property>
@@ -490,7 +525,7 @@
           </property>
           <property name="font">
            <font>
-            <family>ONE 모바일POP</family>
+            <family>ONE Mobile POP</family>
             <pointsize>11</pointsize>
             <strikeout>false</strikeout>
            </font>
@@ -504,7 +539,7 @@
          <widget class="QPushButton" name="save_cur_btn">
           <property name="font">
            <font>
-            <family>ONE 모바일POP</family>
+            <family>ONE Mobile POP</family>
             <pointsize>11</pointsize>
            </font>
           </property>
@@ -517,7 +552,7 @@
          <widget class="QPushButton" name="undo_all_btn">
           <property name="font">
            <font>
-            <family>ONE 모바일POP</family>
+            <family>ONE Mobile POP</family>
             <pointsize>11</pointsize>
            </font>
           </property>

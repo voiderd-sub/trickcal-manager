@@ -9,13 +9,7 @@ class Sidebar(Ui_sidebar, QWidget):
         super().__init__()
         self.setParent(parent)
         self.setupUi(self)              # Settings in Qt Designer
-        self.setStyleFromPath("widgets/style/style_sidebar.qss")
         self.setInitialState()        # Settings in main.py
-        
-    
-    def setStyleFromPath(self, path):
-        with open(path, "r") as f:
-            self.setStyleSheet(f.read())
 
 
     def setInitialState(self):
@@ -41,7 +35,7 @@ class Sidebar(Ui_sidebar, QWidget):
                 sub.hide()
             btn.clicked.connect(partial(self.showSubmenu, clicked_menu_name=name))
         
-        self.updateLocalAccountList()
+        self.updateLocalAccountList(False)
         # connect changeaccount with account_list only when user select account from account_list
         self.account_list.activated.connect(self.changeAccount)
 
@@ -66,23 +60,23 @@ class Sidebar(Ui_sidebar, QWidget):
                 sub.hide()
 
 
-    def changeAccount(self):
+    def changeAccount(self, account_list_changed=False):
         main_window = self.window()
         config = main_window.config
         selected_idx = self.account_list.currentIndex()
-        if selected_idx != config["cur_account_idx"]:
+        if selected_idx != config["cur_account_idx"] or account_list_changed:
             config["cur_account_idx"] = selected_idx
-            print(f"CHANGE ACCOUNT FROM SIDEBAR: {config["account_list"][config["cur_account_idx"]]}")
             main_window.conn_user.close()
             del main_window.conn_user
             main_window.changeAccountCascade()
 
 
-    def updateLocalAccountList(self):
+    def updateLocalAccountList(self, is_not_init):
         config = self.window().config
         self.account_list.clear()
         self.account_list.addItems(config["account_list"])
         self.account_list.setCurrentIndex(config["cur_account_idx"])
+        self.changeAccount(is_not_init)
 
 
     def openAccountSettings(self):

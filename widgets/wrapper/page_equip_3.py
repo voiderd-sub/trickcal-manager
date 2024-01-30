@@ -1,0 +1,370 @@
+from widgets.ui.page_equip_3 import Ui_page_equip_3
+from widgets.wrapper.equip_dialog import EquipDialog
+
+from PySide6.QtWidgets import QWidget, QMessageBox
+from PySide6.QtGui import QIntValidator
+from PySide6.QtGui import QValidator
+
+import sqlite3
+import pandas as pd
+import numpy as np
+import pulp
+from collections import defaultdict
+from copy import deepcopy
+
+
+
+class PageEquip3(Ui_page_equip_3, QWidget):
+    def __init__(self, parent):
+        super().__init__()
+        self.setParent(parent)
+        self.setupUi(self)
+        self.setInitialState()
+
+    def setInitialState(self):
+        cur_master:sqlite3.Cursor = self.window().conn_master.cursor()
+        cur_master.execute("SELECT * from equipment_recipe")
+        self.recipe = defaultdict(lambda: defaultdict(int))
+        for row in cur_master:
+            rank, type = row[:2]
+            for i in range(2, len(row), 2):
+                name, count = row[i], row[i+1]
+                if name is None:
+                    continue
+                self.recipe[(rank, type)][name] = count
+
+
+        self.setting_name_list = ["auto_update_yes", "use_equip_yes", "hallow_13_yes",
+                                  "research_level","candy_buying", "use_standard_yes",
+                                  "daily_elleaf_yes", "lecture_level", "cur_standard",
+                                  "daily_candy_yes", "auto_update_yes", "round_yes"]
+        self.updateGoalList()
+        self.loadSettings()
+
+        self.research_level.setValidator(QIntValidator(0, 8, self.research_level))
+        self.candy_buying.setValidator(QIntValidator(0, 10, self.candy_buying))
+        self.lecture_level.setValidator(QIntValidator(0, 25, self.lecture_level))
+        self.cur_standard.setValidator(QIntValidator(0, 999999, self.cur_standard))
+
+        self.update_btn.clicked.connect(self.updateDropTable)
+        self.calc_btn.clicked.connect(self.calculate)
+
+        self.dialog = EquipDialog()
+
+
+    def updateGoalList(self):
+        main_window = self.window()
+        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
+
+        cur_user.execute("SELECT id, name FROM user_goal_equip_names")
+        self.goal_name_to_id = {name: id for (id, name) in cur_user}
+
+        self.goal_list.clear()
+        self.goal_list.addItems(self.goal_name_to_id.keys())
+        self.goal_list.setCurrentIndex(0)
+    
+
+    def loadSettings(self):
+        main_window = self.window()
+        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
+
+        cur_user.execute("SELECT * FROM calc_settings")
+        for setting_name, value in cur_user:
+            widget = getattr(self, setting_name)
+            if len(setting_name.split("_yes"))==2:
+                if value:
+                    widget.setChecked(True)
+                else:
+                    getattr(self, setting_name.split("_yes")[0]+"_no").setChecked(True)
+            else:
+                widget.setText(str(value))
+    
+
+    def updateDropTable(self):
+        main_window = self.window()
+        path_item_table = main_window.config["path_item_table"]
+        url=f'https://docs.google.com/spreadsheet/ccc?key={path_item_table}&output=xlsx'
+
+        # make dict of drop item list
+        drop_item_list = dict()
+        self.stage_to_prob = dict()
+        df = pd.read_excel(url, sheet_name="아이템 이름", usecols="A,E:F")
+        df = df.replace({np.nan: None})
+        for (_, row) in df.iterrows():
+            stage_name, item_1, item_2 = row
+            drop_item_list[stage_name] = (item_1, item_2)
+
+        df = pd.read_excel(url, sheet_name="드랍률", header=2, usecols="A:B,K:L")
+        for (_, row) in df.iterrows():
+            stage_name, count, prob_1, prob_2 = row
+            if count < 100:
+                continue
+            prob_1 = None if type(prob_1)==str else prob_1
+            prob_2 = None if type(prob_2)==str else prob_2
+            item_1, item_2 = drop_item_list[stage_name]
+            self.stage_to_prob[stage_name] = dict()
+            self.stage_to_prob[stage_name][item_1] = prob_1
+            self.stage_to_prob[stage_name][item_2] = prob_2
+            self.stage_to_prob[stage_name].pop(None, None)
+
+        data = []
+        for stage_name, item_dict in self.stage_to_prob.items():
+            item_1, item_2 = drop_item_list[stage_name]
+            data.append((stage_name, item_1, item_dict.get(item_1, None), item_2, item_dict.get(item_2, None)))
+
+        cur_master: sqlite3.Cursor = main_window.conn_master.cursor()
+        cur_master.executemany("""INSERT OR REPLACE INTO
+                           drop_table(area, item_1_name, item_1_drop_rate, item_2_name, item_2_drop_rate)
+                           VALUES (?, ?, ?, ?, ?)""", data)
+        main_window.conn_master.commit()
+    
+    # load data from drop_table and save to self.stage_to_prob if not exists
+    def loadDropTable(self):
+        if hasattr(self, "stage_to_prob"):
+            return
+        main_window = self.window()
+        cur_master: sqlite3.Cursor = main_window.conn_master.cursor()
+        cur_master.execute("SELECT * FROM drop_table")
+        self.stage_to_prob = dict()
+        for row in cur_master:
+            stage_name = row[0]
+            self.stage_to_prob[stage_name] = dict()
+            for i in range(0,4,2):
+                item_name = row[i+1]
+                drop_rate = row[i+2]
+                if item_name is None:
+                    continue
+                self.stage_to_prob[stage_name][item_name] = drop_rate
+
+
+    def calculate(self):
+        try:
+            self.saveCurrentSettings()
+        except:
+            QMessageBox.critical(self, "Error", "입력값이 범위에 맞는지 확인해주세요.")
+            return
+        if self.auto_update_yes.isChecked():
+            self.updateDropTable()
+        self.loadDropTable()
+        stage_to_prob = deepcopy(self.stage_to_prob)
+        if self.round_yes.isChecked():
+            for _, item_dict in stage_to_prob.items():
+                for item_name, drop_rate in item_dict.items():
+                    item_dict[item_name] = round(drop_rate * 2, 1) / 2
+
+        # Calculate needs
+        main_window = self.window()
+        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
+        cur_master: sqlite3.Cursor = main_window.conn_master.cursor()
+        equip_data = main_window.hero_id_to_equip_ids
+        needs_each_equip = defaultdict(int)
+        needs_each_type = defaultdict(lambda: defaultdict(int))
+        needs_each_item = defaultdict(int)
+
+        goal_name = self.goal_list.currentText()
+        goal_id = self.goal_name_to_id[goal_name]
+        cur_user.execute("SELECT hero_id, rank, equips FROM user_goal_equip WHERE goal_id=?", (goal_id,))
+        goal_equip = {idx: (rank, set((int(i) for i in equips.split(",")))
+                            if equips is not None else None)
+                            for (idx, rank, equips) in cur_user}
+        
+        cur_user.execute("SELECT hero_id, rank, equips FROM user_cur_equip")
+        cur_equip = {idx: (rank, set((int(i) for i in equips.split(",")))
+                            if equips is not None else None)
+                            for (idx, rank, equips) in cur_user}
+
+        for hero_id, (goal_rank, goal_equips) in goal_equip.items():
+            cur_rank, cur_equips = cur_equip.get(hero_id, (1, set()))
+            for rank in range(cur_rank, goal_rank):
+                for equip_id in equip_data[hero_id][rank]:
+                    needs_each_equip[equip_id] += 1
+            if goal_equips is not None:
+                for order_idx in goal_equips - cur_equips:
+                    equip_id = equip_data[hero_id][goal_rank][order_idx - 1]
+                    needs_each_equip[equip_id] += 1
+
+        if self.use_equip_yes.isChecked():
+            cur_user.execute("SELECT id, count FROM user_bag_equips")
+            for equip_id, count in cur_user:
+                needs_each_equip[equip_id] -= count
+        
+        for equip_id in list(needs_each_equip.keys()):
+            if needs_each_equip[equip_id] <= 0:
+                needs_each_equip.pop(equip_id)
+
+        cur_master.execute("select id, rank, type from equipment")
+        equip_id_to_rank_n_type = {idx: (rank, type_id) for idx, rank, type_id in cur_master}
+
+        for equip_id, count in needs_each_equip.items():
+            rank, type_id = equip_id_to_rank_n_type[equip_id]
+            needs_each_type[rank][type_id] += count
+        
+        for rank in needs_each_type:
+            for type_id, count in needs_each_type[rank].items():
+                for item_name, item_count in self.recipe[(rank, type_id)].items():
+                    needs_each_item[item_name] += item_count * count
+        
+        # Candy settings
+        hallow_level = 2 if self.hallow_13_yes.isChecked() else 1
+        research_level = int(self.research_level.text())
+        candy_buying = int(self.candy_buying.text())
+        daily_candy = 1600 / 14 if self.daily_candy_yes.isChecked() else 0
+
+        # Standard settings
+        lecture_level = int(self.lecture_level.text())
+        cur_standard = int(self.cur_standard.text())
+        num_lecture = 3 if self.daily_elleaf_yes.isChecked() else 2
+        use_standard = self.use_standard_yes.isChecked() and lecture_level > 0
+        
+        candy_per_day = 200 + 24 * (10 + 6 * hallow_level * (1 + 0.1 * research_level)) \
+                        + 100 * candy_buying + daily_candy
+        standard_per_day = num_lecture * (lecture_level + 29)
+
+        # Set LpProblem
+        model = pulp.LpProblem('test_lp', pulp.LpMinimize)
+        x = pulp.LpVariable.dicts('면제 횟수', stage_to_prob, lowBound=0)
+        if use_standard:
+            y = pulp.LpVariable.dicts('정석 개수', needs_each_item, lowBound=0)
+        
+        constraints = dict()
+        for item_name, count in needs_each_item.items():
+            exp = pulp.LpAffineExpression()
+            for stage_name, prob_dict in stage_to_prob.items():
+                if item_name in prob_dict:
+                    exp += prob_dict[item_name] * x[stage_name]
+            if use_standard:
+                exp += (1 / self.name_to_num_standard(item_name)) * y[item_name]
+            constraints[item_name] = exp
+            model += exp >= needs_each_item[item_name]
+        candy_days = pulp.LpVariable('왕사탕', lowBound=0)
+        if use_standard:
+            standard_days = pulp.LpVariable('정석', lowBound=0)
+        
+        model += candy_days * candy_per_day == pulp.lpSum([10 * v  for _,v in x.items()])
+        if use_standard:
+            model += standard_days * standard_per_day + cur_standard == pulp.lpSum([y[name] for name in needs_each_item.keys()])
+        
+        if use_standard:
+            tmp_bin = pulp.LpVariable('binary', cat="Binary")
+            M = 100_000
+            days = pulp.LpVariable('days', lowBound=0)
+
+            # Constraint for binary
+            model += candy_days - standard_days <= M * tmp_bin
+            model += standard_days - candy_days <= M * (1-tmp_bin)
+
+            # Constraint for min_x = min(x1, x2)
+            model += days >= candy_days
+            model += days >= standard_days
+            model += days <= candy_days + M * (1-tmp_bin)
+            model += days <= standard_days + M * tmp_bin
+
+        else:
+            days = pulp.LpVariable('days', lowBound=0)
+            model += days == candy_days
+
+        # objective function : max(candy_days, standard_days)
+        model += days
+        model.solve(pulp.apis.PULP_CBC_CMD(msg=False))
+
+        # print result
+        result = []
+        partial_res=f"""소요 시간 : {pulp.value(model.objective):.2f}일
+사용한 왕사탕 개수 : {pulp.value(candy_days * candy_per_day):.2f}개
+사용한 정석 개수 : {pulp.value(standard_days * standard_per_day + cur_standard):.2f}개
+"""
+        partial_res+="\n[남는 재료 개수]\n"
+
+        for k, v in constraints.items():
+            val = pulp.value(v)
+            if val >= needs_each_item[k] + 1:
+                partial_res+=f"{k} - {val - needs_each_item[k]:.1f}개 남음\n"
+        result.append(partial_res)
+
+        partial_res = ""
+        for k, v in x.items():
+            val = pulp.value(v)
+            if val != 0:
+                partial_res+=(f"{k} : {val:.1f}회 면제\n")
+        result.append(partial_res)
+
+        partial_res = ""
+        for k in sorted(needs_each_item.keys(), key=lambda x: self.material_name_to_id(x)):
+            if not k in constraints:
+                continue
+            v = constraints[k]
+            partial_res+=f"[{k}]\n"
+            expval = pulp.value(v)
+            for a in v:
+                val = a.varValue
+                if val != 0:
+                    name = a.name
+                    if len(name.split('면제_횟수_')) > 1:
+                        stage = True
+                        name = name.split('면제_횟수_')[-1].replace("_", "-")
+                    else:
+                        stage = False
+
+                    if stage:
+                        partial_res+=f"{name} : {val * stage_to_prob[name][k]/expval * 100:.1f}%\n"
+                    else:
+                        partial_res+=f"정석 : {val / self.name_to_num_standard(k) / expval * 100:.1f}%\n"
+            partial_res+="\n"
+        result.append(partial_res)
+
+        partial_res = ""
+        if use_standard:
+            for k, v in y.items():
+                val = pulp.value(v)
+                if val != 0:
+                    partial_res+=f"{k} : 정석 {val:.1f}개 사용\n"
+        result.append(partial_res)
+
+        self.dialog.tabWidget.setCurrentIndex(0)
+        self.dialog.show()
+        self.dialog.setResultValues(result)
+
+
+
+
+    def saveCurrentSettings(self):
+        main_window = self.window()
+        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
+
+        for setting_name in self.setting_name_list:
+            widget = getattr(self, setting_name)
+            if len(setting_name.split("_yes"))==2:
+                value = int(widget.isChecked())
+            else:
+                text = widget.text()
+                if text == "":
+                    text = "0"
+                criteria = widget.validator().validate(text, 0)[0]
+                if criteria != QValidator.State.Acceptable:
+                    raise Exception
+                value = int(text)
+            cur_user.execute("INSERT OR REPLACE INTO calc_settings (setting_name, value) VALUES (?, ?)", (setting_name, value))
+        main_window.conn_user.commit()
+    
+
+    def name_to_num_standard(self, name):
+        tier = int(name.split("티어")[0].split("(")[-1])
+        if tier == 3: return 6
+        if tier == 4: return 10
+        elif tier == 5: return 12
+        elif tier == 6 : return 14
+        return 22
+    
+
+    def material_name_to_id(self, name):
+        name = name.split("(")
+        rank = int(name[1].rstrip("티어)"))
+
+        name_w_o_rank = name[0].split(" ")
+        prefix = " ".join(name_w_o_rank[:-1])
+        suffix = name_w_o_rank[-1]
+
+        prefix = self.window().type_name_to_type_id[prefix]
+        suffix = self.window().pr_to_id[suffix]
+        
+        return (-rank, prefix, suffix)
