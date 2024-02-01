@@ -31,6 +31,12 @@
    </property>
    <item>
     <widget class="QWidget" name="hero_table_container" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+       <horstretch>2</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="minimumSize">
       <size>
        <width>300</width>
@@ -94,10 +100,16 @@
         </item>
         <item>
          <widget class="QPushButton" name="update_btn">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>40</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <family>ONE 모바일POP</family>
-            <pointsize>12</pointsize>
+            <pointsize>15</pointsize>
            </font>
           </property>
           <property name="text">
@@ -114,7 +126,7 @@
     <widget class="QWidget" name="button_area" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-       <horstretch>0</horstretch>
+       <horstretch>1</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
@@ -135,10 +147,16 @@
         </property>
         <item>
          <widget class="QPushButton" name="star_1_btn">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <family>ONE 모바일POP</family>
-            <pointsize>12</pointsize>
+            <pointsize>13</pointsize>
            </font>
           </property>
           <property name="text">
@@ -148,10 +166,16 @@
         </item>
         <item>
          <widget class="QPushButton" name="star_2_btn">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <family>ONE 모바일POP</family>
-            <pointsize>12</pointsize>
+            <pointsize>13</pointsize>
            </font>
           </property>
           <property name="text">
@@ -161,10 +185,16 @@
         </item>
         <item>
          <widget class="QPushButton" name="all_check_btn">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <family>ONE 모바일POP</family>
-            <pointsize>12</pointsize>
+            <pointsize>13</pointsize>
            </font>
           </property>
           <property name="text">
@@ -196,10 +226,16 @@
         </item>
         <item>
          <widget class="QPushButton" name="all_uncheck_btn">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <family>ONE 모바일POP</family>
-            <pointsize>12</pointsize>
+            <pointsize>13</pointsize>
            </font>
           </property>
           <property name="text">
@@ -235,10 +271,16 @@
         </property>
         <item>
          <widget class="QPushButton" name="save_btn">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <family>ONE 모바일POP</family>
-            <pointsize>12</pointsize>
+            <pointsize>13</pointsize>
            </font>
           </property>
           <property name="text">
@@ -248,10 +290,16 @@
         </item>
         <item>
          <widget class="QPushButton" name="undo_btn">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
           <property name="font">
            <font>
             <family>ONE 모바일POP</family>
-            <pointsize>12</pointsize>
+            <pointsize>13</pointsize>
            </font>
           </property>
           <property name="text">

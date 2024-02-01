@@ -31,6 +31,11 @@ class Ui_page_hero(object):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.hero_table_container = QWidget(page_hero)
         self.hero_table_container.setObjectName(u"hero_table_container")
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(2)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.hero_table_container.sizePolicy().hasHeightForWidth())
+        self.hero_table_container.setSizePolicy(sizePolicy)
         self.hero_table_container.setMinimumSize(QSize(300, 0))
         font = QFont()
         font.setFamilies([u"ONE \ubaa8\ubc14\uc77cPOP"])
@@ -50,11 +55,11 @@ class Ui_page_hero(object):
         __qtablewidgetitem2 = QTableWidgetItem()
         self.hero_table.setHorizontalHeaderItem(2, __qtablewidgetitem2)
         self.hero_table.setObjectName(u"hero_table")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.hero_table.sizePolicy().hasHeightForWidth())
-        self.hero_table.setSizePolicy(sizePolicy)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.hero_table.sizePolicy().hasHeightForWidth())
+        self.hero_table.setSizePolicy(sizePolicy1)
         font1 = QFont()
         font1.setFamilies([u"ONE \ubaa8\ubc14\uc77cPOP"])
         font1.setPointSize(14)
@@ -69,7 +74,11 @@ class Ui_page_hero(object):
 
         self.update_btn = QPushButton(self.hero_table_container)
         self.update_btn.setObjectName(u"update_btn")
-        self.update_btn.setFont(font)
+        self.update_btn.setMinimumSize(QSize(0, 40))
+        font2 = QFont()
+        font2.setFamilies([u"ONE \ubaa8\ubc14\uc77cPOP"])
+        font2.setPointSize(15)
+        self.update_btn.setFont(font2)
 
         self.verticalLayout_2.addWidget(self.update_btn)
 
@@ -81,11 +90,11 @@ class Ui_page_hero(object):
 
         self.button_area = QWidget(page_hero)
         self.button_area.setObjectName(u"button_area")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.button_area.sizePolicy().hasHeightForWidth())
-        self.button_area.setSizePolicy(sizePolicy1)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy2.setHorizontalStretch(1)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.button_area.sizePolicy().hasHeightForWidth())
+        self.button_area.setSizePolicy(sizePolicy2)
         self.button_area.setFont(font)
         self.verticalLayout_4 = QVBoxLayout(self.button_area)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -95,19 +104,25 @@ class Ui_page_hero(object):
         self.verticalLayout.setSizeConstraint(QLayout.SetFixedSize)
         self.star_1_btn = QPushButton(self.button_area)
         self.star_1_btn.setObjectName(u"star_1_btn")
-        self.star_1_btn.setFont(font)
+        self.star_1_btn.setMinimumSize(QSize(0, 30))
+        font3 = QFont()
+        font3.setFamilies([u"ONE \ubaa8\ubc14\uc77cPOP"])
+        font3.setPointSize(13)
+        self.star_1_btn.setFont(font3)
 
         self.verticalLayout.addWidget(self.star_1_btn)
 
         self.star_2_btn = QPushButton(self.button_area)
         self.star_2_btn.setObjectName(u"star_2_btn")
-        self.star_2_btn.setFont(font)
+        self.star_2_btn.setMinimumSize(QSize(0, 30))
+        self.star_2_btn.setFont(font3)
 
         self.verticalLayout.addWidget(self.star_2_btn)
 
         self.all_check_btn = QPushButton(self.button_area)
         self.all_check_btn.setObjectName(u"all_check_btn")
-        self.all_check_btn.setFont(font)
+        self.all_check_btn.setMinimumSize(QSize(0, 30))
+        self.all_check_btn.setFont(font3)
 
         self.verticalLayout.addWidget(self.all_check_btn)
 
@@ -117,7 +132,8 @@ class Ui_page_hero(object):
 
         self.all_uncheck_btn = QPushButton(self.button_area)
         self.all_uncheck_btn.setObjectName(u"all_uncheck_btn")
-        self.all_uncheck_btn.setFont(font)
+        self.all_uncheck_btn.setMinimumSize(QSize(0, 30))
+        self.all_uncheck_btn.setFont(font3)
 
         self.verticalLayout.addWidget(self.all_uncheck_btn)
 
@@ -133,13 +149,15 @@ class Ui_page_hero(object):
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.save_btn = QPushButton(self.button_area)
         self.save_btn.setObjectName(u"save_btn")
-        self.save_btn.setFont(font)
+        self.save_btn.setMinimumSize(QSize(0, 30))
+        self.save_btn.setFont(font3)
 
         self.verticalLayout_3.addWidget(self.save_btn)
 
         self.undo_btn = QPushButton(self.button_area)
         self.undo_btn.setObjectName(u"undo_btn")
-        self.undo_btn.setFont(font)
+        self.undo_btn.setMinimumSize(QSize(0, 30))
+        self.undo_btn.setFont(font3)
 
         self.verticalLayout_3.addWidget(self.undo_btn)
 

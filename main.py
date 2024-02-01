@@ -5,8 +5,13 @@ from widgets.ui.main_window import Ui_MainWindow
 from widgets.wrapper.account_settings import AccountSettings
 from widgets.wrapper.goal_settings import GoalSettings
 
+from PySide6.QtWidgets import QMessageBox
+from PySide6.QtGui import QIcon
+
 from functools import partial
 import sqlite3, yaml, os.path
+import requests
+import shutil
 
 """
 !WARNING!
@@ -14,6 +19,58 @@ If you converted the .ui file to a .py file with the pyside6-uic command,
 you must pass "self.stacked_widget" as an argument to each custom widget
 constructor of stackedwindow in main_window.py.
 """
+
+def download_folder_from_github(username, repository, branch, folder_path, destination_path, skip_existing=True):
+    # GitHub API URL to get the contents of a repository
+    api_url = f'https://api.github.com/repos/{username}/{repository}/contents/{folder_path}?ref={branch}'
+
+    # Make a GET request to the GitHub API
+    response = requests.get(api_url)
+
+    if response.status_code == 200:
+        # Parse the JSON response
+        content_list = response.json()
+
+        # Create the destination folder if it doesn't exist
+        os.makedirs(destination_path, exist_ok=True)
+
+        # Iterate through each file in the folder and download it
+        for item in content_list:
+            if item['type'] == 'file':
+                file_url = item['download_url']
+                file_name = item['name']
+                destination_file_path = os.path.join(destination_path, file_name)
+
+                # Download the file if it doesn't exist or if the skip_existing option is turned off
+                if not skip_existing or not os.path.exists(destination_file_path):
+                    download_file(file_url, destination_file_path)
+
+            elif item['type'] == 'dir':
+                # Recursively download subfolders
+                subfolder_name = item['name']
+                subfolder_path = os.path.join(destination_path, subfolder_name)
+                download_folder_from_github(username, repository, branch, f'{folder_path}/{subfolder_name}', subfolder_path, skip_existing)
+
+    else:
+        raise Exception(
+f"""Failed to fetch folder contents.
+Status code: {response.status_code}
+URL: {api_url}""")
+
+def download_file(url, destination_path):
+    # Download a file from a URL
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        with open(destination_path, 'wb') as file:
+            file.write(response.content)
+    else:
+        raise Exception(
+f"""Failed to download file.
+Status code: {response.status_code}
+URL: {url}""")
+
+
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -38,19 +95,45 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             btn=getattr(self.sidebar, name)
             btn.clicked.connect(partial(self.stacked_window.setCurrentIndex, i))
 
+
     def closeEvent(self, event):
         self.conn_master.close()
         self.conn_user.close()
         with open('db/config.yaml', 'w') as f:
             yaml.dump(self.config, f)
         event.accept()
-    
-    def masterDBInit(self):
+
+
+    def masterDBInit(self, force=False):
+        if hasattr(self, "conn_master"):
+            self.conn_master.close()
+              
         db_path = "db/master.db"
-        if not os.path.isfile(db_path):
-            ### 대충 db 다운로드 하는 코드 ###
-            pass
+        if force or not os.path.isfile(db_path):
+            self.downloadMasterDB()
         self.conn_master = sqlite3.connect(db_path)
+
+
+    def downloadMasterDB(self):
+        try:
+            user_name = "voiderd-sub"
+            repository = "trickal-manager"
+            branch = "main"
+            folder_path = destination_path = "db"
+            download_folder_from_github(user_name, repository, branch, folder_path, destination_path, True)
+
+            folder_path = destination_path = "icon"
+            download_folder_from_github(user_name, repository, branch, folder_path, destination_path, True)
+
+        except Exception as e:
+            msg_box = QMessageBox()
+            msg_box.setIcon(QMessageBox.Critical)
+            msg_box.setWindowTitle("Error")
+            msg_box.setText(str(e))
+            msg_box.exec()
+            raise e
+        
+
 
     def userDBInit(self):
         user_name = self.config["account_list"][self.config["cur_account_idx"]]
@@ -148,10 +231,12 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         self.page_equip_3.updateGoalList()
 
 
+if __name__ == "__main__":
+    os.chdir("_internal")
+    app = QtWidgets.QApplication([])
+    app.setWindowIcon(QIcon('icon/icon.png'))
 
-app = QtWidgets.QApplication([])
+    window = MainWindow()
+    window.show()
 
-window = MainWindow()
-window.show()
-
-app.exec()
+    app.exec()

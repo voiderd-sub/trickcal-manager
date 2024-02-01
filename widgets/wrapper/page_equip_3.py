@@ -206,19 +206,23 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         
         # Candy settings
         hallow_level = 2 if self.hallow_13_yes.isChecked() else 1
-        research_level = int(self.research_level.text())
-        candy_buying = int(self.candy_buying.text())
+        research_level = self.research_level.text()
+        research_level = 0 if research_level == "" else int(research_level)
+        candy_buying = self.candy_buying.text()
+        candy_buying = 0 if candy_buying == "" else int(candy_buying)
         daily_candy = 1600 / 14 if self.daily_candy_yes.isChecked() else 0
 
         # Standard settings
-        lecture_level = int(self.lecture_level.text())
-        cur_standard = int(self.cur_standard.text())
+        lecture_level = self.lecture_level.text()
+        lecture_level = 0 if lecture_level == "" else int(lecture_level)
+        cur_standard = self.cur_standard.text()
+        cur_standard = 0 if cur_standard == "" else int(cur_standard)
         num_lecture = 3 if self.daily_elleaf_yes.isChecked() else 2
-        use_standard = self.use_standard_yes.isChecked() and lecture_level > 0
+        use_standard = self.use_standard_yes.isChecked()
         
         candy_per_day = 200 + 24 * (10 + 6 * hallow_level * (1 + 0.1 * research_level)) \
                         + 100 * candy_buying + daily_candy
-        standard_per_day = num_lecture * (lecture_level + 29)
+        standard_per_day = 0 if lecture_level == 0 else num_lecture * (lecture_level + 29)
 
         # Set LpProblem
         model = pulp.LpProblem('test_lp', pulp.LpMinimize)
@@ -240,9 +244,9 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         if use_standard:
             standard_days = pulp.LpVariable('정석', lowBound=0)
         
-        model += candy_days * candy_per_day == pulp.lpSum([10 * v  for _,v in x.items()])
+        model += candy_days * candy_per_day >= pulp.lpSum([10 * v  for _,v in x.items()])
         if use_standard:
-            model += standard_days * standard_per_day + cur_standard == pulp.lpSum([y[name] for name in needs_each_item.keys()])
+            model += standard_days * standard_per_day + cur_standard >= pulp.lpSum([y[name] for name in needs_each_item.keys()])
         
         if use_standard:
             tmp_bin = pulp.LpVariable('binary', cat="Binary")
@@ -267,12 +271,17 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         model += days
         model.solve(pulp.apis.PULP_CBC_CMD(msg=False))
 
+        if model.status != 1:
+            QMessageBox.critical(self, "Error", "해가 존재하지 않습니다.")
+            return
+
         # print result
         result = []
         partial_res=f"""소요 시간 : {pulp.value(model.objective):.2f}일
 사용한 왕사탕 개수 : {pulp.value(candy_days * candy_per_day):.2f}개
-사용한 정석 개수 : {pulp.value(standard_days * standard_per_day + cur_standard):.2f}개
 """
+        if use_standard:
+            partial_res+=f"사용한 정석 개수 : {pulp.value(pulp.lpSum([y[name] for name in needs_each_item.keys()])):.2f}개\n"
         partial_res+="\n[남는 재료 개수]\n"
 
         for k, v in constraints.items():
@@ -295,6 +304,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             v = constraints[k]
             partial_res+=f"[{k}]\n"
             expval = pulp.value(v)
+            tmp_res = []
             for a in v:
                 val = a.varValue
                 if val != 0:
@@ -306,9 +316,12 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                         stage = False
 
                     if stage:
-                        partial_res+=f"{name} : {val * stage_to_prob[name][k]/expval * 100:.1f}%\n"
+                        tmp_res.append((name, val * stage_to_prob[name][k]/expval * 100))
                     else:
-                        partial_res+=f"정석 : {val / self.name_to_num_standard(k) / expval * 100:.1f}%\n"
+                        tmp_res.append(("정석", val / self.name_to_num_standard(k) / expval * 100))
+            tmp_res.sort(key=lambda x: x[1], reverse=True)
+            for name, val in tmp_res:
+                partial_res+=f"{name} : {val:.1f}%\n"
             partial_res+="\n"
         result.append(partial_res)
 
