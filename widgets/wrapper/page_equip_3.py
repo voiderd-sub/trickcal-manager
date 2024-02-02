@@ -203,6 +203,13 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             for type_id, count in needs_each_type[rank].items():
                 for item_name, item_count in self.recipe[(rank, type_id)].items():
                     needs_each_item[item_name] += item_count * count
+                
+        cur_user.execute("select name, count from user_items")
+        for name, count in cur_user:
+            needs_each_item[name] -= count
+        for name in list(needs_each_item.keys()):
+            if needs_each_item[name] <= 0:
+                needs_each_item.pop(name)
         
         # Candy settings
         hallow_level = 2 if self.hallow_13_yes.isChecked() else 1
@@ -278,23 +285,23 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         # print result
         result = []
         partial_res=f"""소요 시간 : {pulp.value(model.objective):.2f}일
-사용한 왕사탕 개수 : {pulp.value(candy_days * candy_per_day):.2f}개
+사용한 왕사탕 개수 : {pulp.value(candy_days * candy_per_day):.0f}개
 """
         if use_standard:
-            partial_res+=f"사용한 정석 개수 : {pulp.value(pulp.lpSum([y[name] for name in needs_each_item.keys()])):.2f}개\n"
+            partial_res+=f"사용한 정석 개수 : {pulp.value(pulp.lpSum([y[name] for name in needs_each_item.keys()])):.0f}개\n"
         partial_res+="\n[남는 재료 개수]\n"
 
         for k, v in constraints.items():
             val = pulp.value(v)
             if val >= needs_each_item[k] + 1:
-                partial_res+=f"{k} - {val - needs_each_item[k]:.1f}개 남음\n"
+                partial_res+=f"{k} - {val - needs_each_item[k]:.0f}개 남음\n"
         result.append(partial_res)
 
         partial_res = ""
         for k, v in x.items():
             val = pulp.value(v)
             if val != 0:
-                partial_res+=(f"{k} : {val:.1f}회 면제\n")
+                partial_res+=(f"{k} : {val:.0f}회 면제\n")
         result.append(partial_res)
 
         partial_res = ""
@@ -302,7 +309,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             if not k in constraints:
                 continue
             v = constraints[k]
-            partial_res+=f"[{k}]\n"
+            partial_res+=f"[{k}]: 총 {pulp.value(v):.0f}개 필요\n"
             expval = pulp.value(v)
             tmp_res = []
             for a in v:
@@ -330,7 +337,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             for k, v in y.items():
                 val = pulp.value(v)
                 if val != 0:
-                    partial_res+=f"{k} : 정석 {val:.1f}개 사용\n"
+                    partial_res+=f"{k} : 정석 {val:.0f}개 사용\n"
         result.append(partial_res)
 
         self.dialog.tabWidget.setCurrentIndex(0)
