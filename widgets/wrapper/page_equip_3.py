@@ -175,6 +175,8 @@ class PageEquip3(Ui_page_equip_3, QWidget):
 
         for hero_id, (goal_rank, goal_equips) in goal_equip.items():
             cur_rank, cur_equips = cur_equip.get(hero_id, (1, set()))
+            if cur_equips is None:
+                cur_equips = set()
             for rank in range(cur_rank, goal_rank):
                 for equip_id in equip_data[hero_id][rank]:
                     needs_each_equip[equip_id] += 1
