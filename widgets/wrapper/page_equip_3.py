@@ -177,12 +177,13 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             cur_rank, cur_equips = cur_equip.get(hero_id, (1, set()))
             if cur_equips is None:
                 cur_equips = set()
-            for rank in range(cur_rank, goal_rank):
-                for equip_id in equip_data[hero_id][rank]:
-                    needs_each_equip[equip_id] += 1
-            if goal_equips is not None:
-                for order_idx in goal_equips - cur_equips:
-                    equip_id = equip_data[hero_id][goal_rank][order_idx - 1]
+            if goal_equips is None:
+                goal_equips = set()
+            for rank in range(cur_rank, goal_rank+1):
+                goal_equips_this_rank = goal_equips if rank == goal_rank else set(range(1,7))
+                cur_equips_this_rank = cur_equips if rank == cur_rank else set()
+                for order_idx in list(goal_equips_this_rank - cur_equips_this_rank):
+                    equip_id = equip_data[hero_id][rank][order_idx - 1]
                     needs_each_equip[equip_id] += 1
 
         if self.use_equip_yes.isChecked():
@@ -200,19 +201,19 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         for equip_id, count in needs_each_equip.items():
             rank, type_id = equip_id_to_rank_n_type[equip_id]
             needs_each_type[rank][type_id] += count
-        
+
         for rank in needs_each_type:
             for type_id, count in needs_each_type[rank].items():
                 for item_name, item_count in self.recipe[(rank, type_id)].items():
                     needs_each_item[item_name] += item_count * count
-                
+
         cur_user.execute("select name, count from user_items")
         for name, count in cur_user:
             needs_each_item[name] -= count
         for name in list(needs_each_item.keys()):
             if needs_each_item[name] <= 0:
                 needs_each_item.pop(name)
-        
+
         # Candy settings
         hallow_level = 2 if self.hallow_13_yes.isChecked() else 1
         research_level = self.research_level.text()
