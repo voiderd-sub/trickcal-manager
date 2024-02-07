@@ -13,6 +13,8 @@ from functools import partial
 import sqlite3, yaml, os.path
 import requests
 from zipfile import ZipFile
+from io import BytesIO
+from pathlib import Path
 
 
 """
@@ -22,25 +24,26 @@ you must pass "self.stacked_widget" as an argument to each custom widget
 constructor of stackedwindow in main_window.py.
 """
 
+BRANCH = "feature_autoupdate"
+
 def downloadIcons():
     # URL of the zip file on GitHub
-    zip_url = "https://github.com/voiderd-sub/trickcal-manager/raw/main/icon.zip"
+    branch = BRANCH
+    zip_url = f"https://github.com/voiderd-sub/trickcal-manager/raw/{branch}/icon.zip"
     
     # Local file paths
-    extract_folder = "icon"
-    zip_file_path = os.path.join(extract_folder, "icon.zip")
+    response = requests.get(zip_url)
+    response.raise_for_status()
 
-    download_file(zip_url, extract_folder)
-
-    with ZipFile(zip_file_path, "r") as zip_ref:
-        zip_ref.extractall(extract_folder)
-
-    if os.path.exists(zip_file_path):
-        os.remove(zip_file_path)
+    with ZipFile(BytesIO(response.content)) as zip_ref:
+        zip_ref.extractall(".")
 
 
 def download_file(url, destination_path):
-    os.makedirs(destination_path, exist_ok=True)
+    # destination_path must be a file
+    destination_path = Path(destination_path)
+    assert destination_path.is_file() or not destination_path.exists()
+    os.makedirs(destination_path.parent, exist_ok=True)
 
     # Download a file from a URL
     response = requests.get(url)
@@ -98,8 +101,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             user_name = "voiderd-sub"
             repository = "trickal-manager"
-            branch = "main"
-            destination_path = "db"
+            branch = BRANCH
+            destination_path = "db/master.db"
             url = f"https://github.com/{user_name}/{repository}/raw/{branch}/db/master.db"
             download_file(url, destination_path)
             downloadIcons()
@@ -229,7 +232,8 @@ if __name__ == "__main__":
     # os.chdir("_internal")
 
     # Check whether icon folder exists
-    downloadIcons()
+    if os.path.isdir("icon") == False:
+        downloadIcons()
 
     app = QtWidgets.QApplication([])
     app.setWindowIcon(QIcon('icon/icon.png'))
