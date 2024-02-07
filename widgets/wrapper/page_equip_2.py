@@ -18,15 +18,10 @@ class PageEquip2(Ui_page_equip_2, QWidget):
 
     def setInitialState(self):
         # load db data
-        main_window = self.window()
-        cur_master: sqlite3.Cursor = main_window.conn_master.cursor()
-        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
-        cur_master.execute("SELECT id, name FROM equipment")
-        self.equip_name_to_id = {name: id for (id, name) in cur_master}
-
-        cur_master.execute("SELECT MAX(rank) FROM equipment")
-        self.max_rank = cur_master.fetchone()[0]
-
+        main = self.window()
+        res = main.resource
+        cur_master: sqlite3.Cursor = main.conn_master.cursor()
+        
 
         # set material table
         mat_table = self.material_table
@@ -34,8 +29,7 @@ class PageEquip2(Ui_page_equip_2, QWidget):
         v_header = self.material_table.verticalHeader()
 
         mat_table.setRowCount(14)
-        mat_table.setColumnCount(self.max_rank-1)
-        mat_table.setHorizontalHeaderLabels([f"{i}티어" for i in range(2, self.max_rank+1)])
+        self.loadMaterialTableColumns()
 
         cur_master.execute("SELECT type_id, comment FROM item_type order by type_id asc")
         self.type_name_to_type_id = {name: idx for (idx, name) in cur_master}
@@ -43,10 +37,10 @@ class PageEquip2(Ui_page_equip_2, QWidget):
         self.pr_to_id = {"조각": 1, "도안": 2}    
         self.id_to_pr = {1: "조각", 2: "도안"}
 
-        main_window.type_name_to_type_id = self.type_name_to_type_id
-        main_window.type_id_to_type_name = self.type_id_to_type_name
-        main_window.pr_to_id = self.pr_to_id
-        main_window.id_to_pr = self.id_to_pr
+        main.type_name_to_type_id = self.type_name_to_type_id
+        main.type_id_to_type_name = self.type_id_to_type_name
+        main.pr_to_id = self.pr_to_id
+        main.id_to_pr = self.id_to_pr
 
         prefix = [self.type_id_to_type_name[i] for i in range(1, len(self.type_id_to_type_name)+1)]
         suffix = ["조각", "도안"]
@@ -62,8 +56,6 @@ class PageEquip2(Ui_page_equip_2, QWidget):
         v_header.setSectionResizeMode(QHeaderView.Stretch)
         v_header.setStyleSheet("font-size: 11pt;")
         v_header.setHighlightSections(False)
-        
-        self.loadMaterial()
 
         # set bag_equip table
         beq_table = self.bag_equip_table
@@ -80,20 +72,28 @@ class PageEquip2(Ui_page_equip_2, QWidget):
         h_header.setSectionResizeMode(0, QHeaderView.Stretch)
         h_header.setSectionResizeMode(1, QHeaderView.Fixed)
 
-        self.loadEquip()
+        self.reloadData()
 
         # connect buttons
         self.save_btn.clicked.connect(self.saveData)
-        self.cancel_btn.clicked.connect(self.cancelData)
+        self.cancel_btn.clicked.connect(self.reloadData)
         self.add_btn.clicked.connect(partial(self.addEquip, idx=None, count=None))
         self.delete_btn.clicked.connect(self.deleteEquip)
 
+    def loadMaterialTableColumns(self):
+        max_rank = self.window().resource.masterGet("MaxRank")
+        self.material_table.setColumnCount(max_rank-1)
+        self.material_table.setHorizontalHeaderLabels([f"{i}티어" for i in range(2, max_rank+1)])
+
     
     def saveData(self):
+        main = self.window()
+        res = main.resource
         cur_user: sqlite3.Cursor = self.window().conn_user.cursor()
+        equip_name_to_id = res.masterGet("EquipNameToId")
         # iterate material table and update user_items
         for row_idx in range(14):
-            for col_idx in range(self.max_rank-1):
+            for col_idx in range(res.masterGet("MaxRank")-1):
                 item = self.material_table.item(row_idx, col_idx)
                 count = 0 if item.text()=="" else int(item.text())
                 prefix = self.type_id_to_type_name[row_idx % 7 + 1]
@@ -108,7 +108,7 @@ class PageEquip2(Ui_page_equip_2, QWidget):
             count = 0 if item.text()=="" else int(item.text())
             if count == 0:
                 continue
-            equip_id = self.equip_name_to_id.get(self.bag_equip_table.cellWidget(row_idx, 0).currentText(), None)
+            equip_id = equip_name_to_id.get(self.bag_equip_table.cellWidget(row_idx, 0).currentText(), None)
             if equip_id is None:
                 continue
             cur_user.execute("INSERT INTO user_bag_equips VALUES (?, ?)", (equip_id, count))
@@ -116,7 +116,7 @@ class PageEquip2(Ui_page_equip_2, QWidget):
         self.window().conn_user.commit()
 
 
-    def cancelData(self):
+    def reloadData(self):
         self.material_table.clearContents()
         self.loadMaterial()
         self.bag_equip_table.clearContents()
@@ -132,7 +132,7 @@ class PageEquip2(Ui_page_equip_2, QWidget):
 
         box = ExtendedComboBox(ignoreWheel=True)
         box.setCompleterFont(12)
-        box.addItems(self.equip_name_to_id.keys())
+        box.addItems(self.window().resource.masterGet("EquipNameToId").keys())
         if idx is None:
             box.setCurrentText("")
         else:
@@ -159,7 +159,7 @@ class PageEquip2(Ui_page_equip_2, QWidget):
     
     def loadMaterial(self):
         for row_idx in range(14):
-            for col_idx in range(self.max_rank-1):
+            for col_idx in range(self.window().resource.masterGet("MaxRank")-1):
                 item = QTableWidgetItem("")
                 self.material_table.setItem(row_idx, col_idx, item)
                 item.setFlags(item.flags() & ~Qt.ItemIsEnabled)

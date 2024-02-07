@@ -211,7 +211,7 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         self.resource.deleteAll(user=True)
         self.page_hero.updateTable()
         self.page_equip_1.changeAccount()
-        self.page_equip_2.cancelData()      # cancelData : Reload all data from db, refresh all tables
+        self.page_equip_2.reloadData()
         self.page_equip_3.updateGoalList()
     
     def changeExtrinsicStarsCascade(self):
@@ -222,10 +222,11 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         self.resource.deleteAll(master=True)
         self.resource.masterInit()
         self.page_hero.constructTable()
-        # self.page_equip_1.updateEquipStatAbstract()
-        # self.page_equip_2.loadEquip()
-        # self.page_equip_3.updateGoalList()
-        # self.page_equip_3.updateGoalNameList()
+        self.page_equip_1.updateHeroList()
+        self.page_equip_2.loadMaterialTableColumns()
+        self.page_equip_2.reloadData()
+        
+        # TODO : update hero list of page_crayon_1
 
 
 if __name__ == "__main__":

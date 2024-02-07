@@ -23,18 +23,6 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         self.setInitialState()
 
     def setInitialState(self):
-        cur_master:sqlite3.Cursor = self.window().conn_master.cursor()
-        cur_master.execute("SELECT * from equipment_recipe")
-        self.recipe = defaultdict(lambda: defaultdict(int))
-        for row in cur_master:
-            rank, type = row[:2]
-            for i in range(2, len(row), 2):
-                name, count = row[i], row[i+1]
-                if name is None:
-                    continue
-                self.recipe[(rank, type)][name] = count
-
-
         self.setting_name_list = ["auto_update_yes", "use_equip_yes", "hallow_13_yes",
                                   "research_level","candy_buying", "use_standard_yes",
                                   "daily_elleaf_yes", "lecture_level", "cur_standard",
@@ -159,6 +147,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         cur_user: sqlite3.Cursor = main.conn_user.cursor()
         cur_master: sqlite3.Cursor = main.conn_master.cursor()
         hero_id_to_equip_ids = res.masterGet("HeroIdToEquipIds")
+        recipe = res.masterGet("Recipe")
         needs_each_equip = defaultdict(int)
         needs_each_type = defaultdict(lambda: defaultdict(int))
         needs_each_item = defaultdict(int)
@@ -199,7 +188,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
 
         for rank in needs_each_type:
             for type_id, count in needs_each_type[rank].items():
-                for item_name, item_count in self.recipe[(rank, type_id)].items():
+                for item_name, item_count in recipe[(rank, type_id)].items():
                     needs_each_item[item_name] += item_count * count
 
         cur_user.execute("select name, count from user_items")
@@ -341,7 +330,6 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         self.dialog.tabWidget.setCurrentIndex(0)
         self.dialog.show()
         self.dialog.setResultValues(result)
-
 
 
 

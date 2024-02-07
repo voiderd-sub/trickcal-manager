@@ -107,7 +107,26 @@ class ResourceManager:
         self._resourceMaster["HeroIdToEquipNames"] = hero_id_to_equip_names
         self._resourceMaster["HeroIdToEquipIds"] = hero_id_to_equip_ids
         self._resourceMaster["HeroNameToEquipNames"] = hero_name_to_equip_names
-        
+
+        # EquipIdToName, EquipNameToId
+        cur.execute("SELECT id, name FROM equipment")
+        equip_id_to_name = {id: name for (id, name) in cur}
+        equip_name_to_id = {name: id for (id, name) in equip_id_to_name.items()}
+        self._resourceMaster["EquipIdToName"] = equip_id_to_name
+        self._resourceMaster["EquipNameToId"] = equip_name_to_id
+
+        # Recipe
+        cur.execute("SELECT * from equipment_recipe")
+        recipe = defaultdict(lambda: defaultdict(int))
+        for row in cur:
+            rank, type = row[:2]
+            for i in range(2, len(row), 2):
+                name, count = row[i], row[i+1]
+                if name is None:
+                    continue
+                recipe[(rank, type)][name] = count
+        self._resourceMaster["Recipe"] = recipe
+
         # HeroDefaultOrder
         hero_default_order = list()
         cur.execute("SELECT id FROM hero ORDER BY personality ASC, star_intrinsic DESC, name_kr ASC")
