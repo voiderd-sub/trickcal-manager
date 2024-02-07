@@ -12,6 +12,7 @@ from widgets.wrapper.resource_manager import ResourceManager
 from functools import partial
 import sqlite3, yaml, os.path
 import requests
+from zipfile import ZipFile
 
 
 """
@@ -21,88 +22,32 @@ you must pass "self.stacked_widget" as an argument to each custom widget
 constructor of stackedwindow in main_window.py.
 """
 
-import os
-import requests
-from zipfile import ZipFile
-
 def downloadIcons():
     # URL of the zip file on GitHub
     zip_url = "https://github.com/voiderd-sub/trickcal-manager/raw/main/icon.zip"
     
     # Local file paths
-    zip_file_path = "icon.zip"
     extract_folder = "icon"
+    zip_file_path = os.path.join(extract_folder, "icon.zip")
 
-    try:
-        response = requests.get(zip_url)
-        response.raise_for_status()  # Raise an exception for non-200 status codes
+    download_file(zip_url, extract_folder)
 
-        with open(zip_file_path, "wb") as zip_file:
-            zip_file.write(response.content)
+    with ZipFile(zip_file_path, "r") as zip_ref:
+        zip_ref.extractall(extract_folder)
 
-        with ZipFile(zip_file_path, "r") as zip_ref:
-            zip_ref.extractall(extract_folder)
+    if os.path.exists(zip_file_path):
+        os.remove(zip_file_path)
 
-    except requests.exceptions.RequestException as e:
-        print(f"Error downloading icons.zip: {e}")
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-    finally:
-        if os.path.exists(zip_file_path):
-            os.remove(zip_file_path)
-
-
-def download_folder_from_github(username, repository, branch, folder_path, destination_path, skip_existing=True):
-    # GitHub API URL to get the contents of a repository
-    api_url = f'https://api.github.com/repos/{username}/{repository}/contents/{folder_path}?ref={branch}'
-
-    # Make a GET request to the GitHub API
-    response = requests.get(api_url)
-
-    if response.status_code == 200:
-        # Parse the JSON response
-        content_list = response.json()
-
-        # Create the destination folder if it doesn't exist
-        os.makedirs(destination_path, exist_ok=True)
-
-        # Iterate through each file in the folder and download it
-        for item in content_list:
-            if item['type'] == 'file':
-                file_url = item['download_url']
-                file_name = item['name']
-                destination_file_path = os.path.join(destination_path, file_name)
-
-                # Download the file if it doesn't exist or if the skip_existing option is turned off
-                if not skip_existing or not os.path.exists(destination_file_path):
-                    download_file(file_url, destination_file_path)
-
-            elif item['type'] == 'dir':
-                # Recursively download subfolders
-                subfolder_name = item['name']
-                subfolder_path = os.path.join(destination_path, subfolder_name)
-                download_folder_from_github(username, repository, branch, f'{folder_path}/{subfolder_name}', subfolder_path, skip_existing)
-
-    else:
-        raise Exception(
-f"""Failed to fetch folder contents.
-Status code: {response.status_code}
-URL: {api_url}""")
 
 def download_file(url, destination_path):
+    os.makedirs(destination_path, exist_ok=True)
+
     # Download a file from a URL
     response = requests.get(url)
+    response.raise_for_status()
     
-    if response.status_code == 200:
-        with open(destination_path, 'wb') as file:
-            file.write(response.content)
-    else:
-        raise Exception(
-f"""Failed to download file.
-Status code: {response.status_code}
-URL: {url}""")
+    with open(destination_path, 'wb') as file:
+        file.write(response.content)
 
 
 
@@ -154,11 +99,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             user_name = "voiderd-sub"
             repository = "trickal-manager"
             branch = "main"
-            folder_path = destination_path = "db"
-            download_folder_from_github(user_name, repository, branch, folder_path, destination_path, True)
-
-            folder_path = destination_path = "icon"
-            download_folder_from_github(user_name, repository, branch, folder_path, destination_path, True)
+            destination_path = "db"
+            url = f"https://github.com/{user_name}/{repository}/raw/{branch}/db/master.db"
+            download_file(url, destination_path)
+            downloadIcons()
 
         except Exception as e:
             msg_box = QMessageBox()
