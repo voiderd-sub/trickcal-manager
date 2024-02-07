@@ -19,8 +19,8 @@ class Sidebar(Ui_sidebar, QWidget):
         self.menu_names = ["home", "hero", "equip", "crayon", "food", "lab"]
 
         f = lambda x: [x[0]+"_sub_btn_"+str(i) for i in range(1, x[1]+1)]
-        self.btn_with_pages = ["home_btn", "hero_btn"]\
-                            + f(("equip",3)) + f(("crayon",2)) + f(("food",3)) + f(("lab",3))
+        self.btn_with_pages = ["home_btn", "hero_btn", "equip_sub_btn_abstract"]\
+                            +f(("equip",3)) + f(("crayon",2)) + f(("food",3)) + f(("lab",3))
         
         for name in self.menu_names:
             self.main_btn_dict[name] = getattr(self, name+"_btn")
@@ -36,7 +36,7 @@ class Sidebar(Ui_sidebar, QWidget):
             btn.clicked.connect(partial(self.showSubmenu, clicked_menu_name=name))
         
         self.updateLocalAccountList(False)
-        # connect changeaccount with account_list only when user select account from account_list
+        # connect changeAccount with account_list only when user select account from account_list
         self.account_list.activated.connect(self.changeAccount)
 
         # self.account_list.currentIndexChanged.connect(self.changeAccount)

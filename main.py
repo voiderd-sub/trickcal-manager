@@ -1,17 +1,18 @@
 from PySide6 import QtWidgets
 from PySide6.QtCore import QEvent
 
+from PySide6.QtWidgets import QMessageBox
+from PySide6.QtGui import QIcon
+
 from widgets.ui.main_window import Ui_MainWindow
 from widgets.wrapper.account_settings import AccountSettings
 from widgets.wrapper.goal_settings import GoalSettings
-
-from PySide6.QtWidgets import QMessageBox
-from PySide6.QtGui import QIcon
+from widgets.wrapper.resource_manager import ResourceManager
 
 from functools import partial
 import sqlite3, yaml, os.path
 import requests
-import shutil
+
 
 """
 !WARNING!
@@ -19,6 +20,39 @@ If you converted the .ui file to a .py file with the pyside6-uic command,
 you must pass "self.stacked_widget" as an argument to each custom widget
 constructor of stackedwindow in main_window.py.
 """
+
+import os
+import requests
+from zipfile import ZipFile
+
+def downloadIcons():
+    # URL of the zip file on GitHub
+    zip_url = "https://github.com/voiderd-sub/trickcal-manager/raw/main/icon.zip"
+    
+    # Local file paths
+    zip_file_path = "icon.zip"
+    extract_folder = "icon"
+
+    try:
+        response = requests.get(zip_url)
+        response.raise_for_status()  # Raise an exception for non-200 status codes
+
+        with open(zip_file_path, "wb") as zip_file:
+            zip_file.write(response.content)
+
+        with ZipFile(zip_file_path, "r") as zip_ref:
+            zip_ref.extractall(extract_folder)
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading icons.zip: {e}")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    finally:
+        if os.path.exists(zip_file_path):
+            os.remove(zip_file_path)
+
 
 def download_folder_from_github(username, repository, branch, folder_path, destination_path, skip_existing=True):
     # GitHub API URL to get the contents of a repository
@@ -75,10 +109,11 @@ URL: {url}""")
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        # open db & config     
-        self.configInit()   
+        # open db & config
+        self.configInit()
         self.masterDBInit()
         self.userDBInit()
+        self.resource = ResourceManager(self)
 
         # generate subwindows
         self.account_settings = AccountSettings(parent=self)
@@ -220,19 +255,38 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         self.sidebar.updateLocalAccountList(True)
 
     def updateGoalList(self):
+        self.resource.delete("GoalList")
         self.page_equip_1.updateGoalNameList()
         self.page_equip_3.updateGoalList()
 
     def changeAccountCascade(self):
         self.userDBInit()
+        self.resource.deleteAll(user=True)
         self.page_hero.updateTable()
         self.page_equip_1.changeAccount()
         self.page_equip_2.cancelData()      # cancelData : Reload all data from db, refresh all tables
         self.page_equip_3.updateGoalList()
+    
+    def changeExtrinsicStarsCascade(self):
+        self.resource.delete("HeroIdToStarExtrinsic")
+    
+    def masterDBUpdateCascade(self):
+        self.masterDBInit(force=True)
+        self.resource.deleteAll(master=True)
+        self.resource.masterInit()
+        self.page_hero.constructTable()
+        # self.page_equip_1.updateEquipStatAbstract()
+        # self.page_equip_2.loadEquip()
+        # self.page_equip_3.updateGoalList()
+        # self.page_equip_3.updateGoalNameList()
 
 
 if __name__ == "__main__":
-    os.chdir("_internal")
+    # os.chdir("_internal")
+
+    # Check whether icon folder exists
+    downloadIcons()
+
     app = QtWidgets.QApplication([])
     app.setWindowIcon(QIcon('icon/icon.png'))
 

@@ -21,43 +21,18 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         
 
     def setInitialState(self):
-        main_window = self.window()
-        cur_master: sqlite3.Cursor = main_window.conn_master.cursor()
+        main = self.window()
+        res = main.resource
 
         # load hero_equip data from master db
-        self.hero_name_to_equip_data = dict()
-        self.hero_id_to_equip_ids = dict()
-        self.hero_name_to_id = dict()
-        self.hero_id_to_name = dict()
-        cur_master.execute("SELECT count(DISTINCT(rank)) FROM equipment")
-        max_rank = cur_master.fetchone()[0]
-
-        cur_master.execute("""
-            select h.id, h.name_kr, he.rank, e.id, e.name
-            from hero h
-            join hero_equip he on (h.id = he.hero_id)
-            join equipment e on (he.equipment_id=e.id)
-            order by h.personality asc, h.star_intrinsic desc, h.name_kr asc, he.rank asc, e.id asc
-        """)
-        for (id, hero_name, rank, e_id, equip_name) in cur_master:
-            if not hero_name in self.hero_name_to_equip_data:
-                self.hero_name_to_equip_data[hero_name] = {k: list() for k in range(1, max_rank+1)}
-                self.hero_id_to_equip_ids[id] = {k: list() for k in range(1, max_rank+1)}
-            self.hero_name_to_equip_data[hero_name][rank].append(equip_name)
-            self.hero_id_to_equip_ids[id][rank].append(e_id)
-        
-        for (id, hero_name) in cur_master.execute("SELECT id, name_kr FROM hero"):
-            self.hero_name_to_id[hero_name] = id
-            self.hero_id_to_name[id] = hero_name
-        
-        # save dict to main window
-        main_window.hero_id_to_equip_ids = self.hero_id_to_equip_ids
+        max_rank = res.masterGet("MaxRank")
 
         # load user_equip data from user db
         self.loadUserEquip()
 
         # set up rank_table
         table = self.rank_table
+        table.clearContents()
         table.setRowCount(max_rank+1)
         table.setColumnCount(7)
         table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
@@ -65,13 +40,9 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         horizontal_header.hide()
         table.verticalHeader().hide()
 
-        # load names from db (with right order)
-        cur_master.execute("""
-            select name_kr
-            from hero h
-            order by name_kr asc
-        """)  
-        names = ["".join(i) for i in cur_master.fetchall()]
+        # hero name with asc order
+        hero_name_to_equip_names = res.masterGet("HeroNameToEquipNames")
+        names = list(sorted(hero_name_to_equip_names.keys()))
 
         self.hero_select.setCompleterFont(15)
         self.hero_select.addItems(names)
@@ -138,6 +109,7 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         self.goal_setting_btn.clicked.connect(self.openGoalSettings)
         self.cur_goal.currentIndexChanged.connect(self.loadCurrentGoalData)
 
+        self.combo_set_goal.clear()
         self.combo_set_goal.addItems(["선택"] + [str(i) for i in range(1, max_rank+1)] + ["MAX"])
         self.set_check_btn.clicked.connect(self.setCheckAllWithRank)
 
@@ -154,11 +126,11 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         num_cols = table.columnCount()
 
         hero_name = self.hero_select.currentText()
-        # print("HERO NAME:", hero_name)
         is_goal = self.radio_goal_mode.isChecked()
 
         self.updateUserEquipTmp()
-        master_equip_data = self.hero_name_to_equip_data[hero_name]
+        hero_name_to_equip_names = self.window().resource.masterGet("HeroNameToEquipNames")
+        master_equip_data = hero_name_to_equip_names[hero_name]
         
         # set text of buttons in the table
         for (rank, item_name_list) in master_equip_data.items():
@@ -224,9 +196,9 @@ class PageEquip1(Ui_page_equip_1, QWidget):
             return
         cur_rank, equips = load_from[hero_name]
         table.cellWidget(cur_rank-1, 0).click()
-        if equips is None:
+        if len(equips) == 0:
             return
-        for col_idx in [int(i) for i in equips.split(",")]:
+        for col_idx in list(equips):
             table.cellWidget(cur_rank-1, col_idx).setChecked(True)
     
 
@@ -329,17 +301,21 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         self.hero_name_to_goal_data.update(self.hero_name_to_goal_data_tmp)
         self.hero_name_to_goal_data_tmp = dict()
 
-        main_window = self.window()
-        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
-        data = [(self.hero_name_to_id[hero_name], rank, equips) for (hero_name, (rank, equips)) in self.user_equip_data.items()]
+        main = self.window()
+        res = main.resource
+        cur_user: sqlite3.Cursor = main.conn_user.cursor()
+        hero_name_to_id = res.masterGet("HeroNameToId")
+
+        data = [(hero_name_to_id[hero_name], rank, equips) for (hero_name, (rank, equips)) in self.user_equip_data.items()]
         cur_user.executemany("REPLACE INTO user_cur_equip VALUES (?, ?, ?)", data)
 
         if self.cur_goal.count()!=0:
             cur_goal_idx = self.cur_goal.currentIndex()
-            data = [(cur_goal_idx+1, self.hero_name_to_id[hero_name], rank, equips) for (hero_name, (rank, equips)) in self.hero_name_to_goal_data.items()]
+            data = [(cur_goal_idx+1, hero_name_to_id[hero_name], rank, equips) for (hero_name, (rank, equips)) in self.hero_name_to_goal_data.items()]
             cur_user.executemany("REPLACE INTO user_goal_equip(goal_id, hero_id, rank, equips) VALUES (?, ?, ?, ?)", data)
 
-        main_window.conn_user.commit()
+        main.conn_user.commit()
+        _ = main.resource.getUserEquip(refresh=True)
     
 
     # undo all changes in tmp
@@ -354,24 +330,27 @@ class PageEquip1(Ui_page_equip_1, QWidget):
     def saveUserEquipCur(self):
         self.last_hero_name = self.hero_select.currentText()
         self.updateUserEquipTmp()
-        main_window = self.window()
-        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
+        main = self.window()
+        res = main.resource
+        cur_user: sqlite3.Cursor = main.conn_user.cursor()
+
+        hero_name_to_id = res.masterGet("HeroNameToId")
         hero_name = self.hero_select.currentText()
 
         if self.last_hero_name in self.user_equip_data_tmp:
             self.user_equip_data[self.last_hero_name] = self.user_equip_data_tmp[self.last_hero_name]
             rank, equips = self.user_equip_data_tmp[hero_name]
             cur_user.execute("REPLACE INTO user_cur_equip VALUES (?, ?, ?)",
-                             (self.hero_name_to_id[hero_name], rank, equips))
-            main_window.conn_user.commit()
+                             (hero_name_to_id[hero_name], rank, equips))
+            main.conn_user.commit()
             del self.user_equip_data_tmp[self.last_hero_name]
 
         if self.last_hero_name in self.hero_name_to_goal_data_tmp:
             self.hero_name_to_goal_data[self.last_hero_name] = self.hero_name_to_goal_data_tmp[self.last_hero_name]
             rank, equips = self.hero_name_to_goal_data_tmp[hero_name]
             cur_user.execute("REPLACE INTO user_goal_equip VALUES (?, ?, ?, ?)",
-                             (self.cur_goal.currentIndex()+1, self.hero_name_to_id[hero_name], rank, equips))
-            main_window.conn_user.commit()
+                             (self.cur_goal.currentIndex()+1, hero_name_to_id[hero_name], rank, equips))
+            main.conn_user.commit()
             del self.hero_name_to_goal_data_tmp[self.last_hero_name]
     
 
@@ -393,18 +372,15 @@ class PageEquip1(Ui_page_equip_1, QWidget):
 
     # Load user_equip_data from db
     def loadUserEquip(self):
-        main_window = self.window()
+        main = self.window()
+        res = main.resource
         self.user_equip_data = dict()
-        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
-        cur_user.execute("ATTACH DATABASE 'db/master.db' as master")
-        cur_user.execute("""
-            select h.name_kr, uhe.rank, uhe.equips
-            from master.hero h
-            join user_cur_equip uhe on (h.id=uhe.hero_id)
-        """)
-        for (hero_name, rank, equips) in cur_user:
-            self.user_equip_data[hero_name] = (rank, equips)
-        cur_user.execute("DETACH DATABASE master")
+
+        id_to_equip = res.userGet("CurEquip")
+        id_to_meta = res.masterGet("HeroIdToMetadata")
+        for (id, equip_data) in id_to_equip.items():
+            self.user_equip_data[id_to_meta[id]["name_kr"]] = equip_data
+
         self.user_equip_data_tmp = dict()
         self.last_hero_name = None
     
@@ -417,10 +393,8 @@ class PageEquip1(Ui_page_equip_1, QWidget):
 
     def updateGoalNameList(self):
         self.cur_goal.clear()
-        main_window = self.window()
-        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
-        cur_user.execute("SELECT name FROM user_goal_equip_names order by id asc;")
-        self.cur_goal.addItems([name for (name,) in cur_user])
+        main = self.window()
+        self.cur_goal.addItems(main.resource.userGet("GoalList"))
         self.enableRadioGoalMode()
         self.loadCurrentGoalData()
     
@@ -435,12 +409,13 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         if self.cur_goal.count()==0:
             return
         goal_idx = self.cur_goal.currentIndex()
-        main_window = self.window()
-        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
+        main = self.window()
+        hero_id_to_metadata = main.resource.masterGet("HeroIdToMetadata")
+        cur_user: sqlite3.Cursor = main.conn_user.cursor()
         cur_user.execute(f"SELECT hero_id, rank, equips FROM user_goal_equip WHERE goal_id={goal_idx+1};")
         self.hero_name_to_goal_data = dict()
         for (hero_id, rank, equips) in cur_user:
-            self.hero_name_to_goal_data[self.hero_id_to_name[hero_id]] = (rank, equips)
+            self.hero_name_to_goal_data[hero_id_to_metadata[hero_id]["name_kr"]] = (rank, equips)
         self.hero_name_to_goal_data_tmp = dict()
         # print("load current goal data: ", self.hero_name_to_goal_data)
         self.last_hero_name = None
@@ -452,9 +427,11 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         is_goal = self.radio_goal_mode.isChecked()
         table = self.rank_table
         cur_rank = self.combo_set_goal.currentIndex()
+        hero_name_to_equip_names = self.window().resource.masterGet("HeroNameToEquipNames")
+
         if cur_rank==0:
             return
-        for name in self.hero_name_to_equip_data.keys():
+        for name in hero_name_to_equip_names.keys():
             if is_goal:
                 self.hero_name_to_goal_data_tmp[name] = (cur_rank, None)
             else:

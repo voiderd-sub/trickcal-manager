@@ -7,7 +7,7 @@ from PySide6.QtGui import QRegularExpressionValidator
 
 # Combobox with search-filtering
 class ExtendedComboBox(QComboBox):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, ignoreWheel=False):
         super(ExtendedComboBox, self).__init__(parent)
 
         self.setFocusPolicy(Qt.StrongFocus)
@@ -30,6 +30,10 @@ class ExtendedComboBox(QComboBox):
 
         # set the font for the completer popup
         self.completer.popup().setFont(QFont("ONE Mobile POP", 15))
+
+        # ignore wheel event
+        if ignoreWheel:
+            self.wheelEvent = lambda event: event.ignore()
 
 
     # on selection of an item from the completer, select the corresponding item from combobox 

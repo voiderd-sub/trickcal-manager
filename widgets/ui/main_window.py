@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (QApplication, QHBoxLayout, QMainWindow, QSizePoli
 from widgets.wrapper.page_equip_1 import PageEquip1
 from widgets.wrapper.page_equip_2 import PageEquip2
 from widgets.wrapper.page_equip_3 import PageEquip3
+from widgets.wrapper.page_equip_abstract import PageEquipAbstract
 from widgets.wrapper.page_hero import PageHero
 from widgets.wrapper.page_home import PageHome
 from widgets.wrapper.sidebar import Sidebar
@@ -59,6 +60,9 @@ class Ui_MainWindow(object):
         self.page_hero = PageHero(self.stacked_window)
         self.page_hero.setObjectName(u"page_hero")
         self.stacked_window.addWidget(self.page_hero)
+        self.page_equip_abstract = PageEquipAbstract(self.stacked_window)
+        self.page_equip_abstract.setObjectName(u"page_equip_abstract")
+        self.stacked_window.addWidget(self.page_equip_abstract)
         self.page_equip_1 = PageEquip1(self.stacked_window)
         self.page_equip_1.setObjectName(u"page_equip_1")
         self.stacked_window.addWidget(self.page_equip_1)
@@ -99,7 +103,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stacked_window.setCurrentIndex(0)
+        self.stacked_window.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

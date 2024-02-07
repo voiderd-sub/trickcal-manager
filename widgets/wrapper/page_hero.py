@@ -12,7 +12,6 @@ class NonScrollComboBox(QComboBox):
         event.ignore()
 
 
-
 class HeroWindowComboBox(QWidget):
     def __init__(self, parent=None):
         super(HeroWindowComboBox, self).__init__(parent)
@@ -55,22 +54,45 @@ class PageHero(Ui_page_hero, QWidget):
 
     def setInitialState(self):
         table = self.hero_table
-        self.hero_name_to_id = dict()
         self.hero_name_to_original_star_ex = dict()
+
+        self.constructTable()
         
-        main_window = self.window()
-        cur: sqlite3.Cursor = main_window.conn_user.cursor()
+        for col in range(1,3):
+            table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Stretch)
+        table.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)
+        table.verticalHeader().hide()
+        table.horizontalHeader().setSectionResizeMode(0,QHeaderView.Fixed)
+        table.resizeColumnsToContents()
+        table.setColumnWidth(0, 130)
 
-        cur.execute(f'attach database "db/master.db" as master_db')
-        cur.execute("""
-            select id, name_en, name_kr, star_intrinsic, star_extrinsic
-            from master_db.hero h
-            left outer join user_hero uh
-            on (h.id=uh.hero_id)
-            order by personality asc, star_intrinsic desc, name_kr asc
-        """)
+        self.star_1_btn.clicked.connect(partial(self.setSpecificStarValues, 1))
+        self.star_2_btn.clicked.connect(partial(self.setSpecificStarValues, 2))
+        self.all_check_btn.clicked.connect(self.setAllStarValues)
+        self.all_uncheck_btn.clicked.connect(self.uncheckAll)
 
-        for idx, (id, name_en, name_kr, star_in, star_ex) in enumerate(cur):
+        self.save_btn.clicked.connect(self.saveExtrinsicStars)
+        self.undo_btn.clicked.connect(self.undo)
+        self.update_btn.clicked.connect(self.updateMasterDB)
+
+
+    def constructTable(self):
+        main = self.window()
+        res = main.resource
+        hero_id_to_metadata = res.masterGet("HeroIdToMetadata")
+        hero_id_to_star_ex = res.userGet("HeroIdToStarExtrinsic")
+        hero_default_order = res.masterGet("HeroDefaultOrder")
+        table = self.hero_table
+        table.clearContents()
+        table.setRowCount(0)
+
+        for idx, id in enumerate(hero_default_order):
+            meta = hero_id_to_metadata[id]
+            name_kr = meta["name_kr"]
+            name_en = meta["name_en"]
+            star_in = meta["star_in"]
+            star_ex = hero_id_to_star_ex.get(id, None)
+
             table.insertRow(idx)
             table.setRowHeight(idx, 130)
             label = QLabel(table)
@@ -92,41 +114,24 @@ class PageHero(Ui_page_hero, QWidget):
             combo_widget.comboSetStar(star_in, star_ex)
             table.setCellWidget(idx, 2, combo_widget)
 
-            self.hero_name_to_id[name_kr] = id
             self.hero_name_to_original_star_ex[name_kr] = "미보유" if star_ex is None else str(star_ex)
-        
-        for col in range(1,3):
-            table.horizontalHeader().setSectionResizeMode(col, QHeaderView.Stretch)
-        table.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)
-        table.verticalHeader().hide()
-        table.horizontalHeader().setSectionResizeMode(0,QHeaderView.Fixed)
-        table.resizeColumnsToContents()
-        table.setColumnWidth(0, 130)
-
-        self.star_1_btn.clicked.connect(partial(self.setSpecificStarValues, 1))
-        self.star_2_btn.clicked.connect(partial(self.setSpecificStarValues, 2))
-        self.all_check_btn.clicked.connect(self.setAllStarValues)
-        self.all_uncheck_btn.clicked.connect(self.uncheckAll)
-
-        self.save_btn.clicked.connect(self.saveExtrinsicStars)
-        self.undo_btn.clicked.connect(self.undo)
-        self.update_btn.clicked.connect(self.updateMasterDB)
 
 
     def updateTable(self):
         table = self.hero_table
-        main_window = self.window()
-        cur: sqlite3.Cursor = main_window.conn_user.cursor()
+        main = self.window()
+        res = main.resource
 
-        cur.execute(f'attach database "db/master.db" as master_db')
-        cur.execute("""
-            select name_kr, star_intrinsic, star_extrinsic
-            from master_db.hero h
-            left outer join user_hero uh
-            on (h.id=uh.hero_id)
-            order by personality asc, star_intrinsic desc, name_kr asc
-        """)
-        for idx, (name_kr, star_in, star_ex) in enumerate(cur):
+        hero_id_to_metadata = res.masterGet("HeroIdToMetadata")
+        hero_id_to_star_ex = res.userGet("HeroIdToStarExtrinsic")
+        hero_default_order = res.masterGet("HeroDefaultOrder")
+
+        for idx, id in enumerate(hero_default_order):
+            meta = hero_id_to_metadata[id]
+            name_kr = meta[0]
+            star_in = meta[2]
+            star_ex = hero_id_to_star_ex.get(id, None)
+            
             table.cellWidget(idx,2).comboSetStar(star_in, star_ex)
             self.hero_name_to_original_star_ex[name_kr] = "미보유" if star_ex is None else str(star_ex)
 
@@ -146,18 +151,23 @@ class PageHero(Ui_page_hero, QWidget):
     
 
     def saveExtrinsicStars(self):
-        conn_user: sqlite3.Connection = self.window().conn_user
+        main = self.window()
+        res = main.resource
+        conn_user: sqlite3.Connection = main.conn_user
         cur = conn_user.cursor()
+
+        hero_name_to_id = res.masterGet("HeroNameToId")
         for i in range(self.hero_table.rowCount()):
             item: NonScrollComboBox = self.hero_table.cellWidget(i,2).comboBox
             text = item.currentText()
             self.hero_name_to_original_star_ex[self.hero_table.item(i,1).text()] = text
-            idx = self.hero_name_to_id[self.hero_table.item(i,1).text()]
+            idx = hero_name_to_id[self.hero_table.item(i,1).text()]
             if text=="미보유":
                 cur.execute("delete from user_hero where hero_id=?",(idx,))
             else:
                 cur.execute("REPLACE INTO user_hero(hero_id, star_extrinsic) VALUES(?,?)",(idx, int(text)))
         conn_user.commit()
+        main.changeExtrinsicStarsCascade()
 
 
     def uncheckAll(self):
@@ -175,3 +185,4 @@ class PageHero(Ui_page_hero, QWidget):
 
     def updateMasterDB(self):
         self.window().masterDBInit(True)
+        self.window().masterDBUpdateCascade()

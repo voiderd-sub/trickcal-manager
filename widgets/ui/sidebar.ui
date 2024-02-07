@@ -190,6 +190,34 @@
        <number>0</number>
       </property>
       <item>
+       <widget class="QPushButton" name="equip_sub_btn_abstract">
+        <property name="font">
+         <font>
+          <family>ONE Mobile POP</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>랭크작 현황 한 눈에 보기</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>25</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>false</bool>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">equip_group</string>
+        </attribute>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="equip_sub_btn_1">
         <property name="font">
          <font>
@@ -198,7 +226,7 @@
          </font>
         </property>
         <property name="text">
-         <string>랭크작 현황 및 목표 설정</string>
+         <string>착용 장비 및 목표 설정</string>
         </property>
         <property name="iconSize">
          <size>
@@ -765,9 +793,9 @@
  <connections/>
  <buttongroups>
   <buttongroup name="equip_group"/>
-  <buttongroup name="lab_group"/>
   <buttongroup name="main_menu_group"/>
   <buttongroup name="food_group"/>
   <buttongroup name="crayon_group"/>
+  <buttongroup name="lab_group"/>
  </buttongroups>
 </ui>

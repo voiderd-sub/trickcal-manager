@@ -1,5 +1,6 @@
 from widgets.ui.page_equip_3 import Ui_page_equip_3
 from widgets.wrapper.equip_dialog import EquipDialog
+from widgets.wrapper.resource_manager import ResourceManager
 
 from PySide6.QtWidgets import QWidget, QMessageBox
 from PySide6.QtGui import QIntValidator
@@ -153,10 +154,11 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                     item_dict[item_name] = round(drop_rate * 2, 1) / 2
 
         # Calculate needs
-        main_window = self.window()
-        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
-        cur_master: sqlite3.Cursor = main_window.conn_master.cursor()
-        equip_data = main_window.hero_id_to_equip_ids
+        main = self.window()
+        res: ResourceManager = main.resource
+        cur_user: sqlite3.Cursor = main.conn_user.cursor()
+        cur_master: sqlite3.Cursor = main.conn_master.cursor()
+        hero_id_to_equip_ids = res.masterGet("HeroIdToEquipIds")
         needs_each_equip = defaultdict(int)
         needs_each_type = defaultdict(lambda: defaultdict(int))
         needs_each_item = defaultdict(int)
@@ -165,25 +167,18 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         goal_id = self.goal_name_to_id[goal_name]
         cur_user.execute("SELECT hero_id, rank, equips FROM user_goal_equip WHERE goal_id=?", (goal_id,))
         goal_equip = {idx: (rank, set((int(i) for i in equips.split(",")))
-                            if equips is not None else None)
+                            if equips is not None else set())
                             for (idx, rank, equips) in cur_user}
         
-        cur_user.execute("SELECT hero_id, rank, equips FROM user_cur_equip")
-        cur_equip = {idx: (rank, set((int(i) for i in equips.split(",")))
-                            if equips is not None else None)
-                            for (idx, rank, equips) in cur_user}
+        cur_equip = res.userGet("CurEquip")
 
         for hero_id, (goal_rank, goal_equips) in goal_equip.items():
             cur_rank, cur_equips = cur_equip.get(hero_id, (1, set()))
-            if cur_equips is None:
-                cur_equips = set()
-            if goal_equips is None:
-                goal_equips = set()
             for rank in range(cur_rank, goal_rank+1):
                 goal_equips_this_rank = goal_equips if rank == goal_rank else set(range(1,7))
                 cur_equips_this_rank = cur_equips if rank == cur_rank else set()
                 for order_idx in list(goal_equips_this_rank - cur_equips_this_rank):
-                    equip_id = equip_data[hero_id][rank][order_idx - 1]
+                    equip_id = hero_id_to_equip_ids[hero_id][rank][order_idx - 1]
                     needs_each_equip[equip_id] += 1
 
         if self.use_equip_yes.isChecked():

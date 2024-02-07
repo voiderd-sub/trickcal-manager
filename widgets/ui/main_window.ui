@@ -46,10 +46,11 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="PageHome" name="page_home"/>
       <widget class="PageHero" name="page_hero"/>
+      <widget class="PageEquipAbstract" name="page_equip_abstract"/>
       <widget class="PageEquip1" name="page_equip_1"/>
       <widget class="PageEquip2" name="page_equip_2"/>
       <widget class="PageEquip3" name="page_equip_3"/>
@@ -101,6 +102,12 @@
    <class>PageHome</class>
    <extends>QWidget</extends>
    <header>widgets/wrapper/page_home.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageEquipAbstract</class>
+   <extends>QWidget</extends>
+   <header>widgets/wrapper/page_equip_abstract.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

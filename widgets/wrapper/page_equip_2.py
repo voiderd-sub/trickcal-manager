@@ -130,7 +130,7 @@ class PageEquip2(Ui_page_equip_2, QWidget):
         row_idx = table.rowCount()
         table.insertRow(row_idx)
 
-        box = ExtendedComboBox()
+        box = ExtendedComboBox(ignoreWheel=True)
         box.setCompleterFont(12)
         box.addItems(self.equip_name_to_id.keys())
         if idx is None:
