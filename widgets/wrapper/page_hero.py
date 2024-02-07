@@ -184,5 +184,4 @@ class PageHero(Ui_page_hero, QWidget):
 
 
     def updateMasterDB(self):
-        self.window().masterDBInit(True)
         self.window().masterDBUpdateCascade()
