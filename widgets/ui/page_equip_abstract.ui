@@ -25,7 +25,7 @@
      <property name="font">
       <font>
        <family>ONE Mobile POP</family>
-       <pointsize>20</pointsize>
+       <pointsize>17</pointsize>
       </font>
      </property>
      <property name="title">
@@ -60,18 +60,21 @@
             <pointsize>15</pointsize>
            </font>
           </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
           <layout class="QHBoxLayout" name="horizontalLayout">
            <property name="spacing">
             <number>10</number>
            </property>
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>10</number>
            </property>
            <property name="bottomMargin">
             <number>0</number>
@@ -86,14 +89,14 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="font">
@@ -124,7 +127,7 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="text">
@@ -146,7 +149,35 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>13</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="rateHp">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>13</pointsize>
               </font>
              </property>
              <property name="text">
@@ -173,13 +204,13 @@
             <number>10</number>
            </property>
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>10</number>
            </property>
            <property name="bottomMargin">
             <number>0</number>
@@ -194,14 +225,14 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="font">
@@ -232,7 +263,7 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="text">
@@ -254,7 +285,35 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>13</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="rateAttackPhysic">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>13</pointsize>
               </font>
              </property>
              <property name="text">
@@ -281,13 +340,13 @@
             <number>10</number>
            </property>
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>10</number>
            </property>
            <property name="bottomMargin">
             <number>0</number>
@@ -302,14 +361,14 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="font">
@@ -340,7 +399,7 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="text">
@@ -362,7 +421,35 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>13</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="rateAttackMagic">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>13</pointsize>
               </font>
              </property>
              <property name="text">
@@ -389,13 +476,13 @@
             <number>10</number>
            </property>
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>10</number>
            </property>
            <property name="bottomMargin">
             <number>0</number>
@@ -410,14 +497,14 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="font">
@@ -448,7 +535,7 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="text">
@@ -470,7 +557,35 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>13</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="rateDefensePhysic">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>13</pointsize>
               </font>
              </property>
              <property name="text">
@@ -497,13 +612,13 @@
             <number>10</number>
            </property>
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>10</number>
            </property>
            <property name="bottomMargin">
             <number>0</number>
@@ -518,14 +633,14 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="font">
@@ -556,7 +671,7 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="text">
@@ -578,7 +693,35 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>13</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="rateDefenseMagic">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>13</pointsize>
               </font>
              </property>
              <property name="text">
@@ -612,13 +755,13 @@
             <number>10</number>
            </property>
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>10</number>
            </property>
            <property name="bottomMargin">
             <number>0</number>
@@ -633,14 +776,14 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="font">
@@ -671,7 +814,7 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="text">
@@ -693,7 +836,35 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>13</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="rateCriticalRate">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>13</pointsize>
               </font>
              </property>
              <property name="text">
@@ -720,13 +891,13 @@
             <number>10</number>
            </property>
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>10</number>
            </property>
            <property name="bottomMargin">
             <number>0</number>
@@ -741,14 +912,14 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="font">
@@ -779,7 +950,7 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="text">
@@ -801,7 +972,35 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>13</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="rateCriticalMult">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>13</pointsize>
               </font>
              </property>
              <property name="text">
@@ -828,13 +1027,13 @@
             <number>10</number>
            </property>
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>10</number>
            </property>
            <property name="bottomMargin">
             <number>0</number>
@@ -849,14 +1048,14 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="font">
@@ -887,7 +1086,7 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="text">
@@ -909,7 +1108,35 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>13</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="rateCriticalResist">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>13</pointsize>
               </font>
              </property>
              <property name="text">
@@ -936,13 +1163,13 @@
             <number>10</number>
            </property>
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>10</number>
            </property>
            <property name="bottomMargin">
             <number>0</number>
@@ -957,14 +1184,14 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="font">
@@ -995,7 +1222,7 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>14</pointsize>
               </font>
              </property>
              <property name="text">
@@ -1017,7 +1244,35 @@
              <property name="font">
               <font>
                <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
+               <pointsize>13</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="rateCriticalMultResist">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>13</pointsize>
               </font>
              </property>
              <property name="text">
@@ -1041,10 +1296,10 @@
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_16">
            <property name="spacing">
-            <number>10</number>
+            <number>0</number>
            </property>
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>0</number>
@@ -1065,14 +1320,14 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>40</height>
+               <width>27</width>
+               <height>27</height>
               </size>
              </property>
              <property name="font">
@@ -1093,47 +1348,68 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="nameAll">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-               <horstretch>1</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>전체 진행률</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="statAll">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-               <horstretch>2</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <family>ONE Mobile POP</family>
-               <pointsize>15</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>0</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
+            <widget class="QWidget" name="containerAll_2" native="true">
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="leftMargin">
+               <number>10</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>10</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="nameAll">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>ONE Mobile POP</family>
+                  <pointsize>14</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>전체 진행률</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="rateAll">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>2</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>ONE Mobile POP</family>
+                  <pointsize>13</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>0</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
@@ -1152,50 +1428,214 @@
        <verstretch>3</verstretch>
       </sizepolicy>
      </property>
-     <widget class="QWidget" name="widget_13" native="true">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>30</y>
-        <width>461</width>
-        <height>40</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_15">
-       <property name="spacing">
-        <number>10</number>
-       </property>
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <family>ONE Mobile POP</family>
-           <pointsize>15</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>보기 설정</string>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <widget class="QWidget" name="widget_13" native="true">
+          <layout class="QGridLayout" name="gridLayout_2">
+           <property name="leftMargin">
+            <number>10</number>
+           </property>
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <property name="rightMargin">
+            <number>10</number>
+           </property>
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
+           <property name="horizontalSpacing">
+            <number>20</number>
+           </property>
+           <property name="verticalSpacing">
+            <number>5</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>14</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>정렬 기준</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="goal_list">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>14</pointsize>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="goal_rate_label_left">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>14</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>목표 달성률</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="goal_rate_label_right">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>14</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>0%</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_2">
+          <property name="font">
+           <font>
+            <family>ONE Mobile POP</family>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="title">
+           <string>표시설정</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="radio_equip_hide">
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>13</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>랭크만 표시</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QRadioButton" name="radio_equip_show">
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>13</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>장비까지 표시</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QCheckBox" name="check_show_completed">
+             <property name="font">
+              <font>
+               <family>ONE Mobile POP</family>
+               <pointsize>13</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>목표 달성 사도 보이기</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QScrollArea" name="equip_abstract_scrolls">
+        <property name="font">
+         <font>
+          <family>ONE Mobile POP</family>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="scroll_container">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>762</width>
+           <height>206</height>
+          </rect>
          </property>
         </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="comboBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

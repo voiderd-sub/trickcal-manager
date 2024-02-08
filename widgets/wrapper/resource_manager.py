@@ -56,7 +56,7 @@ class ResourceManager:
             if i not in user_equip:
                 user_equip[i] = (1, set())
         
-        self._resourceUser["user_equip"] = user_equip
+        self._resourceUser["CurEquip"] = user_equip
         return user_equip
     
 
@@ -126,6 +126,24 @@ class ResourceManager:
                     continue
                 recipe[(rank, type)][name] = count
         self._resourceMaster["Recipe"] = recipe
+
+        # RankStatType
+        cur.execute("SELECT id, rank, stat_1_id, stat_1_value, stat_2_id, stat_2_value FROM rank_stat_type")
+        rank_stat_type = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+        for (id, rank, stat_1_id, stat_1_value, stat_2_id, stat_2_value) in cur:
+            rank_stat_type[id][rank][stat_1_id] = stat_1_value
+            rank_stat_type[id][rank][stat_2_id] = stat_2_value
+        self._resourceMaster["RankStatType"] = rank_stat_type
+
+        # HeroIdToRankStatType
+        cur.execute("SELECT hero_id, rank_stat_type FROM hero_rank_stat_type")
+        hero_rank_stat_type = {hero_id: stat_type for (hero_id, stat_type) in cur}
+        self._resourceMaster["HeroIdToRankStatType"] = hero_rank_stat_type
+
+        # Stat
+        cur.execute("SELECT * FROM stat")
+        stat = {id: (name_kr, name_en) for (id, name_kr, name_en) in cur}
+        self._resourceMaster["Stat"] = stat
 
         # HeroDefaultOrder
         hero_default_order = list()

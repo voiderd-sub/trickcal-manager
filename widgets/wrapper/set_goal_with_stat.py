@@ -15,11 +15,13 @@ class SetGoalWithStat(QMainWindow, Ui_SetGoalWithStat):
 
     def setInitialState(self):
         # make list of stat names. name of icon file is in icon\status
-        stat_list = os.listdir('icon/status')
-        self.stat_list = [stat.split('.')[0].lstrip("Icon_") for stat in stat_list]
+        stat = self.parent().window().resource.masterGet("Stat")
+        stat_list_en = []
+        for name_kr, name_en in stat.values():
+            stat_list_en.append(name_en)
 
         # set icon
-        for stat in self.stat_list:
+        for stat in stat_list_en:
             getattr(self, stat).setIcon(QIcon(f"icon/status/Icon_{stat}.png"))
 
         self.cancel_btn.clicked.connect(self.close)
@@ -28,8 +30,8 @@ class SetGoalWithStat(QMainWindow, Ui_SetGoalWithStat):
 
     def sendGoalStat(self):
         checked_stat = []
-        for stat in self.stat_list:
-            btn = getattr(self, stat)
+        for name_kr, name_en in self.parent().window().resource.masterGet("Stat").values():
+            btn = getattr(self, name_en)
             if btn.isChecked():
                 checked_stat.append(btn.text())
         self.close()

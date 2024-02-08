@@ -165,10 +165,7 @@ class PageEquip1(Ui_page_equip_1, QWidget):
                 cur_rank, equips = load_from[hero_name]
                 for row_idx in range(num_rows-1):
                     for col_idx in range(1, num_cols):
-                        if equips is None:
-                            table.cellWidget(row_idx, col_idx).setDisabled(row_idx<cur_rank-1)
-                        else:
-                            table.cellWidget(row_idx, col_idx).setDisabled(row_idx<cur_rank-1 or (row_idx==cur_rank-1 and col_idx in equips))
+                        table.cellWidget(row_idx, col_idx).setDisabled(row_idx<cur_rank-1 or (row_idx==cur_rank-1 and col_idx in equips))
                 for row_idx in range(num_rows-1):
                     table.cellWidget(row_idx, 0).setDisabled(row_idx<cur_rank-1)
         else:
@@ -192,14 +189,16 @@ class PageEquip1(Ui_page_equip_1, QWidget):
                 load_from = self.user_equip_data
         
         if load_from is None:
-            for row_idx in range(num_rows):
-                btn = table.cellWidget(row_idx, 0)
-                if btn.isEnabled():
-                    btn.click()
-                    break
-            return
-        cur_rank, equips = load_from[hero_name]
-        table.cellWidget(cur_rank-1, 0).click()
+            cur_rank, equips = 1, set()
+        else:
+            cur_rank, equips = load_from[hero_name]
+        min_enabled_rank = 1
+        for row_idx in range(num_rows):
+            btn = table.cellWidget(row_idx, 0)
+            if btn.isEnabled():
+                min_enabled_rank = row_idx+1
+                break
+        table.cellWidget(max(min_enabled_rank, cur_rank)-1, 0).click()
         if len(equips) == 0:
             return
         for col_idx in list(equips):
@@ -439,9 +438,9 @@ class PageEquip1(Ui_page_equip_1, QWidget):
             return
         for name in hero_name_to_equip_names.keys():
             if is_goal:
-                self.hero_name_to_goal_data_tmp[name] = (cur_rank, None)
+                self.hero_name_to_goal_data_tmp[name] = (cur_rank, set())
             else:
-                self.user_equip_data_tmp[name] = (cur_rank, None)
+                self.user_equip_data_tmp[name] = (cur_rank, set())
         self.last_hero_name = None
         self.updateCurrentEquipTalbe()
     
@@ -449,10 +448,10 @@ class PageEquip1(Ui_page_equip_1, QWidget):
     def setGoalStat(self, stat_list):
         assert len(stat_list) >= 1, "stat_list must have at least one element"
         
-        main_window = self.window()
-        cur_master: sqlite3.Cursor = main_window.conn_master.cursor()
-        cur_master.execute("SELECT id, name from stat")
-        stat_name_to_id = {name: id for (id, name) in cur_master}
+        main = self.window()
+        res = main.resource
+        cur_master: sqlite3.Cursor = main.conn_master.cursor()
+        stat_name_to_id = {name_kr: id for (id, (name_kr, name_en)) in res.masterGet("Stat").items()}
         stat_ids = "("+",".join([str(stat_name_to_id[stat]) for stat in stat_list])+")"
 
         cur_master.execute("SELECT MAX(DISTINCT(rank)) FROM equipment")
@@ -469,15 +468,16 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         rank_type_id_to_rank = {id: rank for (id, rank) in cur_master}
 
         if not hasattr(self, "hero_name_to_rank_type"):
+            hero_id_to_metadata = res.masterGet("HeroIdToMetadata")
             self.hero_name_to_rank_type = dict()
             cur_master.execute("select * from hero_rank_stat_type")
             for (hero_id, rank_type_id) in cur_master:
-                self.hero_name_to_rank_type[self.hero_id_to_name[hero_id]] = rank_type_id
+                self.hero_name_to_rank_type[hero_id_to_metadata[hero_id]["name_kr"]] = rank_type_id
 
         for hero_name in self.hero_name_to_rank_type:
             rank_type_id = self.hero_name_to_rank_type[hero_name]
             rank = rank_type_id_to_rank[rank_type_id]
-            self.hero_name_to_goal_data_tmp[hero_name] = (rank, None)
+            self.hero_name_to_goal_data_tmp[hero_name] = (rank, set())
         
         self.last_hero_name = None
         self.updateCurrentEquipTalbe()
