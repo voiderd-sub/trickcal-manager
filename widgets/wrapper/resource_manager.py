@@ -68,6 +68,40 @@ class ResourceManager:
         return goal_list
     
 
+    def getGoalEquip(self):
+        cur_user = self.main.conn_user.cursor()
+        cur_user.execute("SELECT * FROM user_goal_equip")
+        goal_equip = defaultdict(lambda: defaultdict(lambda: defaultdict(set)))
+        for (goal_id, hero_id, rank, equips) in cur_user:
+            goal_equip[goal_id][hero_id] = (rank, set((int(i) for i in equips.split(","))) if equips is not None else set())
+        self._resourceUser["GoalEquip"] = goal_equip
+        return goal_equip
+    
+
+    def getCalcSettings(self):
+        cur_user = self.main.conn_user.cursor()
+        cur_user.execute("SELECT * FROM calc_settings")
+        calc_settings = {name: value for (name, value) in cur_user}
+        self._resourceUser["CalcSettings"] = calc_settings
+        return calc_settings
+    
+
+    def getBagEquips(self):
+        cur_user = self.main.conn_user.cursor()
+        cur_user.execute("SELECT * FROM user_bag_equips")
+        bag_equips = {id: count for (id, count) in cur_user}
+        self._resourceUser["BagEquips"] = bag_equips
+        return bag_equips
+    
+    # user_items means "materials"
+    def getUserItems(self):
+        cur_user = self.main.conn_user.cursor()
+        cur_user.execute("SELECT * FROM user_items")
+        user_items = {name: count for (name, count) in cur_user}
+        self._resourceUser["UserItems"] = user_items
+        return user_items
+    
+
     def masterInit(self):
         cur = self.main.conn_master.cursor()
 
@@ -109,9 +143,11 @@ class ResourceManager:
         self._resourceMaster["HeroNameToEquipNames"] = hero_name_to_equip_names
 
         # EquipIdToName, EquipNameToId
-        cur.execute("SELECT id, name FROM equipment")
-        equip_id_to_name = {id: name for (id, name) in cur}
+        cur.execute("SELECT id, name, rank, type FROM equipment")
+        equip_id_to_rank_n_type = {id: (rank, type) for (id, _, rank, type) in cur}
+        equip_id_to_name = {id: name for (id, (name, _)) in equip_id_to_rank_n_type.items()}
         equip_name_to_id = {name: id for (id, name) in equip_id_to_name.items()}
+        self._resourceMaster["EquipIdToRankAndType"] = equip_id_to_rank_n_type
         self._resourceMaster["EquipIdToName"] = equip_id_to_name
         self._resourceMaster["EquipNameToId"] = equip_name_to_id
 
@@ -151,3 +187,11 @@ class ResourceManager:
         for (idx,) in cur:
             hero_default_order.append(idx)
         self._resourceMaster["HeroDefaultOrder"] = hero_default_order
+
+        # HeroIdToNameOrder
+        hero_name_order = dict()
+        cur.execute("SELECT id FROM hero ORDER BY name_kr ASC")
+        for (idx,) in cur:
+            hero_name_order[idx] = len(hero_name_order) + 1
+        self._resourceMaster["HeroIdToNameOrder"] = hero_name_order
+        

@@ -203,6 +203,7 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
 
     def updateGoalList(self):
         self.resource.delete("GoalList")
+        self.page_equip_abstract.goalListChanged()
         self.page_equip_1.updateGoalNameList()
         self.page_equip_3.updateGoalList()
 
@@ -210,10 +211,10 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         self.userDBInit()
         self.resource.deleteAll(user=True)
         self.page_hero.updateTable()
-        self.page_equip_abstract.reloadAll()
+        self.page_equip_abstract.goalListChanged()
         self.page_equip_1.changeAccount()
         self.page_equip_2.reloadData()
-        self.page_equip_3.updateGoalList()
+        self.page_equip_3.loadUserData()
     
     def changeExtrinsicStarsCascade(self):
         self.resource.delete("HeroIdToStarExtrinsic")
@@ -223,8 +224,8 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         self.resource.deleteAll(master=True)
         self.resource.masterInit()
         self.page_hero.constructTable()
-        self.page_equip_abstract.reloadAll()
-        self.page_equip_1.updateHeroList()
+        self.page_equip_abstract.goalListChanged()
+        self.page_equip_1.masterDBUpdated()
         self.page_equip_2.loadMaterialTableColumns()
         self.page_equip_2.reloadData()
         

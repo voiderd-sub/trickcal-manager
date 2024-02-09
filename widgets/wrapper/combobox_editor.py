@@ -34,6 +34,12 @@ class NameDelegate(QItemDelegate):
 
 
 class ComboBoxEditor(Ui_combobox_editor, QMainWindow):
+    """
+    A class for a window that edits a list of names.
+    You must override loadList and saveCurrentState;
+    loadList: Initialize name_list and deleted_name_list
+    saveCurrentState: Save the current state of the list
+    """
     def __init__(self, *args, **kwargs):
         super(ComboBoxEditor, self).__init__(*args, **kwargs)
         self.setupUi(self)

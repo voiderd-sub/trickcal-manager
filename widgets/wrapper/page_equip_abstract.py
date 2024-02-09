@@ -3,7 +3,7 @@ from widgets.wrapper.resource_manager import ResourceManager
 from widgets.wrapper.misc import FlowLayout
 
 from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QSizePolicy
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QPainter
 from PySide6.QtCore import Qt
 
 from collections import defaultdict
@@ -31,7 +31,10 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
         self.vertical_layout.setContentsMargins(10, 10, 10, 10)
         self.vertical_layout.setSpacing(10)
         self.goal_list.currentIndexChanged.connect(self.updateEquipState)
+        self.check_show_completed.stateChanged.connect(self.updateEquipState)
+        self.radio_equip_show.toggled.connect(self.showModeChanged)
         self.updateGoalList()
+        self.updateEquipState()
 
 
     def updateEquipStatAbstract(self):
@@ -46,7 +49,7 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
         cur_stats = defaultdict(int)
         all_stats = defaultdict(int)
         cur_cnt = 0
-        all_cnt = len(hero_id_to_rank_stat_type) * max_rank * 2
+        all_cnt = len(hero_id_to_rank_stat_type) * (max_rank-1) * 2
         for hero_id in hero_id_to_rank_stat_type.keys():
             hero_rank = user_equip[hero_id][0]
             stat_type = hero_id_to_rank_stat_type[hero_id]
@@ -69,8 +72,8 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
         self.rateAll.setText(f"{cur_cnt * 100 / all_cnt:.1f}%")
 
 
-    def reloadAll(self):
-        self.updateEquipStatAbstract()
+    def goalListChanged(self):
+        self.updateGoalList()
         self.updateEquipState()
     
 
@@ -78,49 +81,65 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
         goal_list = self.window().resource.userGet("GoalList")
         self.goal_list.blockSignals(True)
         self.goal_list.clear()
-        self.goal_list.blockSignals(False)
         self.goal_list.addItems(["현재 랭크"] + goal_list)
+        self.goal_list.blockSignals(False)
     
 
     def updateEquipState(self):
-        if self.goal_list.currentIndex() == 0:
+        no_goal = self.goal_list.currentIndex() == 0
+        if no_goal:
             self.goal_rate_label_left.hide()
             self.goal_rate_label_right.hide()
         else:
             self.goal_rate_label_left.show()
             self.goal_rate_label_right.show()
         
-        res = self.window().resource
+        res: ResourceManager = self.window().resource
         max_rank = res.masterGet("MaxRank")
         user_equip = res.userGet("CurEquip")
         hero_id_to_metadata = res.masterGet("HeroIdToMetadata")
+        hero_id_to_name_order = res.masterGet("HeroIdToNameOrder")
 
         # Treat MAX (=max_rank +1) as max_rank
-        rank_to_hero_list = {idx: [] for idx in range(max_rank+1)}
-        if self.goal_list.currentIndex() == 0:
-            for hero_id in hero_id_to_metadata.keys():
-                rank, equips = user_equip.get(hero_id, (1, set()))
-                if rank > max_rank:
-                    rank = max_rank
-                    equips = {1, 2, 3, 4, 5, 6}
-                rank_to_hero_list[rank].append((hero_id, equips))
-        else:
+        rank_to_hero_dict = {idx: dict() for idx in range(max_rank+1)}
+        if not no_goal:
+            cnt_tot = 0
+            cnt_complete = 0
             goal_idx = self.goal_list.currentIndex()
-            cur = self.window().conn_user.cursor()
-            cur.execute("SELECT hero_id, rank, equips FROM user_goal_equip WHERE goal_id = ?", (goal_idx,))
-            for hero_id, rank, equips in cur:
-                if equips is not None:
-                    equips = set(map(int, equips.split(",")))
+            goal_equip = res.userGet("GoalEquip")[goal_idx]
+
+        for hero_id in hero_id_to_metadata.keys():
+            cur_rank, cur_equips = user_equip.get(hero_id, (1, set()))
+            if cur_rank > max_rank:
+                cur_rank = max_rank
+                cur_equips = set(range(1,7))
+            if no_goal:
+                rank_to_hero_dict[cur_rank][hero_id] = (f"{len(cur_equips)}/6", False)
+            else:
+                goal_rank, goal_equips = goal_equip.get(hero_id, (1, set()))
+                cnt_tot += (goal_rank-1) * 6 + len(goal_equips)
+                if goal_rank > max_rank:
+                    goal_rank = max_rank
+                    goal_equips = set(range(1,7))
+                completed = cur_rank > goal_rank or (cur_rank == goal_rank and cur_equips & goal_equips == goal_equips)
+                not_compl_same_rank = not completed and cur_rank == goal_rank
+                equip_complete_numerator = (len(cur_equips & goal_equips)
+                                            if not_compl_same_rank
+                                            else len(cur_equips))
+                equip_complete_denominator = len(goal_equips) if not_compl_same_rank else 6
+                if completed:
+                    cnt_complete += (goal_rank-1) * 6 + len(goal_equips)
                 else:
-                    equips = set()
-                if rank > max_rank:
-                    rank = max_rank
-                    equips = {1, 2, 3, 4, 5, 6}
-                cur_rank, cur_equips = user_equip.get(hero_id, (1, set()))
-                if (self.check_show_completed.isChecked() is False and
-                    (cur_rank > rank or (cur_rank == rank and cur_equips & equips == equips))):
-                    continue
-                rank_to_hero_list[rank].append((hero_id, equips))
+                    cnt_complete += (cur_rank-1) * 6 + (
+                        len(cur_equips & goal_equips) if cur_rank == goal_rank else len(cur_equips))
+                ratio_text = f"{equip_complete_numerator}/{equip_complete_denominator}"
+                rank_to_hero_dict[goal_rank][hero_id] = (ratio_text, completed)
+
+        if not no_goal:
+            if cnt_tot == 0:
+                self.goal_rate_label_right.setText("목표 없음")
+            else:
+                self.goal_rate_label_right.setText(f"{cnt_complete * 100 / cnt_tot:.1f}%")
             
         # clear all widgets in self.contents_layout
         for i in reversed(range(self.vertical_layout.count())):
@@ -140,12 +159,13 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
             label.setFont(font)
             horizontal_layout.addWidget(label)
 
-            hero_list = rank_to_hero_list[rank]
+            hero_dict = rank_to_hero_dict[rank]
             rank_container = QWidget(row_container)
             rank_container.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred))
-            # layout = QHBoxLayout(rank_container)
             layout = FlowLayout(rank_container, 0)
-            for hero_id, equips in hero_list:
+            for hero_id, (ratio_text, completed) in sorted(hero_dict.items(), key=lambda x: hero_id_to_name_order[x[0]]):
+                if completed and not self.check_show_completed.isChecked():
+                    continue
                 metadata = hero_id_to_metadata[hero_id]
 
                 hero_container = QWidget(rank_container)
@@ -158,6 +178,7 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
                 pixmap = QPixmap()
                 pixmap.load(f"icon/hero/{metadata['name_en']}.png")
                 pixmap = pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
                 label = QLabel()
                 label.setFixedSize(80, 80)
                 label.setPixmap(pixmap)
@@ -165,14 +186,36 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
                 hero_container_layout.addWidget(label)
                 label.setStyleSheet("border: 1px solid black; border-radius: 0px;")
 
-                label = QLabel(metadata["name_kr"], hero_container)
+                text = metadata["name_kr"]
+                label = QLabel(text, hero_container)
                 label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
                 label.setFixedWidth(80)
                 label.setWordWrap(True)
                 hero_container_layout.addWidget(label)
 
+                text = []
+                if not no_goal or self.radio_equip_show.isChecked():
+                    label = QLabel(hero_container)
+                    if not no_goal:
+                        cur_rank = min(user_equip[hero_id][0], 7)
+                        text.append(f"{cur_rank}")
+                    if self.radio_equip_show.isChecked():
+                        text.append(f"{ratio_text}")
+                    text = " - ".join(text)
+                    label.setText(text)
+                    label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+                    label.setFixedWidth(80)
+                    label.setWordWrap(True)
+                    font = label.font()
+                    font.setPointSize(11)
+                    label.setFont(font)
+                    hero_container_layout.addWidget(label)
                 layout.addWidget(hero_container)
-
 
             horizontal_layout.addWidget(rank_container)
             self.vertical_layout.addWidget(row_container)
+
+
+    def showModeChanged(self):
+        if self.goal_list.currentIndex() != 0:
+            self.updateEquipState()

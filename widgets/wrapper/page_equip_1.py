@@ -28,13 +28,12 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         max_rank = res.masterGet("MaxRank")
 
         # load user_equip data from user db
-        self.loadUserEquip()
+        self.user_equip_data_tmp = dict()
+        self.last_hero_name = None
 
         # set up rank_table
         table = self.rank_table
-        table.clearContents()
-        table.setRowCount(max_rank+1)
-        table.setColumnCount(7)
+        self.setupTable()
         table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         horizontal_header = table.horizontalHeader()
         horizontal_header.hide()
@@ -44,38 +43,6 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         self.hero_select.setCompleterFont(15)
         self.updateHeroList()
         self.hero_select.currentIndexChanged.connect(self.updateCurrentEquipTalbe)
-
-        # set current equip table
-        for rank in range(1, max_rank+1):
-            btn = QPushButton()
-            btn.setText(f"Rank {rank}")
-            btn.setCheckable(True)
-            btn.setStyleSheet('font: 14pt "ONE Mobile POP";')
-            table.setCellWidget(rank-1, 0, btn)
-            for col_idx in range(1, 7):
-                mini_btn = QPushButton()
-                mini_btn.setStyle(wrapStyle())
-                mini_btn.setStyleSheet('font: 11pt "ONE Mobile POP";')
-                mini_btn.setCheckable(True)
-                mini_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-                table.setCellWidget(rank-1, col_idx, mini_btn)
-                mini_btn.clicked.connect(partial(self.checkButton, mini_btn))
-            btn.clicked.connect(partial(self.checkAll, rank-1))
-            table.setRowHeight(rank-1, 50)
-        btn = QPushButton()
-        btn.setText("MAX")
-        btn.setCheckable(True)
-        btn.setStyleSheet('font: 14pt "ONE Mobile POP";')
-        table.setCellWidget(max_rank, 0, btn)
-        btn.clicked.connect(partial(self.checkAll, max_rank))
-        table.setRowHeight(max_rank, 50)
-
-        self.go_left_btn.setEnabled(False)
-
-        # make qbuttongroup with all buttons in the first column
-        rank_btn_group = QButtonGroup(self)
-        for row_idx in range(max_rank+1):
-            rank_btn_group.addButton(table.cellWidget(row_idx, 0))
 
         horizontal_header.setSectionResizeMode(0, QHeaderView.Fixed)
         for col_idx in range(1, 7):
@@ -101,10 +68,12 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         self.radio_cur_mode.toggled.connect(self.updateCurrentEquipTalbe)
 
         # Settings for goal mode
+        self.cur_goal.currentIndexChanged.connect(self.loadCurrentGoalData)
+        self.goal_setting_btn.clicked.connect(self.openGoalSettings)
         self.updateGoalNameList()
         self.cur_goal.setCurrentIndex(0)
-        self.goal_setting_btn.clicked.connect(self.openGoalSettings)
-        self.cur_goal.currentIndexChanged.connect(self.loadCurrentGoalData)
+
+        
 
         self.combo_set_goal.clear()
         self.combo_set_goal.addItems(["선택"] + [str(i) for i in range(1, max_rank+1)] + ["MAX"])
@@ -114,11 +83,47 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         self.set_goal_with_stat = SetGoalWithStat(self)
         self.set_goal_w_stat_btn.clicked.connect(self.set_goal_with_stat.show)
 
+
+    def setupTable(self):
+        max_rank = self.window().resource.masterGet("MaxRank")
+        table = self.rank_table
+        table.clearContents()
+        table.setRowCount(max_rank+1)
+        table.setColumnCount(7)
+        for rank in range(1, max_rank+1):
+            btn = QPushButton()
+            btn.setText(f"Rank {rank}")
+            btn.setCheckable(True)
+            btn.setStyleSheet('font: 14pt "ONE Mobile POP";')
+            table.setCellWidget(rank-1, 0, btn)
+            for col_idx in range(1, 7):
+                mini_btn = QPushButton()
+                mini_btn.setStyle(wrapStyle())
+                mini_btn.setStyleSheet('font: 11pt "ONE Mobile POP";')
+                mini_btn.setCheckable(True)
+                mini_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                table.setCellWidget(rank-1, col_idx, mini_btn)
+                mini_btn.clicked.connect(partial(self.checkButton, mini_btn))
+            btn.clicked.connect(partial(self.checkAll, rank-1))
+            table.setRowHeight(rank-1, 50)
+        btn = QPushButton()
+        btn.setText("MAX")
+        btn.setCheckable(True)
+        btn.setStyleSheet('font: 14pt "ONE Mobile POP";')
+        table.setCellWidget(max_rank, 0, btn)
+        btn.clicked.connect(partial(self.checkAll, max_rank))
+        table.setRowHeight(max_rank, 50)
+
+        # make qbuttongroup with all buttons in the first column
+        rank_btn_group = QButtonGroup(self)
+        for row_idx in range(max_rank+1):
+            rank_btn_group.addButton(table.cellWidget(row_idx, 0))
+
+
     def updateHeroList(self):
         self.hero_select.blockSignals(True)
-        res = self.window().resource
-        hero_name_to_equip_names = res.masterGet("HeroNameToId")
-        names = list(sorted(hero_name_to_equip_names.keys()))
+        hero_name_to_id = self.window().resource.masterGet("HeroNameToId")
+        names = list(sorted(hero_name_to_id.keys()))
         self.hero_select.clear()
         self.hero_select.addItems(names)
         self.hero_select.blockSignals(False)
@@ -127,15 +132,17 @@ class PageEquip1(Ui_page_equip_1, QWidget):
     # Update the table according to the current index of self.hero_select
     def updateCurrentEquipTalbe(self):
         table = self.rank_table
+        res = self.window().resource
         num_rows = table.rowCount()
         num_cols = table.columnCount()
 
         hero_name = self.hero_select.currentText()
+        hero_id = res.masterGet("HeroNameToId")[hero_name]
         is_goal = self.radio_goal_mode.isChecked()
 
         self.updateUserEquipTmp()
-        hero_name_to_equip_names = self.window().resource.masterGet("HeroNameToEquipNames")
-        master_equip_data = hero_name_to_equip_names[hero_name]
+        hero_id_to_equip_names = res.masterGet("HeroIdToEquipNames")
+        master_equip_data = hero_id_to_equip_names[hero_id]
         
         # set text of buttons in the table
         for (rank, item_name_list) in master_equip_data.items():
@@ -144,17 +151,17 @@ class PageEquip1(Ui_page_equip_1, QWidget):
                 mini_btn.setText(equip_name)
 
         # enable/disable go_left_btn/go_right_btn
-        cur_idx = self.hero_select.currentIndex()
-        self.go_left_btn.setEnabled(cur_idx!=0)
-        self.go_right_btn.setEnabled(cur_idx!=self.hero_select.count()-1)
+        cur_herolist_idx = self.hero_select.currentIndex()
+        self.go_left_btn.setEnabled(cur_herolist_idx!=0)
+        self.go_right_btn.setEnabled(cur_herolist_idx!=self.hero_select.count()-1)
 
         # set enabled state of buttons in the table (only in goal mode)
         # Determine whether to disable using equip_data(_tmp)
         if is_goal:
-            if hero_name in self.user_equip_data_tmp:
+            if hero_id in self.user_equip_data_tmp:
                 load_from = self.user_equip_data_tmp
-            elif hero_name in self.user_equip_data:
-                load_from = self.user_equip_data
+            elif hero_id in res.userGet("CurEquip"):
+                load_from = res.userGet("CurEquip")
             else:
                 load_from = None
             if load_from is None:
@@ -162,7 +169,7 @@ class PageEquip1(Ui_page_equip_1, QWidget):
                     for col_idx in range(num_cols):
                         table.cellWidget(row_idx, col_idx).setEnabled(True)
             else:
-                cur_rank, equips = load_from[hero_name]
+                cur_rank, equips = load_from[hero_id]
                 for row_idx in range(num_rows-1):
                     for col_idx in range(1, num_cols):
                         table.cellWidget(row_idx, col_idx).setDisabled(row_idx<cur_rank-1 or (row_idx==cur_rank-1 and col_idx in equips))
@@ -178,20 +185,20 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         # In goal mode, check the buttons according to hero_name_to_goal_data(_tmp)
         load_from = None  
         if is_goal:
-            if hero_name in self.hero_name_to_goal_data_tmp:
+            if hero_id in self.hero_name_to_goal_data_tmp:
                 load_from = self.hero_name_to_goal_data_tmp
-            elif hero_name in self.hero_name_to_goal_data:
-                load_from = self.hero_name_to_goal_data
+            elif hero_id in res.userGet("GoalEquip")[self.cur_goal.currentIndex()+1]:
+                load_from = res.userGet("GoalEquip")[self.cur_goal.currentIndex()+1]
         else:
-            if hero_name in self.user_equip_data_tmp:
+            if hero_id in self.user_equip_data_tmp:
                 load_from = self.user_equip_data_tmp
-            elif hero_name in self.user_equip_data:
-                load_from = self.user_equip_data
+            elif hero_id in res.userGet("CurEquip"):
+                load_from = res.userGet("CurEquip")
         
         if load_from is None:
             cur_rank, equips = 1, set()
         else:
-            cur_rank, equips = load_from[hero_name]
+            cur_rank, equips = load_from[hero_id]
         min_enabled_rank = 1
         for row_idx in range(num_rows):
             btn = table.cellWidget(row_idx, 0)
@@ -247,16 +254,19 @@ class PageEquip1(Ui_page_equip_1, QWidget):
     # Update user_equip_data_tmp & hero_name_to_goal_data_tmp with the previous page's data
     def updateUserEquipTmp(self):
         table = self.rank_table
+        res = self.window().resource
 
         # In Current mode, checked cells are checked and stored in user_equip_data tmp.
         # In goal mode, cells that are enabled and checked at the same time
         # are checked and stored in hero_name_to_goal_data_tmp.
-        db_data_dict = self.user_equip_data if self.last_mode else self.hero_name_to_goal_data
-        save_to = self.user_equip_data_tmp if self.last_mode else self.hero_name_to_goal_data_tmp
+        db_data_dict = (res.userGet("CurEquip") if self.last_mode
+                        else res.userGet("GoalEquip")[self.cur_goal.currentIndex()+1])
+        save_to = (self.user_equip_data_tmp if self.last_mode
+                   else self.hero_name_to_goal_data_tmp)
 
         if not self.last_hero_name is None:
             # Find the last checked rank
-            # The method for finding rank is the same for both cur_mode and goal_mode
+            # Method for finding rank is the same for both cur_mode and goal_mode
             last_rank = 0
             for row_idx in range(table.rowCount()):
                 if table.cellWidget(row_idx, 0).isChecked():
@@ -266,26 +276,23 @@ class PageEquip1(Ui_page_equip_1, QWidget):
             if last_rank==table.rowCount():
                 last_equips = set()
             else:
-            # Meanwhile, in goal_mode, the button in the same row as the enabled top button
-            # among the first rows can be checked/unchecked in a disabled state.
-            # Therefore, both cases must be considered separately.
+                # Find the last checked equips
+                # Method for finding equips is different for cur_mode and goal_mode
                 if self.last_mode:
                     last_equips = set([i for i in range(1, table.columnCount()) if table.cellWidget(last_rank-1, i).isChecked()])
                 else:
                     last_equips = set([i for i in range(1, table.columnCount()) if table.cellWidget(last_rank-1, i).isChecked() or not table.cellWidget(last_rank-1, i).isEnabled()])
-
-            if last_equips=="":
-                last_equips = set()
             
-            db_data = db_data_dict.get(self.last_hero_name, None)
+            last_hero_idx = res.masterGet("HeroNameToId")[self.last_hero_name]
+            db_data = db_data_dict.get(last_hero_idx, None)
 
             # If same data already exists in db, delete from tmp
             if db_data == (last_rank, last_equips):
-                save_to.pop(self.last_hero_name, None)
+                save_to.pop(last_hero_idx, None)
 
             # If it is not in db, save to tmp
             else:
-                save_to[self.last_hero_name] = (last_rank, last_equips)
+                save_to[last_hero_idx] = (last_rank, last_equips)
 
         self.last_hero_name = self.hero_select.currentText()
         self.last_mode = self.radio_cur_mode.isChecked()
@@ -296,28 +303,29 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         # save current page data into user_equip_data_tmp
         self.last_hero_name = self.hero_select.currentText()
         self.updateUserEquipTmp()
-
-        # transfer changed data from tmp to each dict
-        self.user_equip_data.update(self.user_equip_data_tmp)
-        self.user_equip_data_tmp = dict()
-        self.hero_name_to_goal_data.update(self.hero_name_to_goal_data_tmp)
-        self.hero_name_to_goal_data_tmp = dict()
-
         main = self.window()
         res = main.resource
-        cur_user: sqlite3.Cursor = main.conn_user.cursor()
-        hero_name_to_id = res.masterGet("HeroNameToId")
 
-        data = [(hero_name_to_id[hero_name], rank, ",".join((str(i) for i in equips)) if len(equips)!=0 else None) for (hero_name, (rank, equips)) in self.user_equip_data.items()]
+        # transfer changed data from tmp to each dict
+        cur_equip = res.userGet("CurEquip")
+        cur_goal_idx = self.cur_goal.currentIndex() + 1
+        goal_equip = res.userGet("GoalEquip")[cur_goal_idx]
+
+        cur_equip.update(self.user_equip_data_tmp)
+        self.user_equip_data_tmp = dict()
+        goal_equip.update(self.hero_name_to_goal_data_tmp)
+        self.hero_name_to_goal_data_tmp = dict()
+
+        cur_user: sqlite3.Cursor = main.conn_user.cursor()
+
+        data = [(hero_id, rank, ",".join((str(i) for i in list(equips))) if len(equips)!=0 else None) for (hero_id, (rank, equips)) in cur_equip.items()]
         cur_user.executemany("REPLACE INTO user_cur_equip VALUES (?, ?, ?)", data)
 
         if self.cur_goal.count()!=0:
-            cur_goal_idx = self.cur_goal.currentIndex()
-            data = [(cur_goal_idx+1, hero_name_to_id[hero_name], rank, ",".join((str(i) for i in equips)) if len(equips)!=0 else None) for (hero_name, (rank, equips)) in self.hero_name_to_goal_data.items()]
+            data = [(cur_goal_idx, hero_id, rank, ",".join((str(i) for i in list(equips))) if len(equips)!=0 else None) for (hero_id, (rank, equips)) in goal_equip.items()]
             cur_user.executemany("REPLACE INTO user_goal_equip(goal_id, hero_id, rank, equips) VALUES (?, ?, ?, ?)", data)
 
         main.conn_user.commit()
-        _ = main.resource.getCurEquip()
     
 
     # undo all changes in tmp
@@ -336,58 +344,37 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         res = main.resource
         cur_user: sqlite3.Cursor = main.conn_user.cursor()
 
-        hero_name_to_id = res.masterGet("HeroNameToId")
-        hero_name = self.hero_select.currentText()
+        hero_id = res.masterGet("HeroNameToId")[self.last_hero_name]
 
-        if self.last_hero_name in self.user_equip_data_tmp:
-            self.user_equip_data[self.last_hero_name] = self.user_equip_data_tmp[self.last_hero_name]
-            rank, equips = self.user_equip_data_tmp[hero_name]
+        if hero_id in self.user_equip_data_tmp:
+            res.userGet("CurEquip")[hero_id] = self.user_equip_data_tmp[hero_id]
+            rank, equips = self.user_equip_data_tmp[hero_id]
             equips = ",".join([str(i) for i in list(equips)]) if len(equips)!=0 else None
             cur_user.execute("REPLACE INTO user_cur_equip VALUES (?, ?, ?)",
-                             (hero_name_to_id[hero_name], rank, equips))
+                             (hero_id, rank, equips))
             main.conn_user.commit()
-            del self.user_equip_data_tmp[self.last_hero_name]
+            del self.user_equip_data_tmp[hero_id]
 
-        if self.last_hero_name in self.hero_name_to_goal_data_tmp:
-            self.hero_name_to_goal_data[self.last_hero_name] = self.hero_name_to_goal_data_tmp[self.last_hero_name]
-            rank, equips = self.hero_name_to_goal_data_tmp[hero_name]
+        if hero_id in self.hero_name_to_goal_data_tmp:
+            goal_idx = self.cur_goal.currentIndex() + 1
+            res.userGet("GoalEquip")[goal_idx] = self.hero_name_to_goal_data_tmp[hero_id]
+            rank, equips = self.hero_name_to_goal_data_tmp[hero_id]
             equips = ",".join([str(i) for i in list(equips)]) if len(equips)!=0 else None
             cur_user.execute("REPLACE INTO user_goal_equip VALUES (?, ?, ?, ?)",
-                             (self.cur_goal.currentIndex()+1, hero_name_to_id[hero_name], rank, equips))
+                             (goal_idx, hero_id, rank, equips))
             main.conn_user.commit()
-            del self.hero_name_to_goal_data_tmp[self.last_hero_name]
-        _ = main.resource.getCurEquip()
+            del self.hero_name_to_goal_data_tmp[hero_id]
     
 
     # undo tmp changes of current page
     def undoUserEquipCur(self):
+        last_hero_id = self.window().resource.masterGet("HeroNameToId")[self.last_hero_name]
         if self.radio_cur_mode.isChecked():
-            self.user_equip_data_tmp.pop(self.last_hero_name, None)
+            self.user_equip_data_tmp.pop(last_hero_id, None)
         else:
-            self.hero_name_to_goal_data_tmp.pop(self.last_hero_name, None)
+            self.hero_name_to_goal_data_tmp.pop(last_hero_id, None)
         self.last_hero_name = None
         self.updateCurrentEquipTalbe()
-    
-
-    # Reload equip & goal data from db, then update the table
-    def changeAccount(self):
-        self.loadUserEquip()
-        self.updateGoalNameList()
-
-
-    # Load user_equip_data from db
-    def loadUserEquip(self):
-        main = self.window()
-        res = main.resource
-        self.user_equip_data = dict()
-
-        id_to_equip = res.userGet("CurEquip")
-        id_to_meta = res.masterGet("HeroIdToMetadata")
-        for (id, equip_data) in id_to_equip.items():
-            self.user_equip_data[id_to_meta[id]["name_kr"]] = equip_data
-
-        self.user_equip_data_tmp = dict()
-        self.last_hero_name = None
     
 
     def openGoalSettings(self):
@@ -397,9 +384,11 @@ class PageEquip1(Ui_page_equip_1, QWidget):
     
 
     def updateGoalNameList(self):
-        self.cur_goal.clear()
         main = self.window()
+        self.cur_goal.blockSignals(True)
+        self.cur_goal.clear()
         self.cur_goal.addItems(main.resource.userGet("GoalList"))
+        self.cur_goal.blockSignals(False)
         self.enableRadioGoalMode()
         self.loadCurrentGoalData()
     
@@ -413,15 +402,7 @@ class PageEquip1(Ui_page_equip_1, QWidget):
     def loadCurrentGoalData(self):
         if self.cur_goal.count()==0:
             return
-        goal_idx = self.cur_goal.currentIndex()
-        main = self.window()
-        hero_id_to_metadata = main.resource.masterGet("HeroIdToMetadata")
-        cur_user: sqlite3.Cursor = main.conn_user.cursor()
-        cur_user.execute(f"SELECT hero_id, rank, equips FROM user_goal_equip WHERE goal_id={goal_idx+1};")
-        self.hero_name_to_goal_data = dict()
-        for (hero_id, rank, equips) in cur_user:
-            equips = set([int(i) for i in equips.split(",")]) if equips is not None else set()
-            self.hero_name_to_goal_data[hero_id_to_metadata[hero_id]["name_kr"]] = (rank, equips)
+
         self.hero_name_to_goal_data_tmp = dict()
         self.last_hero_name = None
         self.updateCurrentEquipTalbe()
@@ -430,17 +411,17 @@ class PageEquip1(Ui_page_equip_1, QWidget):
     # Edit each tmp file and refresh table
     def setCheckAllWithRank(self):
         is_goal = self.radio_goal_mode.isChecked()
-        table = self.rank_table
         cur_rank = self.combo_set_goal.currentIndex()
-        hero_name_to_equip_names = self.window().resource.masterGet("HeroNameToEquipNames")
+        hero_id_to_equip_names = self.window().resource.masterGet("HeroIdToEquipNames")
+        res = self.window().resource
 
         if cur_rank==0:
             return
-        for name in hero_name_to_equip_names.keys():
+        for hero_id in hero_id_to_equip_names.keys():
             if is_goal:
-                self.hero_name_to_goal_data_tmp[name] = (cur_rank, set())
+                res.userGet("GoalEquip")[self.cur_goal.currentIndex()+1][hero_id] = (cur_rank, set())
             else:
-                self.user_equip_data_tmp[name] = (cur_rank, set())
+                self.user_equip_data_tmp[hero_id] = (cur_rank, set())
         self.last_hero_name = None
         self.updateCurrentEquipTalbe()
     
@@ -452,32 +433,35 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         res = main.resource
         cur_master: sqlite3.Cursor = main.conn_master.cursor()
         stat_name_to_id = {name_kr: id for (id, (name_kr, name_en)) in res.masterGet("Stat").items()}
-        stat_ids = "("+",".join([str(stat_name_to_id[stat]) for stat in stat_list])+")"
+        goal_stat_ids = {stat_name_to_id[stat_name] for stat_name in stat_list}
+        max_rank = res.masterGet("MaxRank")
+        rank_type_id_to_goal_rank = dict()
 
-        cur_master.execute("SELECT MAX(DISTINCT(rank)) FROM equipment")
-        max_rank = cur_master.fetchone()[0]
+        for rank_type_id, rank_to_stat_dict in res.masterGet("RankStatType").items():
+            goal_rank = 1
+            for rank, stat_dict in rank_to_stat_dict.items():
+                if rank > max_rank:
+                    break
+                if len(goal_stat_ids.intersection(stat_dict.keys())) > 0:
+                    rank_type_id_to_goal_rank[rank_type_id] = rank
 
-        cur_master.execute(f"""
-            select id, max(rank)
-            from rank_stat_type rst
-            where (stat_1_id in {stat_ids} or stat_2_id in {stat_ids})
-            and rank <= {max_rank}
-			group by id
-        """)
+        hero_id_to_rank_stat_type = res.masterGet("HeroIdToRankStatType")
 
-        rank_type_id_to_rank = {id: rank for (id, rank) in cur_master}
-
-        if not hasattr(self, "hero_name_to_rank_type"):
-            hero_id_to_metadata = res.masterGet("HeroIdToMetadata")
-            self.hero_name_to_rank_type = dict()
-            cur_master.execute("select * from hero_rank_stat_type")
-            for (hero_id, rank_type_id) in cur_master:
-                self.hero_name_to_rank_type[hero_id_to_metadata[hero_id]["name_kr"]] = rank_type_id
-
-        for hero_name in self.hero_name_to_rank_type:
-            rank_type_id = self.hero_name_to_rank_type[hero_name]
-            rank = rank_type_id_to_rank[rank_type_id]
-            self.hero_name_to_goal_data_tmp[hero_name] = (rank, set())
+        for hero_id, rank_type_id in hero_id_to_rank_stat_type.items():
+            goal_rank = rank_type_id_to_goal_rank[rank_type_id]
+            self.hero_name_to_goal_data_tmp[hero_id] = (goal_rank, set())
         
         self.last_hero_name = None
         self.updateCurrentEquipTalbe()
+
+
+    # Reload equip & goal data from db, then update the table
+    def changeAccount(self):
+        self.user_equip_data_tmp = dict()
+        self.last_hero_name = None
+        self.updateGoalNameList()
+
+    
+    def masterDBUpdated(self):
+        self.setupTable()
+        self.updateHeroList()

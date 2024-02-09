@@ -128,8 +128,8 @@ class PageHero(Ui_page_hero, QWidget):
 
         for idx, id in enumerate(hero_default_order):
             meta = hero_id_to_metadata[id]
-            name_kr = meta[0]
-            star_in = meta[2]
+            name_kr = meta["name_kr"]
+            star_in = meta["star_in"]
             star_ex = hero_id_to_star_ex.get(id, None)
             
             table.cellWidget(idx,2).comboSetStar(star_in, star_ex)

@@ -27,8 +27,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                                   "research_level","candy_buying", "use_standard_yes",
                                   "daily_elleaf_yes", "lecture_level", "cur_standard",
                                   "daily_candy_yes", "auto_update_yes", "round_yes"]
-        self.updateGoalList()
-        self.loadSettings()
+        self.loadUserData()
 
         self.research_level.setValidator(QIntValidator(0, 8, self.research_level))
         self.candy_buying.setValidator(QIntValidator(0, 10, self.candy_buying))
@@ -41,24 +40,26 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         self.dialog = EquipDialog()
 
 
-    def updateGoalList(self):
-        main_window = self.window()
-        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
-
-        cur_user.execute("SELECT id, name FROM user_goal_equip_names")
-        self.goal_name_to_id = {name: id for (id, name) in cur_user}
+    def loadUserData(self):
+        # updateGoalList
+        res = self.window().resource
+        goal_list = res.userGet("GoalList")
 
         self.goal_list.clear()
-        self.goal_list.addItems(self.goal_name_to_id.keys())
+        self.goal_list.addItems(goal_list)
         self.goal_list.setCurrentIndex(0)
-    
 
-    def loadSettings(self):
-        main_window = self.window()
-        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
-
-        cur_user.execute("SELECT * FROM calc_settings")
-        for setting_name, value in cur_user:
+        # loadCalcSettings
+        calc_settings = res.userGet("CalcSettings")
+        for setting_name in self.setting_name_list:
+            if setting_name not in calc_settings:
+                # Initialize default value
+                if len(setting_name.split("_yes"))==2:
+                    value = 1
+                else:
+                    value = ""
+            else:
+                value = calc_settings[setting_name]
             widget = getattr(self, setting_name)
             if len(setting_name.split("_yes"))==2:
                 if value:
@@ -145,20 +146,14 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         main = self.window()
         res: ResourceManager = main.resource
         cur_user: sqlite3.Cursor = main.conn_user.cursor()
-        cur_master: sqlite3.Cursor = main.conn_master.cursor()
         hero_id_to_equip_ids = res.masterGet("HeroIdToEquipIds")
         recipe = res.masterGet("Recipe")
         needs_each_equip = defaultdict(int)
         needs_each_type = defaultdict(lambda: defaultdict(int))
         needs_each_item = defaultdict(int)
 
-        goal_name = self.goal_list.currentText()
-        goal_id = self.goal_name_to_id[goal_name]
-        cur_user.execute("SELECT hero_id, rank, equips FROM user_goal_equip WHERE goal_id=?", (goal_id,))
-        goal_equip = {idx: (rank, set((int(i) for i in equips.split(",")))
-                            if equips is not None else set())
-                            for (idx, rank, equips) in cur_user}
-        
+        goal_id = self.goal_list.currentIndex() + 1
+        goal_equip = res.userGet("GoalEquip")[goal_id]
         cur_equip = res.userGet("CurEquip")
 
         for hero_id, (goal_rank, goal_equips) in goal_equip.items():
@@ -171,19 +166,18 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                     needs_each_equip[equip_id] += 1
 
         if self.use_equip_yes.isChecked():
-            cur_user.execute("SELECT id, count FROM user_bag_equips")
-            for equip_id, count in cur_user:
+            bag_equips = res.userGet("BagEquips")
+            for equip_id, count in bag_equips.items():
                 needs_each_equip[equip_id] -= count
         
         for equip_id in list(needs_each_equip.keys()):
             if needs_each_equip[equip_id] <= 0:
                 needs_each_equip.pop(equip_id)
 
-        cur_master.execute("select id, rank, type from equipment")
-        equip_id_to_rank_n_type = {idx: (rank, type_id) for idx, rank, type_id in cur_master}
+        equip_id_to_rank_and_type = res.masterGet("EquipIdToRankAndType")
 
         for equip_id, count in needs_each_equip.items():
-            rank, type_id = equip_id_to_rank_n_type[equip_id]
+            rank, type_id = equip_id_to_rank_and_type[equip_id]
             needs_each_type[rank][type_id] += count
 
         for rank in needs_each_type:
@@ -191,8 +185,8 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                 for item_name, item_count in recipe[(rank, type_id)].items():
                     needs_each_item[item_name] += item_count * count
 
-        cur_user.execute("select name, count from user_items")
-        for name, count in cur_user:
+        user_items = res.userGet("UserItems")
+        for name, count in user_items.items():
             needs_each_item[name] -= count
         for name in list(needs_each_item.keys()):
             if needs_each_item[name] <= 0:
@@ -334,8 +328,8 @@ class PageEquip3(Ui_page_equip_3, QWidget):
 
 
     def saveCurrentSettings(self):
-        main_window = self.window()
-        cur_user: sqlite3.Cursor = main_window.conn_user.cursor()
+        main = self.window()
+        cur_user: sqlite3.Cursor = main.conn_user.cursor()
 
         for setting_name in self.setting_name_list:
             widget = getattr(self, setting_name)
@@ -350,7 +344,8 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                     raise Exception
                 value = int(text)
             cur_user.execute("INSERT OR REPLACE INTO calc_settings (setting_name, value) VALUES (?, ?)", (setting_name, value))
-        main_window.conn_user.commit()
+        main.conn_user.commit()
+        main.resource.delete("CalcSettings")
     
 
     def name_to_num_standard(self, name):
