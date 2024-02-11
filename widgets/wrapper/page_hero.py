@@ -65,6 +65,8 @@ class PageHero(Ui_page_hero, QWidget):
         table.horizontalHeader().setSectionResizeMode(0,QHeaderView.Fixed)
         table.resizeColumnsToContents()
         table.setColumnWidth(0, 130)
+        table.setVerticalScrollMode(QTableWidget.ScrollMode.ScrollPerPixel)
+        table.verticalScrollBar().setSingleStep(50)
 
         self.star_1_btn.clicked.connect(partial(self.setSpecificStarValues, 1))
         self.star_2_btn.clicked.connect(partial(self.setSpecificStarValues, 2))
@@ -73,7 +75,7 @@ class PageHero(Ui_page_hero, QWidget):
 
         self.save_btn.clicked.connect(self.saveExtrinsicStars)
         self.undo_btn.clicked.connect(self.undo)
-        self.update_btn.clicked.connect(self.updateMasterDB)
+        self.update_btn.clicked.connect(self.window().masterDBUpdateCascade)
 
 
     def constructTable(self):
@@ -181,7 +183,3 @@ class PageHero(Ui_page_hero, QWidget):
             item: NonScrollComboBox = self.hero_table.cellWidget(i,2).comboBox
             original_ex = self.hero_name_to_original_star_ex[self.hero_table.item(i,1).text()]
             item.setCurrentText(original_ex)
-
-
-    def updateMasterDB(self):
-        self.window().masterDBUpdateCascade()

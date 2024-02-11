@@ -24,7 +24,7 @@ class GoalSettings(ComboBoxEditor):
         main = self.parent()
 
         old_name_to_id = {goal_name: goal_idx for (goal_idx, goal_name)
-                          in enumerate(main.res.userGet("GoalList"), start=1)}
+                          in enumerate(main.resource.userGet("GoalList"), start=1)}
         old_name_to_new_name = dict()
         old_idx_to_tmp_idx = dict()
         tmp_idx_to_new_idx = dict()

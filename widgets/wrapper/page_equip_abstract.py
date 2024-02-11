@@ -31,8 +31,8 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
         self.vertical_layout.setContentsMargins(10, 10, 10, 10)
         self.vertical_layout.setSpacing(10)
         self.goal_list.currentIndexChanged.connect(self.updateEquipState)
-        self.check_show_completed.stateChanged.connect(self.updateEquipState)
-        self.radio_equip_show.toggled.connect(self.showModeChanged)
+        self.check_show_completed.stateChanged.connect(self.showModeChanged)
+        self.radio_equip_show.toggled.connect(self.updateEquipState)
         self.updateGoalList()
         self.updateEquipState()
 

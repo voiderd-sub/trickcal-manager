@@ -1,20 +1,21 @@
-from PySide6 import QtWidgets
-from PySide6.QtCore import QEvent
-
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox, QMainWindow, QApplication
 from PySide6.QtGui import QIcon
+from PySide6.QtCore import QThreadPool
 
 from widgets.ui.main_window import Ui_MainWindow
+from widgets.wrapper.resource_manager import ResourceManager, UpdateDropTableDialog
 from widgets.wrapper.account_settings import AccountSettings
 from widgets.wrapper.goal_settings import GoalSettings
-from widgets.wrapper.resource_manager import ResourceManager
+from widgets.wrapper.setting_window import SettingWindow
+from widgets.wrapper.multithread import Worker
 
+import sqlite3, yaml, os, sys, requests
+from datetime import datetime, timedelta
 from functools import partial
-import sqlite3, yaml, os.path
-import requests
 from zipfile import ZipFile
 from io import BytesIO
 from pathlib import Path
+
 
 
 """
@@ -24,7 +25,9 @@ you must pass "self.stacked_widget" as an argument to each custom widget
 constructor of stackedwindow in main_window.py.
 """
 
-BRANCH = "feature_autoupdate"
+USERNAME = "voiderd-sub"
+REPO = "trickal-manager"
+BRANCH = "main"
 
 def downloadIcons():
     # URL of the zip file on GitHub
@@ -35,7 +38,7 @@ def downloadIcons():
     response = requests.get(zip_url)
     response.raise_for_status()
 
-    with ZipFile(BytesIO(response.content)) as zip_ref:
+    with ZipFile(BytesIO(response.content), "r") as zip_ref:
         zip_ref.extractall(".")
 
 
@@ -53,8 +56,13 @@ def download_file(url, destination_path):
         file.write(response.content)
 
 
+def run_update(url):
+    os.chdir("..")
+    os.startfile("update.exe", arguments=url)
 
-class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
+
+
+class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         # open db & config
@@ -63,13 +71,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.userDBInit()
         self.resource = ResourceManager(self)
 
-        # generate subwindows
-        self.account_settings = AccountSettings(parent=self)
-        self.goal_settings = GoalSettings(parent=self)
-
         self.setupUi(self)
         self.setInitialState()
         self.stacked_window.setCurrentIndex(0)
+
+        # generate subwindows
+        self.account_settings = AccountSettings(parent=self)
+        self.goal_settings = GoalSettings(parent=self)
+        self.setting_window = SettingWindow(parent=self)
 
     
     def setInitialState(self):
@@ -77,6 +86,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         for i, name in enumerate(self.sidebar.btn_with_pages):
             btn=getattr(self.sidebar, name)
             btn.clicked.connect(partial(self.stacked_window.setCurrentIndex, i))
+    
+
+    def showEvent(self, event):
+        super().showEvent(event)
+
+        if (self.config.get("last_version_check", datetime(2021, 1, 1)) < datetime.now() - timedelta(days=1)
+            and self.config.get("setting", dict()).get("update_program", False)):
+            self.updateProgram(auto=True)
+    
+        if (self.config.get("last_drop_update", datetime(2021, 1, 1)) < datetime.now() - timedelta(days=1)
+            and self.config.get("setting", dict()).get("update_drop", False)):
+            self.updateDropTable()
+            self.config["last_drop_update"] = datetime.now()
 
 
     def closeEvent(self, event):
@@ -99,11 +121,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def downloadMasterDB(self):
         try:
-            user_name = "voiderd-sub"
-            repository = "trickal-manager"
-            branch = BRANCH
             destination_path = "db/master.db"
-            url = f"https://github.com/{user_name}/{repository}/raw/{branch}/db/master.db"
+            url = f"https://github.com/{USERNAME}/{REPO}/raw/{BRANCH}/db/master.db"
             download_file(url, destination_path)
             downloadIcons()
 
@@ -114,7 +133,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             msg_box.setText(str(e))
             msg_box.exec()
             raise e
-        
 
 
     def userDBInit(self):
@@ -188,7 +206,7 @@ join item_type t on (i.type = t.type_id)
         if not os.path.isfile(config_path):
             with open(config_path, "w") as f:
                 f.write(
-"""
+f"""
 account_list:
     - user 1
 cur_account_idx: 0
@@ -230,16 +248,84 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         self.page_equip_2.reloadData()
         
         # TODO : update hero list of page_crayon_1
+    
+
+    def updateProgram(self, auto):
+        api_url = f"https://api.github.com/repos/{USERNAME}/{REPO}/"
+        response = requests.get(api_url + "releases/latest", auth=(USERNAME, self.config.get("github_token", "")))
+        if response.status_code != 200:
+            error_text ="""업데이트 정보를 가져오는 데에 실패했습니다.
+짧은 시간에 GitHub API를 너무 많이 호출하여 차단당했을 수 있습니다. 1시간 후 다시 시도해주세요.
+문제가 계속되면 관리자에게 문의해주세요."""
+            QMessageBox.critical(self, 'Error', error_text, QMessageBox.Ok)
+            return
+
+        json_file = response.json()
+        latest_version = json_file["tag_name"]
+        with open("version", "r") as file:
+            current_version = "v" + file.read()
+        
+        if latest_version == current_version:
+            if not auto:
+                QMessageBox.information(self, 'Info', "이미 최신 버전이에요.", QMessageBox.Ok)
+            return
+        
+        download_url = None
+        for asset in json_file["assets"]:
+            if asset["name"] == "Trickcal.Manager.zip":
+                download_url = asset["browser_download_url"]
+                break
+        if download_url is None:
+            QMessageBox.critical(self, 'Error', "업데이트 파일 url을 찾을 수 없습니다. 관리자에게 문의해주세요.", QMessageBox.Ok)
+            return
+        
+        # open message box whether to update
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Question)
+        msg_box.setWindowTitle("Update")
+        msg_box.setText(f"최신 버전({latest_version})이 있습니다. 업데이트 할까요?")
+        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg_box.setDefaultButton(QMessageBox.Yes)
+        yes_btn = msg_box.button(QMessageBox.Yes)
+        yes_btn.setText("네")
+        no_btn = msg_box.button(QMessageBox.No)
+        no_btn.setText("아니요")
+        ret = msg_box.exec()
+        if ret == QMessageBox.No:
+            return
+        
+        # execute update.exe
+        app = QApplication.instance()
+        app.aboutToQuit.connect(partial(run_update,url=download_url))
+        app.quit()
+    
+
+    def updateDropTable(self):
+        # setup dialog
+        dialog = UpdateDropTableDialog(self)
+        
+        # make new worker
+        threadpool = QThreadPool()
+        worker = Worker(self.resource.updateDropTable)
+        worker.signals.finished.connect(dialog.close)
+
+        threadpool.start(worker)
+        dialog.exec()
+
 
 
 if __name__ == "__main__":
-    # os.chdir("_internal")
+    if getattr(sys, 'frozen', False):
+        application_path = Path(sys.executable).parents[0] / "_internal"
+    elif __file__:
+        application_path = Path(__file__).parents[0]
+    os.chdir(application_path)
 
     # Check whether icon folder exists
     if os.path.isdir("icon") == False:
         downloadIcons()
 
-    app = QtWidgets.QApplication([])
+    app = QApplication([])
     app.setWindowIcon(QIcon('icon/icon.png'))
 
     window = MainWindow()
