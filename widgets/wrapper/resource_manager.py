@@ -1,5 +1,11 @@
-from collections import defaultdict
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel
+from PySide6.QtGui import QMovie
 
+from collections import defaultdict
+import sqlite3
+import pandas as pd
+import numpy as np
 
 class ResourceManager:
     def __init__(self, main):
@@ -133,7 +139,9 @@ class ResourceManager:
         cur.execute("""SELECT h.id, h.name_kr, he.rank, e.id, e.name
                         FROM hero h
                         JOIN hero_equip he ON (h.id = he.hero_id)
-                        JOIN equipment e ON (he.equipment_id = e.id)""")
+                        JOIN equipment e ON (he.equipment_id = e.id)
+                        ORDER BY he.rank ASC, e.id ASC
+                    """)
         for (hero_id, hero_name_kr, rank, equip_id, equip_name) in cur:
             hero_id_to_equip_names[hero_id][rank].append(equip_name)
             hero_id_to_equip_ids[hero_id][rank].append(equip_id)
@@ -143,10 +151,14 @@ class ResourceManager:
         self._resourceMaster["HeroNameToEquipNames"] = hero_name_to_equip_names
 
         # EquipIdToName, EquipNameToId
+        equip_id_to_rank_n_type = dict()
+        equip_id_to_name = dict()
+        equip_name_to_id = dict()
         cur.execute("SELECT id, name, rank, type FROM equipment")
-        equip_id_to_rank_n_type = {id: (rank, type) for (id, _, rank, type) in cur}
-        equip_id_to_name = {id: name for (id, (name, _)) in equip_id_to_rank_n_type.items()}
-        equip_name_to_id = {name: id for (id, name) in equip_id_to_name.items()}
+        for (id, name, rank, type) in cur:
+            equip_id_to_rank_n_type[id] = (rank, type)
+            equip_id_to_name[id] = name
+            equip_name_to_id[name] = id
         self._resourceMaster["EquipIdToRankAndType"] = equip_id_to_rank_n_type
         self._resourceMaster["EquipIdToName"] = equip_id_to_name
         self._resourceMaster["EquipNameToId"] = equip_name_to_id
@@ -181,6 +193,14 @@ class ResourceManager:
         stat = {id: (name_kr, name_en) for (id, name_kr, name_en) in cur}
         self._resourceMaster["Stat"] = stat
 
+        # StageToDrop
+        cur.execute("SELECT * FROM drop_table")
+        stage_to_drop = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+        for (stage, item_1, item_1_drop_rate, item_2, item_2_drop_rate) in cur:
+            stage_to_drop[stage][item_1] = item_1_drop_rate
+            stage_to_drop[stage][item_2] = item_2_drop_rate
+        self._resourceMaster["StageToDrop"] = stage_to_drop
+
         # HeroDefaultOrder
         hero_default_order = list()
         cur.execute("SELECT id FROM hero ORDER BY personality ASC, star_intrinsic DESC, name_kr ASC")
@@ -194,4 +214,90 @@ class ResourceManager:
         for (idx,) in cur:
             hero_name_order[idx] = len(hero_name_order) + 1
         self._resourceMaster["HeroIdToNameOrder"] = hero_name_order
+    
+
+    def updateDropTable(self):
+        path_item_table = self.main.config["path_item_table"]
+        url=f'https://docs.google.com/spreadsheet/ccc?key={path_item_table}&output=xlsx'
+
+        # make dict of drop item list
+        drop_item_list = dict()
+        stage_to_drop = dict()
+        df = pd.read_excel(url, sheet_name="아이템 이름", usecols="A,E:F")
+        df = df.replace({np.nan: None})
+        for (_, row) in df.iterrows():
+            stage_name, item_1, item_2 = row
+            drop_item_list[stage_name] = (item_1, item_2)
+
+        df = pd.read_excel(url, sheet_name="드랍률", header=2, usecols="A:B,K:L")
+        for (_, row) in df.iterrows():
+            stage_name, count, prob_1, prob_2 = row
+            if count < 100:
+                continue
+            prob_1 = None if type(prob_1)==str else prob_1
+            prob_2 = None if type(prob_2)==str else prob_2
+            item_1, item_2 = drop_item_list[stage_name]
+            stage_to_drop[stage_name] = dict()
+            stage_to_drop[stage_name][item_1] = prob_1
+            stage_to_drop[stage_name][item_2] = prob_2
+            stage_to_drop[stage_name].pop(None, None)
+
+        data = []
+        for stage_name, item_dict in stage_to_drop.items():
+            item_1, item_2 = drop_item_list[stage_name]
+            data.append((stage_name, item_1, item_dict.get(item_1, None), item_2, item_dict.get(item_2, None)))
+
+        conn = sqlite3.connect("db/master.db")
+        cur = conn.cursor()
+        cur.executemany("""INSERT OR REPLACE INTO
+                            drop_table(area, item_1_name, item_1_drop_rate, item_2_name, item_2_drop_rate)
+                            VALUES (?, ?, ?, ?, ?)""", data)
+        conn.commit()
+        conn.close()
+
+        self._resourceMaster["StageToDrop"] = stage_to_drop
+
+
+
+class UpdateDropTableDialog(QDialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setFixedSize(400, 300)
+        self.setWindowTitle("로딩중...")
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowTitleHint)
+
+        layout = QVBoxLayout()
+        layout.setSpacing(10)
+        layout.setContentsMargins(10, 10, 10, 10)
+        label = QLabel()
+        self.movie = QMovie("icon/loading.gif")
+        self.movie.setCacheMode(QMovie.CacheAll)
+        self.movie.setScaledSize(self.movie.scaledSize() * 0.75)
+        label.setMovie(self.movie)
+        label.setAlignment(Qt.AlignHCenter)
+        layout.addWidget(label)
+
+        layout.addSpacing(20)
+        
+        label = QLabel("드랍 테이블 로딩중...학교. 푸흡.")
+        label.setStyleSheet('font: 18pt "ONE Mobile POP";')
+        label.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        layout.addWidget(label)
+
+        label = QLabel("교주님, 10초 정도 걸려요.")
+        label.setStyleSheet('font: 12pt "ONE Mobile POP";')
+        label.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
+        layout.addWidget(label)
+
+        self.setLayout(layout)
+    
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.movie.start()
+    
+    def closeEvent(self, event):
+        self.movie.stop()
+        super().closeEvent(event)
+
         

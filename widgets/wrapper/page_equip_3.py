@@ -34,23 +34,19 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         self.lecture_level.setValidator(QIntValidator(0, 25, self.lecture_level))
         self.cur_standard.setValidator(QIntValidator(0, 999999, self.cur_standard))
 
-        self.update_btn.clicked.connect(self.updateDropTable)
+        self.update_btn.clicked.connect(self.window().updateDropTable)
         self.calc_btn.clicked.connect(self.calculate)
 
         self.dialog = EquipDialog()
 
 
     def loadUserData(self):
-        # updateGoalList
-        res = self.window().resource
-        goal_list = res.userGet("GoalList")
+        self.updateGoalList()
+        self.loadCalcSettings()
 
-        self.goal_list.clear()
-        self.goal_list.addItems(goal_list)
-        self.goal_list.setCurrentIndex(0)
 
-        # loadCalcSettings
-        calc_settings = res.userGet("CalcSettings")
+    def loadCalcSettings(self):
+        calc_settings = self.window().resource.userGet("CalcSettings")
         for setting_name in self.setting_name_list:
             if setting_name not in calc_settings:
                 # Initialize default value
@@ -68,6 +64,15 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                     getattr(self, setting_name.split("_yes")[0]+"_no").setChecked(True)
             else:
                 widget.setText(str(value))
+
+
+    def updateGoalList(self):
+        res = self.window().resource
+        goal_list = res.userGet("GoalList")
+
+        self.goal_list.clear()
+        self.goal_list.addItems(goal_list)
+        self.goal_list.setCurrentIndex(0)
     
 
     def updateDropTable(self):
@@ -77,7 +82,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
 
         # make dict of drop item list
         drop_item_list = dict()
-        self.stage_to_prob = dict()
+        self.stage_to_drop = dict()
         df = pd.read_excel(url, sheet_name="아이템 이름", usecols="A,E:F")
         df = df.replace({np.nan: None})
         for (_, row) in df.iterrows():
@@ -92,13 +97,13 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             prob_1 = None if type(prob_1)==str else prob_1
             prob_2 = None if type(prob_2)==str else prob_2
             item_1, item_2 = drop_item_list[stage_name]
-            self.stage_to_prob[stage_name] = dict()
-            self.stage_to_prob[stage_name][item_1] = prob_1
-            self.stage_to_prob[stage_name][item_2] = prob_2
-            self.stage_to_prob[stage_name].pop(None, None)
+            self.stage_to_drop[stage_name] = dict()
+            self.stage_to_drop[stage_name][item_1] = prob_1
+            self.stage_to_drop[stage_name][item_2] = prob_2
+            self.stage_to_drop[stage_name].pop(None, None)
 
         data = []
-        for stage_name, item_dict in self.stage_to_prob.items():
+        for stage_name, item_dict in self.stage_to_drop.items():
             item_1, item_2 = drop_item_list[stage_name]
             data.append((stage_name, item_1, item_dict.get(item_1, None), item_2, item_dict.get(item_2, None)))
 
@@ -107,24 +112,6 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                            drop_table(area, item_1_name, item_1_drop_rate, item_2_name, item_2_drop_rate)
                            VALUES (?, ?, ?, ?, ?)""", data)
         main_window.conn_master.commit()
-    
-    # load data from drop_table and save to self.stage_to_prob if not exists
-    def loadDropTable(self):
-        if hasattr(self, "stage_to_prob"):
-            return
-        main_window = self.window()
-        cur_master: sqlite3.Cursor = main_window.conn_master.cursor()
-        cur_master.execute("SELECT * FROM drop_table")
-        self.stage_to_prob = dict()
-        for row in cur_master:
-            stage_name = row[0]
-            self.stage_to_prob[stage_name] = dict()
-            for i in range(0,4,2):
-                item_name = row[i+1]
-                drop_rate = row[i+2]
-                if item_name is None:
-                    continue
-                self.stage_to_prob[stage_name][item_name] = drop_rate
 
 
     def calculate(self):
@@ -133,19 +120,19 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         except:
             QMessageBox.critical(self, "Error", "입력값이 범위에 맞는지 확인해주세요.")
             return
+        
+        main = self.window()
+        res: ResourceManager = main.resource
+
         if self.auto_update_yes.isChecked():
-            self.updateDropTable()
-        self.loadDropTable()
-        stage_to_prob = deepcopy(self.stage_to_prob)
+            main.updateDropTable()
+        stage_to_drop = deepcopy(res.masterGet("StageToDrop"))
         if self.round_yes.isChecked():
-            for _, item_dict in stage_to_prob.items():
+            for _, item_dict in stage_to_drop.items():
                 for item_name, drop_rate in item_dict.items():
                     item_dict[item_name] = round(drop_rate * 2, 1) / 2
 
         # Calculate needs
-        main = self.window()
-        res: ResourceManager = main.resource
-        cur_user: sqlite3.Cursor = main.conn_user.cursor()
         hero_id_to_equip_ids = res.masterGet("HeroIdToEquipIds")
         recipe = res.masterGet("Recipe")
         needs_each_equip = defaultdict(int)
@@ -214,14 +201,14 @@ class PageEquip3(Ui_page_equip_3, QWidget):
 
         # Set LpProblem
         model = pulp.LpProblem('test_lp', pulp.LpMinimize)
-        x = pulp.LpVariable.dicts('면제 횟수', stage_to_prob, lowBound=0)
+        x = pulp.LpVariable.dicts('면제 횟수', stage_to_drop, lowBound=0)
         if use_standard:
             y = pulp.LpVariable.dicts('정석 개수', needs_each_item, lowBound=0)
         
         constraints = dict()
         for item_name, count in needs_each_item.items():
             exp = pulp.LpAffineExpression()
-            for stage_name, prob_dict in stage_to_prob.items():
+            for stage_name, prob_dict in stage_to_drop.items():
                 if item_name in prob_dict:
                     exp += prob_dict[item_name] * x[stage_name]
             if use_standard:
@@ -304,7 +291,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                         stage = False
 
                     if stage:
-                        tmp_res.append((name, val * stage_to_prob[name][k]/expval * 100))
+                        tmp_res.append((name, val * stage_to_drop[name][k]/expval * 100))
                     else:
                         tmp_res.append(("정석", val / self.name_to_num_standard(k) / expval * 100))
             tmp_res.sort(key=lambda x: x[1], reverse=True)
