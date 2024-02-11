@@ -199,6 +199,7 @@ class ResourceManager:
         for (stage, item_1, item_1_drop_rate, item_2, item_2_drop_rate) in cur:
             stage_to_drop[stage][item_1] = item_1_drop_rate
             stage_to_drop[stage][item_2] = item_2_drop_rate
+            stage_to_drop[stage].pop(None, None)
         self._resourceMaster["StageToDrop"] = stage_to_drop
 
         # HeroDefaultOrder
