@@ -38,9 +38,8 @@ class Sidebar(Ui_sidebar, QWidget):
         self.updateLocalAccountList(False)
         # connect changeAccount with account_list only when user select account from account_list
         self.account_list.activated.connect(self.changeAccount)
-
-        # self.account_list.currentIndexChanged.connect(self.changeAccount)
         self.account_setting_btn.clicked.connect(self.openAccountSettings)
+        self.setting_btn.clicked.connect(self.openSettings)
 
 
     def showSubmenu(self, clicked_menu_name):
@@ -80,6 +79,8 @@ class Sidebar(Ui_sidebar, QWidget):
 
 
     def openAccountSettings(self):
-        main_window = self.window()
-        new_window: AccountSettings = main_window.account_settings
-        new_window.show()
+        self.window().account_settings.show()
+    
+
+    def openSettings(self):
+        self.window().setting_window.show()

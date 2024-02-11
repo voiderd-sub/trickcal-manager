@@ -357,7 +357,7 @@ class PageEquip1(Ui_page_equip_1, QWidget):
 
         if hero_id in self.hero_name_to_goal_data_tmp:
             goal_idx = self.cur_goal.currentIndex() + 1
-            res.userGet("GoalEquip")[goal_idx] = self.hero_name_to_goal_data_tmp[hero_id]
+            res.userGet("GoalEquip")[goal_idx][hero_id] = self.hero_name_to_goal_data_tmp[hero_id]
             rank, equips = self.hero_name_to_goal_data_tmp[hero_id]
             equips = ",".join([str(i) for i in list(equips)]) if len(equips)!=0 else None
             cur_user.execute("REPLACE INTO user_goal_equip VALUES (?, ?, ?, ?)",
