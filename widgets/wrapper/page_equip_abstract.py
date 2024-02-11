@@ -75,6 +75,7 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
     def goalListChanged(self):
         self.updateGoalList()
         self.updateEquipState()
+        self.updateEquipStatAbstract()
     
 
     def updateGoalList(self):

@@ -326,6 +326,8 @@ class PageEquip1(Ui_page_equip_1, QWidget):
             cur_user.executemany("REPLACE INTO user_goal_equip(goal_id, hero_id, rank, equips) VALUES (?, ?, ?, ?)", data)
 
         main.conn_user.commit()
+        main.changeEquipCascade()
+
     
 
     # undo all changes in tmp
@@ -364,6 +366,8 @@ class PageEquip1(Ui_page_equip_1, QWidget):
                              (goal_idx, hero_id, rank, equips))
             main.conn_user.commit()
             del self.hero_name_to_goal_data_tmp[hero_id]
+        
+        main.changeEquipCascade()
     
 
     # undo tmp changes of current page

@@ -234,6 +234,9 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         self.page_equip_2.reloadData()
         self.page_equip_3.loadUserData()
     
+    def changeEquipCascade(self):
+        self.page_equip_abstract.goalListChanged()
+    
     def changeExtrinsicStarsCascade(self):
         self.resource.delete("HeroIdToStarExtrinsic")
     

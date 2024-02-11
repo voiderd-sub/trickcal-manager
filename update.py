@@ -30,6 +30,9 @@ def main():
             if fname != "master.db":
                 shutil.copy(f"_internal/db/{fname}", f"update_tmp/_internal/db/{fname}")
         
+        # remove _internal folder
+        shutil.rmtree("_internal")
+        
         # move all folder and files in update_tmp to . (except ../update.exe)
         for fname in os.listdir("update_tmp"):
             if fname != "update.exe":
@@ -43,7 +46,7 @@ def main():
 
         if os.path.exists("_internal/db/config.yaml"):
             with open('_internal/db/config.yaml', 'r') as f:
-                config = yaml.load(f)
+                config = yaml.load(f, Loader=yaml.FullLoader)
 
             config["last_version_check"] = datetime.now()
             with open('_internal/db/config.yaml', 'w') as f:
