@@ -360,7 +360,7 @@ class Ui_sidebar(object):
         self.equip_sub_btn_1.setText(QCoreApplication.translate("sidebar", u"\ucc29\uc6a9 \uc7a5\ube44 \ubc0f \ubaa9\ud45c \uc124\uc815", None))
         self.equip_sub_btn_2.setText(QCoreApplication.translate("sidebar", u"\ubcf4\uc720 \uc7a5\ube44 \uc7ac\ub8cc", None))
         self.equip_sub_btn_3.setText(QCoreApplication.translate("sidebar", u"\ud30c\ubc0d \ub3d9\uc120 \uacc4\uc0b0", None))
-        self.crayon_btn.setText(QCoreApplication.translate("sidebar", u"\ubcf4\ub4dc (\uc900\ube44\uc911)", None))
+        self.crayon_btn.setText(QCoreApplication.translate("sidebar", u"\ubcf4\ub4dc", None))
         self.crayon_sub_btn_1.setText(QCoreApplication.translate("sidebar", u"\ubcf4\ub4dc\uc791 \ud604\ud669", None))
         self.crayon_sub_btn_2.setText(QCoreApplication.translate("sidebar", u"\ud669\ud06c\uce78 \ucc0d\ub294 \ube44\uc6a9 \uacc4\uc0b0", None))
         self.food_btn.setText(QCoreApplication.translate("sidebar", u"\ud638\uac10\ub3c4 (\uc900\ube44\uc911)", None))

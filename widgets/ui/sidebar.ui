@@ -313,7 +313,7 @@
       </font>
      </property>
      <property name="text">
-      <string>보드 (준비중)</string>
+      <string>보드</string>
      </property>
      <property name="icon">
       <iconset>
@@ -792,10 +792,10 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="crayon_group"/>
-  <buttongroup name="equip_group"/>
-  <buttongroup name="lab_group"/>
   <buttongroup name="food_group"/>
   <buttongroup name="main_menu_group"/>
+  <buttongroup name="crayon_group"/>
+  <buttongroup name="lab_group"/>
+  <buttongroup name="equip_group"/>
  </buttongroups>
 </ui>
