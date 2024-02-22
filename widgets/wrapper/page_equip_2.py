@@ -89,8 +89,9 @@ class PageEquip2(Ui_page_equip_2, QWidget):
     def saveData(self):
         main = self.window()
         res = main.resource
-        cur_user: sqlite3.Cursor = self.window().conn_user.cursor()
+        cur_user: sqlite3.Cursor = main.conn_user.cursor()
         equip_name_to_id = res.masterGet("EquipNameToId")
+
         # iterate material table and update user_items
         for row_idx in range(14):
             for col_idx in range(res.masterGet("MaxRank")-1):
@@ -100,6 +101,7 @@ class PageEquip2(Ui_page_equip_2, QWidget):
                 suffix = "조각" if row_idx // 7 == 0 else "도안"
                 name = f"{prefix} {suffix}({col_idx+2}티어)"
                 cur_user.execute("UPDATE user_items SET count=? WHERE name=?", (count, name))
+        res.delete("UserItems")
         
         # iterate bag_equip table and update user_bag_equips
         cur_user.execute("DELETE FROM user_bag_equips")
@@ -112,8 +114,9 @@ class PageEquip2(Ui_page_equip_2, QWidget):
             if equip_id is None:
                 continue
             cur_user.execute("INSERT INTO user_bag_equips VALUES (?, ?)", (equip_id, count))
+        res.delete("BagEquips")
         
-        self.window().conn_user.commit()
+        main.conn_user.commit()
 
 
     def reloadData(self):
@@ -151,9 +154,8 @@ class PageEquip2(Ui_page_equip_2, QWidget):
     
 
     def loadEquip(self):
-        cur_user: sqlite3.Cursor = self.window().conn_user.cursor()
-        cur_user.execute("SELECT * from user_bag_equips")
-        for (equip_id, count) in cur_user:
+        bag_equips = self.window().resource.userGet("BagEquips")
+        for (equip_id, count) in bag_equips.items():
             self.addEquip(equip_id, count)
 
     
@@ -164,10 +166,9 @@ class PageEquip2(Ui_page_equip_2, QWidget):
                 self.material_table.setItem(row_idx, col_idx, item)
                 item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
         
-        cur_user: sqlite3.Cursor = self.window().conn_user.cursor()
-        cur_user.execute("SELECT * from user_items")
+        user_items = self.window().resource.userGet("UserItems")
 
-        for (name, count) in cur_user:
+        for (name, count) in user_items.items():
             name = name.split("(")
             rank = int(name[1].rstrip("티어)"))
 
