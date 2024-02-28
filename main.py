@@ -31,8 +31,7 @@ BRANCH = "main"
 
 def downloadIcons():
     # URL of the zip file on GitHub
-    branch = BRANCH
-    zip_url = f"https://github.com/voiderd-sub/trickcal-manager/raw/{branch}/icon.zip"
+    zip_url = f"https://github.com/{USERNAME}/{REPO}/raw/{BRANCH}/icon.zip"
     
     # Local file paths
     response = requests.get(zip_url)
