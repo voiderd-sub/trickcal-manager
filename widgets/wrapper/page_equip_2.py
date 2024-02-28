@@ -17,6 +17,7 @@ class PageEquip2(Ui_page_equip_2, QWidget):
         self.setInitialState()
 
     def setInitialState(self):
+        self.reload = dict()
         # load db data
         main = self.window()
         res = main.resource
@@ -186,3 +187,16 @@ class PageEquip2(Ui_page_equip_2, QWidget):
             if count != 0:
                 item.setText(str(count))
             item.setFlags(item.flags() | Qt.ItemIsEnabled)
+    
+
+    def reloadPage(self):
+        if not any(self.reload.values()):
+            return
+        
+        if self.reload.get("master", False):
+            self.loadMaterialTableColumns()
+            self.reloadData()
+        elif self.reload.get("account", False):
+            self.reloadData()
+        
+        self.reload = dict()

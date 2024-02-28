@@ -36,6 +36,8 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
         self.updateGoalList()
         self.updateEquipState()
 
+        self.reload = dict()
+
 
     def updateEquipStatAbstract(self):
         # load current equip state
@@ -70,12 +72,6 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
             getattr(self, f"rate{name_en}").setText(f"({ratio})")
         
         self.rateAll.setText(f"{cur_cnt * 100 / all_cnt:.1f}%")
-
-
-    def goalListChanged(self):
-        self.updateGoalList()
-        self.updateEquipState()
-        self.updateEquipStatAbstract()
     
 
     def updateGoalList(self):
@@ -220,3 +216,13 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
     def showModeChanged(self):
         if self.goal_list.currentIndex() != 0:
             self.updateEquipState()
+    
+
+    def reloadPage(self):
+        if not any(self.reload.values()):
+            return
+        
+        self.updateGoalList()
+        self.updateEquipStatAbstract()
+        self.updateEquipState()
+        self.reload = dict()

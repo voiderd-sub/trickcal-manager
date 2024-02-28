@@ -84,6 +84,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Connect btns with pages with each page
         for i, name in enumerate(self.sidebar.btn_with_pages):
             btn=getattr(self.sidebar, name)
+            page_name = "page_" + name[:-4]
+            page = getattr(self, page_name)
+            if hasattr(page, "reloadPage"):
+                btn.clicked.connect(page.reloadPage)
             btn.clicked.connect(partial(self.stacked_window.setCurrentIndex, i))
     
 
@@ -220,37 +224,42 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
 
     def updateGoalList(self):
         self.resource.delete("GoalList")
-        self.page_equip_abstract.goalListChanged()
-        self.page_equip_1.updateGoalNameList()
-        self.page_equip_3.updateGoalList()
+        need_to_update_list = ["page_equip_abstract", "page_equip_1", "page_equip_3"]
+        self.changeReloadState(need_to_update_list, "goal")
+
 
     def changeAccountCascade(self):
         self.userDBInit()
         self.resource.deleteAll(user=True)
-        self.page_hero.updateTable()
-        self.page_equip_abstract.goalListChanged()
-        self.page_equip_1.changeAccount()
-        self.page_equip_2.reloadData()
-        self.page_equip_3.loadUserData()
+        need_to_update_list = ["page_hero", "page_equip_abstract", "page_equip_1", "page_equip_2", "page_equip_3"]
+        self.changeReloadState(need_to_update_list, "account")
+
     
     def changeEquipCascade(self):
-        self.page_equip_abstract.goalListChanged()
-    
+        need_to_update_list = ["page_equip_abstract"]
+        self.changeReloadState(need_to_update_list, "equip")
+
+
     def changeExtrinsicStarsCascade(self):
         self.resource.delete("HeroIdToStarExtrinsic")
-    
+
+
     def masterDBUpdateCascade(self):
         self.masterDBInit(force=True)
-        self.resource.deleteAll(master=True)
+        self.resource.deleteAll(user=True, master=True)
         self.resource.masterInit()
-        self.page_hero.constructTable()
-        self.page_equip_abstract.goalListChanged()
-        self.page_equip_1.masterDBUpdated()
-        self.page_equip_2.loadMaterialTableColumns()
-        self.page_equip_2.reloadData()
-        
-        # TODO : update hero list of page_crayon_1
-    
+        need_to_update_list = ["page_hero", "page_equip_abstract", "page_equip_1", "page_equip_2"]
+        self.changeReloadState(need_to_update_list, "master")
+
+
+    def changeReloadState(self, need_to_reload, reason):
+        for name in need_to_reload:
+            page = getattr(self, name)
+            page.reload[reason] = True
+        current_page = self.stacked_window.currentWidget()
+        if hasattr(current_page, "reloadPage"):
+            current_page.reloadPage()
+
 
     def updateProgram(self, auto):
         api_url = f"https://api.github.com/repos/{USERNAME}/{REPO}/"

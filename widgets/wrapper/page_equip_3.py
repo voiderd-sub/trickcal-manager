@@ -23,6 +23,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         self.setInitialState()
 
     def setInitialState(self):
+        self.reload = dict()
         self.setting_name_list = ["auto_update_yes", "use_equip_yes", "hallow_13_yes",
                                   "research_level","candy_buying", "use_standard_yes",
                                   "daily_elleaf_yes", "lecture_level", "cur_standard",
@@ -356,3 +357,16 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         suffix = self.window().pr_to_id[suffix]
         
         return (-rank, prefix, suffix)
+    
+
+    def reloadPage(self):
+        if not any(self.reload.values()):
+            return
+        
+        if self.reload.get("account", False):
+            self.loadUserData()
+
+        elif self.reload.get("goal", False):
+            self.updateGoalList()
+        
+        self.reload = dict()

@@ -53,6 +53,7 @@ class PageHero(Ui_page_hero, QWidget):
 
 
     def setInitialState(self):
+        self.reload = dict()
         table = self.hero_table
         self.hero_name_to_original_star_ex = dict()
 
@@ -183,3 +184,16 @@ class PageHero(Ui_page_hero, QWidget):
             item: NonScrollComboBox = self.hero_table.cellWidget(i,2).comboBox
             original_ex = self.hero_name_to_original_star_ex[self.hero_table.item(i,1).text()]
             item.setCurrentText(original_ex)
+    
+
+    def reloadPage(self):
+        if not any(self.reload.values()):
+            return
+        
+        if self.reload.get("master", False):
+            self.constructTable()
+
+        elif self.reload.get("account", False):
+            self.updateTable()
+
+        self.reload = dict()

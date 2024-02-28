@@ -21,6 +21,7 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         
 
     def setInitialState(self):
+        self.reload = dict()
         main = self.window()
         res = main.resource
 
@@ -459,13 +460,32 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         self.updateCurrentEquipTalbe()
 
 
-    # Reload equip & goal data from db, then update the table
-    def changeAccount(self):
-        self.user_equip_data_tmp = dict()
-        self.last_hero_name = None
-        self.updateGoalNameList()
+    # # Reload equip & goal data from db, then update the table
+    # def changeAccount(self):
+    #     self.user_equip_data_tmp = dict()
+    #     self.last_hero_name = None
+    #     self.updateGoalNameList()
 
     
-    def masterDBUpdated(self):
-        self.setupTable()
-        self.updateHeroList()
+    # def masterDBUpdated(self):
+    #     self.setupTable()
+    #     self.updateHeroList()
+
+    
+    def reloadPage(self):
+        if not any(self.reload.values()):
+            return
+        
+        if self.reload.get("account", False):
+            self.user_equip_data_tmp = dict()
+            self.last_hero_name = None
+            self.updateGoalNameList()
+        
+        elif self.reload.get("master", False):
+            self.setupTable()
+            self.updateHeroList()
+        
+        elif self.reload.get("goal", False):
+            self.updateGoalNameList()
+        
+        self.reload = dict()

@@ -18,8 +18,8 @@ class Sidebar(Ui_sidebar, QWidget):
         self.sub_menu_dict = dict()
         self.menu_names = ["home", "hero", "equip", "crayon", "food", "lab"]
 
-        f = lambda x: [x[0]+"_sub_btn_"+str(i) for i in range(1, x[1]+1)]
-        self.btn_with_pages = ["home_btn", "hero_btn", "equip_sub_btn_abstract"]\
+        f = lambda x: [f"{x[0]}_{i}_btn" for i in range(1, x[1]+1)]
+        self.btn_with_pages = ["home_btn", "hero_btn", "equip_abstract_btn"]\
                             +f(("equip",3)) + f(("crayon",2)) + f(("food",3)) + f(("lab",3))
         
         for name in self.menu_names:
@@ -37,7 +37,7 @@ class Sidebar(Ui_sidebar, QWidget):
         
         self.updateLocalAccountList(False)
         # connect changeAccount with account_list only when user select account from account_list
-        self.account_list.activated.connect(self.changeAccount)
+        self.account_list.activated.connect(lambda: self.changeAccount(account_list_changed=False))
         self.account_setting_btn.clicked.connect(self.openAccountSettings)
         self.setting_btn.clicked.connect(self.openSettings)
 
@@ -59,7 +59,7 @@ class Sidebar(Ui_sidebar, QWidget):
                 sub.hide()
 
 
-    def changeAccount(self, account_list_changed=False):
+    def changeAccount(self, account_list_changed):
         main_window = self.window()
         config = main_window.config
         selected_idx = self.account_list.currentIndex()
@@ -75,7 +75,7 @@ class Sidebar(Ui_sidebar, QWidget):
         self.account_list.clear()
         self.account_list.addItems(config["account_list"])
         self.account_list.setCurrentIndex(config["cur_account_idx"])
-        self.changeAccount(is_not_init)
+        self.changeAccount(account_list_changed=is_not_init)
 
 
     def openAccountSettings(self):
