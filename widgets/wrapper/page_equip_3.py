@@ -135,6 +135,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         # Calculate needs
         hero_id_to_equip_ids = res.masterGet("HeroIdToEquipIds")
         recipe = res.masterGet("Recipe")
+        rank_to_standard = res.masterGet("RankToStandard")
         needs_each_equip = defaultdict(int)
         needs_each_type = defaultdict(lambda: defaultdict(int))
         needs_each_item = defaultdict(int)
@@ -145,11 +146,11 @@ class PageEquip3(Ui_page_equip_3, QWidget):
 
         for hero_id, (goal_rank, goal_equips) in goal_equip.items():
             cur_rank, cur_equips = cur_equip.get(hero_id, (1, set()))
-            for rank in range(cur_rank, goal_rank+1):
-                goal_equips_this_rank = goal_equips if rank == goal_rank else set(range(1,7))
-                cur_equips_this_rank = cur_equips if rank == cur_rank else set()
+            for item_rank in range(cur_rank, goal_rank+1):
+                goal_equips_this_rank = goal_equips if item_rank == goal_rank else set(range(1,7))
+                cur_equips_this_rank = cur_equips if item_rank == cur_rank else set()
                 for order_idx in list(goal_equips_this_rank - cur_equips_this_rank):
-                    equip_id = hero_id_to_equip_ids[hero_id][rank][order_idx - 1]
+                    equip_id = hero_id_to_equip_ids[hero_id][item_rank][order_idx - 1]
                     needs_each_equip[equip_id] += 1
 
         if self.use_equip_yes.isChecked():
@@ -164,12 +165,12 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         equip_id_to_rank_and_type = res.masterGet("EquipIdToRankAndType")
 
         for equip_id, count in needs_each_equip.items():
-            rank, type_id = equip_id_to_rank_and_type[equip_id]
-            needs_each_type[rank][type_id] += count
+            item_rank, type_id = equip_id_to_rank_and_type[equip_id]
+            needs_each_type[item_rank][type_id] += count
 
-        for rank in needs_each_type:
-            for type_id, count in needs_each_type[rank].items():
-                for item_name, item_count in recipe[(rank, type_id)].items():
+        for item_rank in needs_each_type:
+            for type_id, count in needs_each_type[item_rank].items():
+                for item_name, item_count in recipe[(item_rank, type_id)].items():
                     needs_each_item[item_name] += item_count * count
 
         user_items = res.userGet("UserItems")
@@ -212,7 +213,8 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                 if item_name in prob_dict:
                     exp += prob_dict[item_name] * x[stage_name]
             if use_standard:
-                exp += (1 / self.name_to_num_standard(item_name)) * y[item_name]
+                item_rank = int(item_name.split("(")[1].rstrip("티어)"))
+                exp += (1 / rank_to_standard[item_rank]) * y[item_name]
             constraints[item_name] = exp
             model += exp >= needs_each_item[item_name]
         candy_days = pulp.LpVariable('왕사탕', lowBound=0)
@@ -293,7 +295,8 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                     if stage:
                         tmp_res.append((name, val * stage_to_drop[name][k]/expval * 100))
                     else:
-                        tmp_res.append(("정석", val / self.name_to_num_standard(k) / expval * 100))
+                        rank = int(k.split("(")[1].rstrip("티어)"))
+                        tmp_res.append(("정석", val / rank_to_standard[rank] / expval * 100))
             tmp_res.sort(key=lambda x: x[1], reverse=True)
             for name, val in tmp_res:
                 partial_res+=f"{name} : {val:.1f}%\n"
@@ -333,15 +336,6 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             cur_user.execute("INSERT OR REPLACE INTO calc_settings (setting_name, value) VALUES (?, ?)", (setting_name, value))
         main.conn_user.commit()
         main.resource.delete("CalcSettings")
-    
-
-    def name_to_num_standard(self, name):
-        tier = int(name.split("티어")[0].split("(")[-1])
-        if tier == 3: return 6
-        if tier == 4: return 10
-        elif tier == 5: return 12
-        elif tier == 6 : return 14
-        return 22
     
 
     def material_name_to_id(self, name):

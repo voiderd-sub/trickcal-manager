@@ -135,7 +135,7 @@ class PageEquip2(Ui_page_equip_2, QWidget):
 
         box = ExtendedComboBox(ignoreWheel=True)
         box.setCompleterFont(12)
-        box.addItems(self.window().resource.masterGet("EquipNameToId").keys())
+        box.addItems(self.window().resource.masterGet("EquipNameDefaultOrder"))
         if idx is None:
             box.setCurrentText("")
         else:
@@ -154,10 +154,13 @@ class PageEquip2(Ui_page_equip_2, QWidget):
     
 
     def loadEquip(self):
-        bag_equips = self.window().resource.userGet("BagEquips")
-        for (equip_id, count) in bag_equips.items():
-            self.addEquip(equip_id, count)
-
+        res = self.window().resource
+        bag_equips = res.userGet("BagEquips")
+        equip_default_order = res.masterGet("EquipDefaultOrder")
+        equip_order_cnt_list = [(equip_default_order[equip_id], cnt) for equip_id, cnt in bag_equips.items()]
+        equip_order_cnt_list.sort(key=lambda x: x[0])
+        for order, cnt in equip_order_cnt_list:
+            self.addEquip(order, cnt)
     
     def loadMaterial(self):
         for row_idx in range(14):
