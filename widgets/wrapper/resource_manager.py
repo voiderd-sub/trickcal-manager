@@ -150,18 +150,24 @@ class ResourceManager:
         self._resourceMaster["HeroIdToEquipIds"] = hero_id_to_equip_ids
         self._resourceMaster["HeroNameToEquipNames"] = hero_name_to_equip_names
 
-        # EquipIdToName, EquipNameToId
+        # EquipIdToName, EquipNameToId, EquipDefaultOrder
         equip_id_to_rank_n_type = dict()
         equip_id_to_name = dict()
         equip_name_to_id = dict()
-        cur.execute("SELECT id, name, rank, type FROM equipment")
+        equip_default_order = dict()
+        equip_name_default_order = list()
+        cur.execute("SELECT id, name, rank, type FROM equipment ORDER BY rank ASC, type ASC, name ASC")
         for (id, name, rank, type) in cur:
             equip_id_to_rank_n_type[id] = (rank, type)
             equip_id_to_name[id] = name
             equip_name_to_id[name] = id
+            equip_default_order[id] = len(equip_default_order) + 1
+            equip_name_default_order.append(name)
         self._resourceMaster["EquipIdToRankAndType"] = equip_id_to_rank_n_type
         self._resourceMaster["EquipIdToName"] = equip_id_to_name
         self._resourceMaster["EquipNameToId"] = equip_name_to_id
+        self._resourceMaster["EquipDefaultOrder"] = equip_default_order
+        self._resourceMaster["EquipNameDefaultOrder"] = equip_name_default_order
 
         # Recipe
         cur.execute("SELECT * from equipment_recipe")
@@ -174,6 +180,11 @@ class ResourceManager:
                     continue
                 recipe[(rank, type)][name] = count
         self._resourceMaster["Recipe"] = recipe
+
+        # RankToStandard
+        cur.execute("SELECT rank, standard FROM rank_standard")
+        rank_to_standard = {rank: standard for (rank, standard) in cur}
+        self._resourceMaster["RankToStandard"] = rank_to_standard
 
         # RankStatType
         cur.execute("SELECT id, rank, stat_1_id, stat_1_value, stat_2_id, stat_2_value FROM rank_stat_type")
