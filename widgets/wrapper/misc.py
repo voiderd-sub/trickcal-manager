@@ -141,6 +141,22 @@ class MaterialTableWidget(QTableWidget):
         self.setItemDelegate(MaterialTableDelegate())
 
 
+class BoardTableDelegate(QStyledItemDelegate):
+    def initStyleOption(self, option, index):
+        super(BoardTableDelegate, self).initStyleOption(option, index)
+
+        if not index.model().flags(index) & Qt.ItemIsEnabled:
+            option.backgroundBrush = QColor(227, 227, 227)  # Set the background color for disabled items
+
+
+class BoardTableWidget(QTableWidget):
+    def __init__(self, *args, **kwargs):
+        super(BoardTableWidget, self).__init__(*args, **kwargs)
+
+        # Set the item delegate to the customized delegate
+        self.setItemDelegate(BoardTableDelegate())
+
+
 # FlowLayout for wrapping widgets
 class FlowLayout(QLayout):
     def __init__(self, parent=None, margin=-1, hspacing=-1, vspacing=-1):

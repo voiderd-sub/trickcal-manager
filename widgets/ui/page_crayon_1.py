@@ -18,15 +18,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
     QGroupBox, QHBoxLayout, QHeaderView, QLabel,
     QPushButton, QRadioButton, QSizePolicy, QSpacerItem,
-    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+    QTableWidgetItem, QVBoxLayout, QWidget)
 
-from widgets.wrapper.misc import ExtendedComboBox
+from widgets.wrapper.misc import (BoardTableWidget, ExtendedComboBox)
 
 class Ui_page_crayon_1(object):
     def setupUi(self, page_crayon_1):
         if not page_crayon_1.objectName():
             page_crayon_1.setObjectName(u"page_crayon_1")
-        page_crayon_1.resize(800, 633)
+        page_crayon_1.resize(964, 857)
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -82,18 +82,23 @@ class Ui_page_crayon_1(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.go_left_btn = QPushButton(page_crayon_1)
         self.go_left_btn.setObjectName(u"go_left_btn")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.go_left_btn.sizePolicy().hasHeightForWidth())
         self.go_left_btn.setSizePolicy(sizePolicy2)
+        self.go_left_btn.setMinimumSize(QSize(0, 370))
         self.go_left_btn.setMaximumSize(QSize(30, 16777215))
         self.go_left_btn.setFont(font1)
 
         self.horizontalLayout.addWidget(self.go_left_btn)
 
-        self.board_table = QTableWidget(page_crayon_1)
+        self.board_table = BoardTableWidget(page_crayon_1)
         self.board_table.setObjectName(u"board_table")
+        sizePolicy1.setHeightForWidth(self.board_table.sizePolicy().hasHeightForWidth())
+        self.board_table.setSizePolicy(sizePolicy1)
+        self.board_table.setMinimumSize(QSize(0, 370))
+        self.board_table.setMaximumSize(QSize(16777215, 350))
         font3 = QFont()
         font3.setFamilies([u"ONE Mobile POP"])
         font3.setPointSize(10)
@@ -106,6 +111,7 @@ class Ui_page_crayon_1(object):
         self.go_right_btn.setObjectName(u"go_right_btn")
         sizePolicy2.setHeightForWidth(self.go_right_btn.sizePolicy().hasHeightForWidth())
         self.go_right_btn.setSizePolicy(sizePolicy2)
+        self.go_right_btn.setMinimumSize(QSize(0, 370))
         self.go_right_btn.setMaximumSize(QSize(30, 16777215))
         self.go_right_btn.setFont(font1)
 
@@ -113,6 +119,167 @@ class Ui_page_crayon_1(object):
 
 
         self.verticalLayout.addLayout(self.horizontalLayout)
+
+        self.verticalSpacer_3 = QSpacerItem(20, 30, QSizePolicy.Minimum, QSizePolicy.Fixed)
+
+        self.verticalLayout.addItem(self.verticalSpacer_3)
+
+        self.currency_widget = QGroupBox(page_crayon_1)
+        self.currency_widget.setObjectName(u"currency_widget")
+        font4 = QFont()
+        font4.setFamilies([u"ONE Mobile POP"])
+        font4.setPointSize(14)
+        self.currency_widget.setFont(font4)
+        self.horizontalLayout_8 = QHBoxLayout(self.currency_widget)
+        self.horizontalLayout_8.setSpacing(40)
+        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
+        self.horizontalLayout_8.setContentsMargins(20, 10, 20, 10)
+        self.widget = QWidget(self.currency_widget)
+        self.widget.setObjectName(u"widget")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy3.setHorizontalStretch(2)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
+        self.widget.setSizePolicy(sizePolicy3)
+        self.verticalLayout_5 = QVBoxLayout(self.widget)
+        self.verticalLayout_5.setSpacing(15)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setSpacing(10)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.IconGold = QLabel(self.widget)
+        self.IconGold.setObjectName(u"IconGold")
+        self.IconGold.setFont(font4)
+
+        self.horizontalLayout_2.addWidget(self.IconGold)
+
+        self.ValueGold = QLabel(self.widget)
+        self.ValueGold.setObjectName(u"ValueGold")
+        self.ValueGold.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+
+        self.horizontalLayout_2.addWidget(self.ValueGold)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_2)
+
+        self.horizontalLayout_7 = QHBoxLayout()
+        self.horizontalLayout_7.setSpacing(10)
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.LabelEraser1 = QLabel(self.widget)
+        self.LabelEraser1.setObjectName(u"LabelEraser1")
+        self.LabelEraser1.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+
+        self.horizontalLayout_7.addWidget(self.LabelEraser1)
+
+        self.ValueEraserGold = QLabel(self.widget)
+        self.ValueEraserGold.setObjectName(u"ValueEraserGold")
+        self.ValueEraserGold.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_7.addWidget(self.ValueEraserGold)
+
+        self.LabelEraser2 = QLabel(self.widget)
+        self.LabelEraser2.setObjectName(u"LabelEraser2")
+        sizePolicy4 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.LabelEraser2.sizePolicy().hasHeightForWidth())
+        self.LabelEraser2.setSizePolicy(sizePolicy4)
+        self.LabelEraser2.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_7.addWidget(self.LabelEraser2)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_7)
+
+
+        self.horizontalLayout_8.addWidget(self.widget)
+
+        self.widget_2 = QWidget(self.currency_widget)
+        self.widget_2.setObjectName(u"widget_2")
+        sizePolicy5 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy5.setHorizontalStretch(3)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.widget_2.sizePolicy().hasHeightForWidth())
+        self.widget_2.setSizePolicy(sizePolicy5)
+        self.gridLayout_2 = QGridLayout(self.widget_2)
+        self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.gridLayout_2.setHorizontalSpacing(30)
+        self.gridLayout_2.setVerticalSpacing(15)
+        self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.CurrencyLayout_2 = QHBoxLayout()
+        self.CurrencyLayout_2.setSpacing(10)
+        self.CurrencyLayout_2.setObjectName(u"CurrencyLayout_2")
+        self.IconCrayon1 = QLabel(self.widget_2)
+        self.IconCrayon1.setObjectName(u"IconCrayon1")
+
+        self.CurrencyLayout_2.addWidget(self.IconCrayon1)
+
+        self.ValueCrayon1 = QLabel(self.widget_2)
+        self.ValueCrayon1.setObjectName(u"ValueCrayon1")
+        self.ValueCrayon1.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+
+        self.CurrencyLayout_2.addWidget(self.ValueCrayon1)
+
+
+        self.gridLayout_2.addLayout(self.CurrencyLayout_2, 0, 0, 1, 1)
+
+        self.CurrencyLayout_4 = QHBoxLayout()
+        self.CurrencyLayout_4.setSpacing(10)
+        self.CurrencyLayout_4.setObjectName(u"CurrencyLayout_4")
+        self.IconCrayon3 = QLabel(self.widget_2)
+        self.IconCrayon3.setObjectName(u"IconCrayon3")
+
+        self.CurrencyLayout_4.addWidget(self.IconCrayon3)
+
+        self.ValueCrayon3 = QLabel(self.widget_2)
+        self.ValueCrayon3.setObjectName(u"ValueCrayon3")
+        self.ValueCrayon3.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+
+        self.CurrencyLayout_4.addWidget(self.ValueCrayon3)
+
+
+        self.gridLayout_2.addLayout(self.CurrencyLayout_4, 0, 1, 1, 1)
+
+        self.CurrencyLayout_3 = QHBoxLayout()
+        self.CurrencyLayout_3.setSpacing(10)
+        self.CurrencyLayout_3.setObjectName(u"CurrencyLayout_3")
+        self.IconCrayon2 = QLabel(self.widget_2)
+        self.IconCrayon2.setObjectName(u"IconCrayon2")
+
+        self.CurrencyLayout_3.addWidget(self.IconCrayon2)
+
+        self.ValueCrayon2 = QLabel(self.widget_2)
+        self.ValueCrayon2.setObjectName(u"ValueCrayon2")
+        self.ValueCrayon2.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+
+        self.CurrencyLayout_3.addWidget(self.ValueCrayon2)
+
+
+        self.gridLayout_2.addLayout(self.CurrencyLayout_3, 1, 0, 1, 1)
+
+        self.CurrencyLayout_5 = QHBoxLayout()
+        self.CurrencyLayout_5.setSpacing(10)
+        self.CurrencyLayout_5.setObjectName(u"CurrencyLayout_5")
+        self.IconCrayon4 = QLabel(self.widget_2)
+        self.IconCrayon4.setObjectName(u"IconCrayon4")
+
+        self.CurrencyLayout_5.addWidget(self.IconCrayon4)
+
+        self.ValueCrayon4 = QLabel(self.widget_2)
+        self.ValueCrayon4.setObjectName(u"ValueCrayon4")
+        self.ValueCrayon4.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+
+        self.CurrencyLayout_5.addWidget(self.ValueCrayon4)
+
+
+        self.gridLayout_2.addLayout(self.CurrencyLayout_5, 1, 1, 1, 1)
+
+
+        self.horizontalLayout_8.addWidget(self.widget_2)
+
+
+        self.verticalLayout.addWidget(self.currency_widget)
 
         self.verticalSpacer_2 = QSpacerItem(20, 30, QSizePolicy.Minimum, QSizePolicy.Fixed)
 
@@ -122,14 +289,8 @@ class Ui_page_crayon_1(object):
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.groupBox_setAll = QGroupBox(page_crayon_1)
         self.groupBox_setAll.setObjectName(u"groupBox_setAll")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy3.setHorizontalStretch(2)
-        sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.groupBox_setAll.sizePolicy().hasHeightForWidth())
         self.groupBox_setAll.setSizePolicy(sizePolicy3)
-        font4 = QFont()
-        font4.setFamilies([u"ONE Mobile POP"])
-        font4.setPointSize(14)
         self.groupBox_setAll.setFont(font4)
         self.verticalLayout_3 = QVBoxLayout(self.groupBox_setAll)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
@@ -153,11 +314,8 @@ class Ui_page_crayon_1(object):
 
         self.groupBox_setAll_3 = QGroupBox(page_crayon_1)
         self.groupBox_setAll_3.setObjectName(u"groupBox_setAll_3")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy4.setHorizontalStretch(3)
-        sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.groupBox_setAll_3.sizePolicy().hasHeightForWidth())
-        self.groupBox_setAll_3.setSizePolicy(sizePolicy4)
+        sizePolicy5.setHeightForWidth(self.groupBox_setAll_3.sizePolicy().hasHeightForWidth())
+        self.groupBox_setAll_3.setSizePolicy(sizePolicy5)
         self.groupBox_setAll_3.setFont(font4)
         self.verticalLayout_2 = QVBoxLayout(self.groupBox_setAll_3)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
@@ -293,11 +451,11 @@ class Ui_page_crayon_1(object):
 
         self.groupBox_save_undo = QGroupBox(page_crayon_1)
         self.groupBox_save_undo.setObjectName(u"groupBox_save_undo")
-        sizePolicy5 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        sizePolicy5.setHorizontalStretch(3)
-        sizePolicy5.setVerticalStretch(0)
-        sizePolicy5.setHeightForWidth(self.groupBox_save_undo.sizePolicy().hasHeightForWidth())
-        self.groupBox_save_undo.setSizePolicy(sizePolicy5)
+        sizePolicy6 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy6.setHorizontalStretch(3)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.groupBox_save_undo.sizePolicy().hasHeightForWidth())
+        self.groupBox_save_undo.setSizePolicy(sizePolicy6)
         self.groupBox_save_undo.setFont(font4)
         self.gridLayout = QGridLayout(self.groupBox_save_undo)
         self.gridLayout.setObjectName(u"gridLayout")
@@ -343,6 +501,20 @@ class Ui_page_crayon_1(object):
         self.filter_btn.setText(QCoreApplication.translate("page_crayon_1", u" \uc0ac\ub3c4 \ubaa9\ub85d \ud544\ud130 ", None))
         self.go_left_btn.setText(QCoreApplication.translate("page_crayon_1", u"<", None))
         self.go_right_btn.setText(QCoreApplication.translate("page_crayon_1", u">", None))
+        self.currency_widget.setTitle(QCoreApplication.translate("page_crayon_1", u"\uc18c\ubaa8\ud55c \uc7ac\ud654", None))
+        self.IconGold.setText(QCoreApplication.translate("page_crayon_1", u"\uace8\ub4dc", None))
+        self.ValueGold.setText(QCoreApplication.translate("page_crayon_1", u"0", None))
+        self.LabelEraser1.setText(QCoreApplication.translate("page_crayon_1", u"\uc9c0\uc6b0\uac1c \uc0ac\uc6a9 \uc2dc", None))
+        self.ValueEraserGold.setText(QCoreApplication.translate("page_crayon_1", u"0", None))
+        self.LabelEraser2.setText(QCoreApplication.translate("page_crayon_1", u"\uace8\ub4dc \uc18c\ubaa8", None))
+        self.IconCrayon1.setText(QCoreApplication.translate("page_crayon_1", u"\ud770\ud06c", None))
+        self.ValueCrayon1.setText(QCoreApplication.translate("page_crayon_1", u"0", None))
+        self.IconCrayon3.setText(QCoreApplication.translate("page_crayon_1", u"\ubcf4\ud06c", None))
+        self.ValueCrayon3.setText(QCoreApplication.translate("page_crayon_1", u"0", None))
+        self.IconCrayon2.setText(QCoreApplication.translate("page_crayon_1", u"\ud30c\ud06c", None))
+        self.ValueCrayon2.setText(QCoreApplication.translate("page_crayon_1", u"0", None))
+        self.IconCrayon4.setText(QCoreApplication.translate("page_crayon_1", u"\ud669\ud06c", None))
+        self.ValueCrayon4.setText(QCoreApplication.translate("page_crayon_1", u"0", None))
         self.groupBox_setAll.setTitle(QCoreApplication.translate("page_crayon_1", u"\ud45c\uc2dc \uc124\uc815", None))
         self.checkBox_2.setText(QCoreApplication.translate("page_crayon_1", u"\uc2a4\ud0ef \uc124\uba85 \uc790\uc138\ud788 \ud45c\uc2dc", None))
         self.checkBox.setText(QCoreApplication.translate("page_crayon_1", u"\uc77c\ubc18\uce78 \uc2a4\ud0ef \uc885\ub958 \ud45c\uc2dc", None))

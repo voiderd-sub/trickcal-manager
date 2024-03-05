@@ -200,9 +200,12 @@ class ResourceManager:
         self._resourceMaster["HeroIdToRankStatType"] = hero_rank_stat_type
 
         # Stat
-        cur.execute("SELECT * FROM stat")
+        cur.execute("SELECT id, name_kr, name_en FROM stat")
         stat = {id: (name_kr, name_en) for (id, name_kr, name_en) in cur}
         self._resourceMaster["Stat"] = stat
+        cur.execute("SELECT id, short FROM stat")
+        stat_short = {id: short for (id, short) in cur}
+        self._resourceMaster["StatShort"] = stat_short
 
         # StageToDrop
         cur.execute("SELECT * FROM drop_table")
@@ -212,6 +215,18 @@ class ResourceManager:
             stage_to_drop[stage][item_2] = item_2_drop_rate
             stage_to_drop[stage].pop(None, None)
         self._resourceMaster["StageToDrop"] = stage_to_drop
+
+
+        # BoardType
+        cur.execute("SELECT id, board FROM board_type")
+        board_type = {id: board.split(";") for (id, board) in cur}
+        self._resourceMaster["BoardType"] = board_type
+
+        # HeroIdToBoardData
+        cur.execute("SELECT * FROM hero_board_type")
+        hero_id_to_board_data = {hero_id: (board_id, tuple(int(i) for i in board_stats.split(";"))) for (hero_id, board_id, board_stats) in cur}
+        self._resourceMaster["HeroIdToBoardData"] = hero_id_to_board_data
+
 
         # HeroDefaultOrder
         hero_default_order = list()
