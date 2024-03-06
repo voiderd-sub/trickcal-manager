@@ -18,6 +18,7 @@ class AccountSettings(ComboBoxEditor):
 
 
     def saveCurrentState(self):
+        main = self.parent()
         table = self.table
         old_name_to_new_name = dict()
 
@@ -44,11 +45,15 @@ class AccountSettings(ComboBoxEditor):
             return
         
         # update config
-        self.parent().config["account_list"] = new_account_list
-        self.parent().config["cur_account_idx"] = 0
+        main.config["account_list"] = new_account_list
+        main.config["cur_account_idx"] = 0
+
+        # Before reflecting the changes, save user data
+        main.saveLastPageData()
+        main.resource.saveAllUserResource()
 
         # disconnect userDB
-        self.parent().conn_user.close()
+        main.conn_user.close()
 
         # delete old dbs first
         for deleted_name in self.deleted_name_list:
@@ -61,5 +66,5 @@ class AccountSettings(ComboBoxEditor):
             os.rename(f"db/{old_name}.db", f"db/{new_name}.db")
 
         
-        self.parent().updateAccountList()
+        main.updateAccountList()
         self.close()

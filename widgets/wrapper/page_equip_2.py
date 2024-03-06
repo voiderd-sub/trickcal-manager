@@ -17,7 +17,7 @@ class PageEquip2(Ui_page_equip_2, QWidget):
         self.setInitialState()
 
     def setInitialState(self):
-        self.reload = dict()
+        self.reload = {"master": True}
         # load db data
         main = self.window()
         res = main.resource
@@ -30,7 +30,6 @@ class PageEquip2(Ui_page_equip_2, QWidget):
         v_header = self.material_table.verticalHeader()
 
         mat_table.setRowCount(14)
-        self.loadMaterialTableColumns()
 
         cur_master.execute("SELECT type_id, comment FROM item_type order by type_id asc")
         self.type_name_to_type_id = {name: idx for (idx, name) in cur_master}
@@ -51,11 +50,13 @@ class PageEquip2(Ui_page_equip_2, QWidget):
         mat_table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         mat_table.setEditTriggers(QTableWidget.AllEditTriggers)
 
+        font = mat_table.font()
+        font.setPointSize(11)
         h_header.setSectionResizeMode(QHeaderView.Stretch)
-        h_header.setStyleSheet("font-size: 11pt;")
+        h_header.setFont(font)
         h_header.setHighlightSections(False)
         v_header.setSectionResizeMode(QHeaderView.Stretch)
-        v_header.setStyleSheet("font-size: 11pt;")
+        v_header.setFont(font)
         v_header.setHighlightSections(False)
 
         # set bag_equip table
@@ -73,51 +74,14 @@ class PageEquip2(Ui_page_equip_2, QWidget):
         h_header.setSectionResizeMode(0, QHeaderView.Stretch)
         h_header.setSectionResizeMode(1, QHeaderView.Fixed)
 
-        self.reloadData()
-
-        # connect buttons
-        self.save_btn.clicked.connect(self.saveData)
-        self.cancel_btn.clicked.connect(self.reloadData)
         self.add_btn.clicked.connect(partial(self.addEquip, idx=None, count=None))
         self.delete_btn.clicked.connect(self.deleteEquip)
+
 
     def loadMaterialTableColumns(self):
         max_rank = self.window().resource.masterGet("MaxRank")
         self.material_table.setColumnCount(max_rank-1)
         self.material_table.setHorizontalHeaderLabels([f"{i}티어" for i in range(2, max_rank+1)])
-
-    
-    def saveData(self):
-        main = self.window()
-        res = main.resource
-        cur_user: sqlite3.Cursor = main.conn_user.cursor()
-        equip_name_to_id = res.masterGet("EquipNameToId")
-
-        # iterate material table and update user_items
-        for row_idx in range(14):
-            for col_idx in range(res.masterGet("MaxRank")-1):
-                item = self.material_table.item(row_idx, col_idx)
-                count = 0 if item.text()=="" else int(item.text())
-                prefix = self.type_id_to_type_name[row_idx % 7 + 1]
-                suffix = "조각" if row_idx // 7 == 0 else "도안"
-                name = f"{prefix} {suffix}({col_idx+2}티어)"
-                cur_user.execute("UPDATE user_items SET count=? WHERE name=?", (count, name))
-        res.delete("UserItems")
-        
-        # iterate bag_equip table and update user_bag_equips
-        cur_user.execute("DELETE FROM user_bag_equips")
-        for row_idx in range(self.bag_equip_table.rowCount()):
-            item = self.bag_equip_table.item(row_idx, 1)
-            count = 0 if item.text()=="" else int(item.text())
-            if count == 0:
-                continue
-            equip_id = equip_name_to_id.get(self.bag_equip_table.cellWidget(row_idx, 0).currentText(), None)
-            if equip_id is None:
-                continue
-            cur_user.execute("INSERT INTO user_bag_equips VALUES (?, ?)", (equip_id, count))
-        res.delete("BagEquips")
-        
-        main.conn_user.commit()
 
 
     def reloadData(self):
@@ -203,3 +167,33 @@ class PageEquip2(Ui_page_equip_2, QWidget):
             self.reloadData()
         
         self.reload = dict()
+    
+
+    def savePageData(self):
+        main = self.window()
+        res = main.resource
+        equip_name_to_id = res.masterGet("EquipNameToId")
+        user_items = res.userGet("UserItems")
+        bag_equips = res.userGet("BagEquips")
+
+        # iterate material table and update user_items
+        for row_idx in range(14):
+            for col_idx in range(res.masterGet("MaxRank")-1):
+                item = self.material_table.item(row_idx, col_idx)
+                count = 0 if item.text()=="" else int(item.text())
+                prefix = self.type_id_to_type_name[row_idx % 7 + 1]
+                suffix = "조각" if row_idx // 7 == 0 else "도안"
+                name = f"{prefix} {suffix}({col_idx+2}티어)"
+                user_items[name] = count
+        
+        # iterate bag_equip table and update user_bag_equips
+        bag_equips.clear()
+        for row_idx in range(self.bag_equip_table.rowCount()):
+            item = self.bag_equip_table.item(row_idx, 1)
+            count = 0 if item.text()=="" else int(item.text())
+            if count == 0:
+                continue
+            equip_id = equip_name_to_id.get(self.bag_equip_table.cellWidget(row_idx, 0).currentText(), None)
+            if equip_id is None:
+                continue
+            bag_equips[equip_id] = count

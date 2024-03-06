@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
-    QGroupBox, QHBoxLayout, QHeaderView, QLabel,
-    QPushButton, QRadioButton, QSizePolicy, QSpacerItem,
-    QTableWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QGridLayout, QGroupBox,
+    QHBoxLayout, QHeaderView, QLabel, QPushButton,
+    QRadioButton, QSizePolicy, QSpacerItem, QTableWidgetItem,
+    QVBoxLayout, QWidget)
 
 from widgets.wrapper.misc import (BoardTableWidget, ExtendedComboBox)
 
@@ -26,7 +26,7 @@ class Ui_page_crayon_1(object):
     def setupUi(self, page_crayon_1):
         if not page_crayon_1.objectName():
             page_crayon_1.setObjectName(u"page_crayon_1")
-        page_crayon_1.resize(964, 857)
+        page_crayon_1.resize(868, 765)
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -285,32 +285,58 @@ class Ui_page_crayon_1(object):
 
         self.verticalLayout.addItem(self.verticalSpacer_2)
 
-        self.gridLayout_3 = QGridLayout()
-        self.gridLayout_3.setObjectName(u"gridLayout_3")
-        self.groupBox_setAll = QGroupBox(page_crayon_1)
-        self.groupBox_setAll.setObjectName(u"groupBox_setAll")
-        sizePolicy3.setHeightForWidth(self.groupBox_setAll.sizePolicy().hasHeightForWidth())
-        self.groupBox_setAll.setSizePolicy(sizePolicy3)
-        self.groupBox_setAll.setFont(font4)
-        self.verticalLayout_3 = QVBoxLayout(self.groupBox_setAll)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.checkBox_2 = QCheckBox(self.groupBox_setAll)
-        self.checkBox_2.setObjectName(u"checkBox_2")
-        font5 = QFont()
-        font5.setFamilies([u"ONE Mobile POP"])
-        font5.setPointSize(13)
-        self.checkBox_2.setFont(font5)
+        self.horizontalLayout_9 = QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.groupBox_setAll_2 = QGroupBox(page_crayon_1)
+        self.groupBox_setAll_2.setObjectName(u"groupBox_setAll_2")
+        sizePolicy3.setHeightForWidth(self.groupBox_setAll_2.sizePolicy().hasHeightForWidth())
+        self.groupBox_setAll_2.setSizePolicy(sizePolicy3)
+        self.groupBox_setAll_2.setFont(font4)
+        self.verticalLayout_4 = QVBoxLayout(self.groupBox_setAll_2)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.autoselect_off = QRadioButton(self.groupBox_setAll_2)
+        self.autoselect_off.setObjectName(u"autoselect_off")
+        self.autoselect_off.setFont(font2)
+        self.autoselect_off.setChecked(True)
 
-        self.verticalLayout_3.addWidget(self.checkBox_2)
+        self.verticalLayout_4.addWidget(self.autoselect_off)
 
-        self.checkBox = QCheckBox(self.groupBox_setAll)
-        self.checkBox.setObjectName(u"checkBox")
-        self.checkBox.setFont(font5)
+        self.autoselect_length = QRadioButton(self.groupBox_setAll_2)
+        self.autoselect_length.setObjectName(u"autoselect_length")
+        self.autoselect_length.setFont(font2)
 
-        self.verticalLayout_3.addWidget(self.checkBox)
+        self.verticalLayout_4.addWidget(self.autoselect_length)
+
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.autoselect_cost = QRadioButton(self.groupBox_setAll_2)
+        self.autoselect_cost.setObjectName(u"autoselect_cost")
+        self.autoselect_cost.setFont(font2)
+
+        self.horizontalLayout_5.addWidget(self.autoselect_cost)
+
+        self.cost_1st = QComboBox(self.groupBox_setAll_2)
+        self.cost_1st.addItem("")
+        self.cost_1st.addItem("")
+        self.cost_1st.addItem("")
+        self.cost_1st.addItem("")
+        self.cost_1st.setObjectName(u"cost_1st")
+        self.cost_1st.setFont(font2)
+
+        self.horizontalLayout_5.addWidget(self.cost_1st)
+
+        self.cost_2nd = QComboBox(self.groupBox_setAll_2)
+        self.cost_2nd.addItem("")
+        self.cost_2nd.setObjectName(u"cost_2nd")
+        self.cost_2nd.setFont(font2)
+
+        self.horizontalLayout_5.addWidget(self.cost_2nd)
 
 
-        self.gridLayout_3.addWidget(self.groupBox_setAll, 0, 0, 1, 1)
+        self.verticalLayout_4.addLayout(self.horizontalLayout_5)
+
+
+        self.horizontalLayout_9.addWidget(self.groupBox_setAll_2)
 
         self.groupBox_setAll_3 = QGroupBox(page_crayon_1)
         self.groupBox_setAll_3.setObjectName(u"groupBox_setAll_3")
@@ -323,6 +349,9 @@ class Ui_page_crayon_1(object):
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.label = QLabel(self.groupBox_setAll_3)
         self.label.setObjectName(u"label")
+        font5 = QFont()
+        font5.setFamilies([u"ONE Mobile POP"])
+        font5.setPointSize(13)
         self.label.setFont(font5)
 
         self.horizontalLayout_6.addWidget(self.label)
@@ -396,99 +425,10 @@ class Ui_page_crayon_1(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout_4)
 
 
-        self.gridLayout_3.addWidget(self.groupBox_setAll_3, 0, 1, 1, 1)
-
-        self.groupBox_setAll_2 = QGroupBox(page_crayon_1)
-        self.groupBox_setAll_2.setObjectName(u"groupBox_setAll_2")
-        sizePolicy3.setHeightForWidth(self.groupBox_setAll_2.sizePolicy().hasHeightForWidth())
-        self.groupBox_setAll_2.setSizePolicy(sizePolicy3)
-        self.groupBox_setAll_2.setFont(font4)
-        self.verticalLayout_4 = QVBoxLayout(self.groupBox_setAll_2)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.autoselect_off = QRadioButton(self.groupBox_setAll_2)
-        self.autoselect_off.setObjectName(u"autoselect_off")
-        self.autoselect_off.setFont(font2)
-        self.autoselect_off.setChecked(True)
-
-        self.verticalLayout_4.addWidget(self.autoselect_off)
-
-        self.autoselect_length = QRadioButton(self.groupBox_setAll_2)
-        self.autoselect_length.setObjectName(u"autoselect_length")
-        self.autoselect_length.setFont(font2)
-
-        self.verticalLayout_4.addWidget(self.autoselect_length)
-
-        self.horizontalLayout_5 = QHBoxLayout()
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.autoselect_cost = QRadioButton(self.groupBox_setAll_2)
-        self.autoselect_cost.setObjectName(u"autoselect_cost")
-        self.autoselect_cost.setFont(font2)
-
-        self.horizontalLayout_5.addWidget(self.autoselect_cost)
-
-        self.cost_1st = QComboBox(self.groupBox_setAll_2)
-        self.cost_1st.addItem("")
-        self.cost_1st.addItem("")
-        self.cost_1st.addItem("")
-        self.cost_1st.addItem("")
-        self.cost_1st.setObjectName(u"cost_1st")
-        self.cost_1st.setFont(font2)
-
-        self.horizontalLayout_5.addWidget(self.cost_1st)
-
-        self.cost_2nd = QComboBox(self.groupBox_setAll_2)
-        self.cost_2nd.addItem("")
-        self.cost_2nd.setObjectName(u"cost_2nd")
-        self.cost_2nd.setFont(font2)
-
-        self.horizontalLayout_5.addWidget(self.cost_2nd)
+        self.horizontalLayout_9.addWidget(self.groupBox_setAll_3)
 
 
-        self.verticalLayout_4.addLayout(self.horizontalLayout_5)
-
-
-        self.gridLayout_3.addWidget(self.groupBox_setAll_2, 1, 0, 1, 1)
-
-        self.groupBox_save_undo = QGroupBox(page_crayon_1)
-        self.groupBox_save_undo.setObjectName(u"groupBox_save_undo")
-        sizePolicy6 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        sizePolicy6.setHorizontalStretch(3)
-        sizePolicy6.setVerticalStretch(0)
-        sizePolicy6.setHeightForWidth(self.groupBox_save_undo.sizePolicy().hasHeightForWidth())
-        self.groupBox_save_undo.setSizePolicy(sizePolicy6)
-        self.groupBox_save_undo.setFont(font4)
-        self.gridLayout = QGridLayout(self.groupBox_save_undo)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.save_all_btn = QPushButton(self.groupBox_save_undo)
-        self.save_all_btn.setObjectName(u"save_all_btn")
-        self.save_all_btn.setEnabled(True)
-        self.save_all_btn.setFont(font6)
-
-        self.gridLayout.addWidget(self.save_all_btn, 0, 0, 1, 1)
-
-        self.undo_cur_btn = QPushButton(self.groupBox_save_undo)
-        self.undo_cur_btn.setObjectName(u"undo_cur_btn")
-        self.undo_cur_btn.setFont(font2)
-
-        self.gridLayout.addWidget(self.undo_cur_btn, 1, 1, 1, 1)
-
-        self.save_cur_btn = QPushButton(self.groupBox_save_undo)
-        self.save_cur_btn.setObjectName(u"save_cur_btn")
-        self.save_cur_btn.setFont(font2)
-
-        self.gridLayout.addWidget(self.save_cur_btn, 0, 1, 1, 1)
-
-        self.undo_all_btn = QPushButton(self.groupBox_save_undo)
-        self.undo_all_btn.setObjectName(u"undo_all_btn")
-        self.undo_all_btn.setFont(font2)
-
-        self.gridLayout.addWidget(self.undo_all_btn, 1, 0, 1, 1)
-
-
-        self.gridLayout_3.addWidget(self.groupBox_save_undo, 1, 1, 1, 1)
-
-
-        self.verticalLayout.addLayout(self.gridLayout_3)
+        self.verticalLayout.addLayout(self.horizontalLayout_9)
 
 
         self.retranslateUi(page_crayon_1)
@@ -515,18 +455,6 @@ class Ui_page_crayon_1(object):
         self.ValueCrayon2.setText(QCoreApplication.translate("page_crayon_1", u"0", None))
         self.IconCrayon4.setText(QCoreApplication.translate("page_crayon_1", u"\ud669\ud06c", None))
         self.ValueCrayon4.setText(QCoreApplication.translate("page_crayon_1", u"0", None))
-        self.groupBox_setAll.setTitle(QCoreApplication.translate("page_crayon_1", u"\ud45c\uc2dc \uc124\uc815", None))
-        self.checkBox_2.setText(QCoreApplication.translate("page_crayon_1", u"\uc2a4\ud0ef \uc124\uba85 \uc790\uc138\ud788 \ud45c\uc2dc", None))
-        self.checkBox.setText(QCoreApplication.translate("page_crayon_1", u"\uc77c\ubc18\uce78 \uc2a4\ud0ef \uc885\ub958 \ud45c\uc2dc", None))
-        self.groupBox_setAll_3.setTitle(QCoreApplication.translate("page_crayon_1", u"\uac04\ud3b8 \uc120\ud0dd", None))
-        self.label.setText(QCoreApplication.translate("page_crayon_1", u"\uc77c\ubc18\uce78 \uc77c\uad04\uc120\ud0dd", None))
-        self.select_normal_1_btn.setText(QCoreApplication.translate("page_crayon_1", u"1\uad00", None))
-        self.select_normal_2_btn.setText(QCoreApplication.translate("page_crayon_1", u"2\uad00", None))
-        self.select_normal_3_btn.setText(QCoreApplication.translate("page_crayon_1", u"3\uad00", None))
-        self.label_2.setText(QCoreApplication.translate("page_crayon_1", u"\uc804\uccb4\uce78 \uc77c\uad04\uc120\ud0dd", None))
-        self.select_all_1_btn.setText(QCoreApplication.translate("page_crayon_1", u"1\uad00", None))
-        self.select_all_2_btn.setText(QCoreApplication.translate("page_crayon_1", u"2\uad00", None))
-        self.select_all_3_btn.setText(QCoreApplication.translate("page_crayon_1", u"3\uad00", None))
         self.groupBox_setAll_2.setTitle(QCoreApplication.translate("page_crayon_1", u"\uc790\ub3d9 \uc120\ud0dd \uc124\uc815", None))
         self.autoselect_off.setText(QCoreApplication.translate("page_crayon_1", u"\ub044\uae30", None))
         self.autoselect_length.setText(QCoreApplication.translate("page_crayon_1", u"\ucd5c\ub2e8\uacbd\ub85c", None))
@@ -540,10 +468,14 @@ class Ui_page_crayon_1(object):
         self.cost_2nd.setItemText(0, QCoreApplication.translate("page_crayon_1", u"2\uc21c\uc704", None))
 
         self.cost_2nd.setPlaceholderText("")
-        self.groupBox_save_undo.setTitle(QCoreApplication.translate("page_crayon_1", u"\uc800\uc7a5 / \ucde8\uc18c", None))
-        self.save_all_btn.setText(QCoreApplication.translate("page_crayon_1", u"\ubaa8\ub450 \uc800\uc7a5", None))
-        self.undo_cur_btn.setText(QCoreApplication.translate("page_crayon_1", u"\ud604\uc7ac \ud398\uc774\uc9c0 \ubcc0\uacbd\uc0ac\ud56d \ucde8\uc18c", None))
-        self.save_cur_btn.setText(QCoreApplication.translate("page_crayon_1", u"\ud604\uc7ac \ud398\uc774\uc9c0 \uc800\uc7a5", None))
-        self.undo_all_btn.setText(QCoreApplication.translate("page_crayon_1", u"\ubcc0\uacbd\uc0ac\ud56d \ubaa8\ub450 \ucde8\uc18c", None))
+        self.groupBox_setAll_3.setTitle(QCoreApplication.translate("page_crayon_1", u"\uac04\ud3b8 \uc120\ud0dd", None))
+        self.label.setText(QCoreApplication.translate("page_crayon_1", u"\uc77c\ubc18\uce78 \uc77c\uad04\uc120\ud0dd", None))
+        self.select_normal_1_btn.setText(QCoreApplication.translate("page_crayon_1", u"1\uad00", None))
+        self.select_normal_2_btn.setText(QCoreApplication.translate("page_crayon_1", u"2\uad00", None))
+        self.select_normal_3_btn.setText(QCoreApplication.translate("page_crayon_1", u"3\uad00", None))
+        self.label_2.setText(QCoreApplication.translate("page_crayon_1", u"\uc804\uccb4\uce78 \uc77c\uad04\uc120\ud0dd", None))
+        self.select_all_1_btn.setText(QCoreApplication.translate("page_crayon_1", u"1\uad00", None))
+        self.select_all_2_btn.setText(QCoreApplication.translate("page_crayon_1", u"2\uad00", None))
+        self.select_all_3_btn.setText(QCoreApplication.translate("page_crayon_1", u"3\uad00", None))
     # retranslateUi
 

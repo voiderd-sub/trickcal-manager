@@ -72,7 +72,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.setupUi(self)
         self.setInitialState()
-        self.stacked_window.setCurrentIndex(0)
 
         # generate subwindows
         self.account_settings = AccountSettings(parent=self)
@@ -81,6 +80,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     
     def setInitialState(self):
+
+        self.stacked_window.setCurrentIndex(0)
+        self.last_page_idx = 0
+
         # Connect btns with pages with each page
         for i, name in enumerate(self.sidebar.btn_with_pages):
             btn=getattr(self.sidebar, name)
@@ -89,6 +92,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if hasattr(page, "reloadPage"):
                 btn.clicked.connect(page.reloadPage)
             btn.clicked.connect(partial(self.stacked_window.setCurrentIndex, i))
+        self.stacked_window.currentChanged.connect(self.saveLastPageData)
     
 
     def showEvent(self, event):
@@ -105,6 +109,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def closeEvent(self, event):
+        self.saveLastPageData()
+        self.resource.saveAllUserResource()
         self.conn_master.close()
         self.conn_user.close()
         with open('db/config.yaml', 'w') as f:
@@ -139,6 +145,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def userDBInit(self):
+        if hasattr(self, "conn_user"):
+            self.conn_user.close()
+        
         user_name = self.config["account_list"][self.config["cur_account_idx"]]
         db_path = f"db/{user_name}.db"
 
@@ -224,15 +233,18 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
             self.config = yaml.load(f, Loader=yaml.FullLoader)
     
     def updateAccountList(self):
-        self.sidebar.updateLocalAccountList(True)
+        # account_list is already updated, and cur_account_idx = 0
+        self.sidebar.updateAccountList()
+        self.changeAccountCascade()
+
 
     def updateGoalList(self):
-        self.resource.delete("GoalList")
         need_to_update_list = ["page_equip_abstract", "page_equip_1", "page_equip_3"]
         self.changeReloadState(need_to_update_list, "goal")
 
 
     def changeAccountCascade(self):
+        # User data is already saved in sidebar.changeAccount or account_settings.saveCurrentState
         self.userDBInit()
         self.resource.deleteAll(user=True)
         need_to_update_list = ["page_hero", "page_equip_abstract", "page_equip_1", "page_equip_2", "page_equip_3"]
@@ -245,11 +257,17 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
 
 
     def changeExtrinsicStarsCascade(self):
-        self.resource.delete("HeroIdToStarExtrinsic")
+        need_to_update_list = []
+        self.changeReloadState(need_to_update_list, "extrinsic")
 
 
     def masterDBUpdateCascade(self):
+        # save user data
+        self.saveLastPageData()
+        self.resource.saveAllUserResource()
+        # update master db
         self.masterDBInit(force=True)
+        # reload all resources
         self.resource.deleteAll(user=True, master=True)
         self.resource.masterInit()
         need_to_update_list = ["page_hero", "page_equip_abstract", "page_equip_1", "page_equip_2"]
@@ -263,6 +281,13 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         current_page = self.stacked_window.currentWidget()
         if hasattr(current_page, "reloadPage"):
             current_page.reloadPage()
+    
+
+    def saveLastPageData(self):
+        last_page = self.stacked_window.widget(self.last_page_idx)
+        if hasattr(last_page, "savePageData"):
+            last_page.savePageData()
+        self.last_page_idx = self.stacked_window.currentIndex()
 
 
     def updateProgram(self, auto):

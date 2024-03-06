@@ -35,9 +35,8 @@ class Sidebar(Ui_sidebar, QWidget):
                 sub.hide()
             btn.clicked.connect(partial(self.showSubmenu, clicked_menu_name=name))
         
-        self.updateLocalAccountList(False)
-        # connect changeAccount with account_list only when user select account from account_list
-        self.account_list.activated.connect(lambda: self.changeAccount(account_list_changed=False))
+        self.updateAccountList()
+        self.account_list.activated.connect(self.changeAccount)
         self.account_setting_btn.clicked.connect(self.openAccountSettings)
         self.setting_btn.clicked.connect(self.openSettings)
 
@@ -59,23 +58,24 @@ class Sidebar(Ui_sidebar, QWidget):
                 sub.hide()
 
 
-    def changeAccount(self, account_list_changed):
-        main_window = self.window()
-        config = main_window.config
+    def changeAccount(self):
+        main = self.window()
+        config = main.config
         selected_idx = self.account_list.currentIndex()
-        if selected_idx != config["cur_account_idx"] or account_list_changed:
+        if selected_idx != config["cur_account_idx"]:
+            main.saveLastPageData()
+            main.resource.saveAllUserResource()
             config["cur_account_idx"] = selected_idx
-            main_window.conn_user.close()
-            del main_window.conn_user
-            main_window.changeAccountCascade()
+            main.changeAccountCascade()
 
 
-    def updateLocalAccountList(self, is_not_init):
+    def updateAccountList(self):
         config = self.window().config
+        self.account_list.blockSignals(True)
         self.account_list.clear()
         self.account_list.addItems(config["account_list"])
         self.account_list.setCurrentIndex(config["cur_account_idx"])
-        self.changeAccount(account_list_changed=is_not_init)
+        self.account_list.blockSignals(False)
 
 
     def openAccountSettings(self):

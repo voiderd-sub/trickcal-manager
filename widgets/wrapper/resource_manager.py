@@ -35,8 +35,48 @@ class ResourceManager:
             self._resourceUser.clear()
         if master:
             self._resourceMaster.clear()
-
     
+    
+    def saveAllUserResource(self):
+        # For each key in _resourceUser, save the value to the database
+        conn = self.main.conn_user
+        cur = conn.cursor()
+        for userdata_name, userdata in self._resourceUser.items():
+            match userdata_name:
+                case "HeroIdToStarExtrinsic":
+                    cur.executemany("REPLACE INTO user_hero(hero_id, star_extrinsic) VALUES(?,?)",
+                                    userdata.items())
+                    
+                case "CurEquip":
+                    data = [(idx, rank, ",".join(str(i) for i in equips) if equips else None)
+                            for idx, (rank, equips) in userdata.items()]
+                    cur.executemany("REPLACE INTO user_cur_equip(hero_id, rank, equips) VALUES(?,?,?)", data)
+
+                case "GoalIdToName":
+                    cur.execute("DELETE FROM user_goal_equip_names")
+                    cur.executemany("INSERT INTO user_goal_equip_names(id, name) VALUES(?,?)",
+                                    [(id, name) for id, name in userdata.items()])
+                    
+                case "GoalEquip":
+                    cur.execute("DELETE FROM user_goal_equip")
+                    data = [(goal_id, hero_id, rank, ",".join(str(i) for i in equips) if equips else None) for goal_id, hero_dict in userdata.items() for hero_id, (rank, equips) in hero_dict.items()]
+                    cur.executemany("REPLACE INTO user_goal_equip(goal_id, hero_id, rank, equips) VALUES(?,?,?,?)", data)
+
+                case "CalcSettings":
+                    cur.executemany("REPLACE INTO calc_settings(setting_name, value) VALUES(?,?)",
+                                    userdata.items())
+                
+                case "BagEquips":
+                    cur.executemany("REPLACE INTO user_bag_equips(id, count) VALUES(?,?)",
+                                    userdata.items())
+                
+                case "UserItems":
+                    cur.executemany("REPLACE INTO user_items(name, count) VALUES(?,?)",
+                                    userdata.items())
+
+        conn.commit()
+    
+
     def getHeroIdToStarExtrinsic(self):
         cur_user = self.main.conn_user.cursor()
         cur_user.execute("SELECT hero_id, star_extrinsic FROM user_hero")
@@ -66,12 +106,12 @@ class ResourceManager:
         return user_equip
     
 
-    def getGoalList(self):
+    def getGoalIdToName(self):
         cur_user = self.main.conn_user.cursor()
-        cur_user.execute("SELECT name FROM user_goal_equip_names order by id asc;")
-        goal_list = [name for (name,) in cur_user]
-        self._resourceUser["goal_list"] = goal_list
-        return goal_list
+        cur_user.execute("SELECT id, name FROM user_goal_equip_names order by id asc;")
+        goal_id_to_name = {id: name for (id, name) in cur_user}
+        self._resourceUser["GoalIdToName"] = goal_id_to_name
+        return goal_id_to_name
     
 
     def getGoalEquip(self):

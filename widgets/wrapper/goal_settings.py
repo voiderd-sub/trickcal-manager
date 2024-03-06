@@ -16,15 +16,16 @@ class GoalSettings(ComboBoxEditor):
     def loadList(self):
         res = self.parent().resource
 
-        self.name_list = list(res.userGet("GoalList"))
+        self.name_list = list(res.userGet("GoalIdToName").values())
         self.deleted_name_list = []
 
 
     def saveCurrentState(self):
         main = self.parent()
+        res = main.resource
 
         old_name_to_id = {goal_name: goal_idx for (goal_idx, goal_name)
-                          in enumerate(main.resource.userGet("GoalList"), start=1)}
+                          in res.userGet("GoalIdToName").items()}
         old_name_to_new_name = dict()
         old_idx_to_tmp_idx = dict()
         tmp_idx_to_new_idx = dict()
@@ -52,21 +53,22 @@ class GoalSettings(ComboBoxEditor):
             QMessageBox.critical(self, 'Error', "중복된 목표명이 있습니다.", QMessageBox.Ok)
             return
         
-        # update table user_goal_equip_names
-        cur_user: sqlite3.Cursor = main.conn_user.cursor()
-        cur_user.execute("DELETE FROM user_goal_equip_names;")
-        cur_user.executemany("INSERT INTO user_goal_equip_names VALUES (?, ?);", enumerate(new_goal_list, start=1))
+        goal_id_to_name = res.userGet("GoalIdToName")
+        goal_id_to_name.clear()
+        for (idx, name) in enumerate(new_goal_list, start=1):
+            goal_id_to_name[idx] = name
 
+        goal_equip = res.userGet("GoalEquip")
         # update table user_goal_equip
         for idx in deleted_idx_list:
-            cur_user.execute("DELETE FROM user_goal_equip WHERE goal_id=?;", (idx,))
+            del goal_equip[idx]
         for old_idx, tmp_idx in old_idx_to_tmp_idx.items():
-            cur_user.execute("UPDATE user_goal_equip SET goal_id=? WHERE goal_id=?;", (tmp_idx, old_idx))
+            goal_equip[tmp_idx] = goal_equip[old_idx]
+            del goal_equip[old_idx]
         for tmp_idx, new_idx in tmp_idx_to_new_idx.items():
-            cur_user.execute("UPDATE user_goal_equip SET goal_id=? WHERE goal_id=?;", (new_idx, tmp_idx))
-        main.conn_user.commit()
+            goal_equip[new_idx] = goal_equip[tmp_idx]
+            del goal_equip[tmp_idx]
 
-        # set cur_goal index
         main.updateGoalList()
 
         self.close()

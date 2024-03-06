@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>964</width>
-    <height>857</height>
+    <width>868</width>
+    <height>765</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -523,9 +523,9 @@
     </spacer>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout_3">
-     <item row="0" column="0">
-      <widget class="QGroupBox" name="groupBox_setAll">
+    <layout class="QHBoxLayout" name="horizontalLayout_9">
+     <item>
+      <widget class="QGroupBox" name="groupBox_setAll_2">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>2</horstretch>
@@ -539,39 +539,110 @@
         </font>
        </property>
        <property name="title">
-        <string>표시 설정</string>
+        <string>자동 선택 설정</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <widget class="QCheckBox" name="checkBox_2">
+         <widget class="QRadioButton" name="autoselect_off">
           <property name="font">
            <font>
             <family>ONE Mobile POP</family>
-            <pointsize>13</pointsize>
+            <pointsize>12</pointsize>
            </font>
           </property>
           <property name="text">
-           <string>스탯 설명 자세히 표시</string>
+           <string>끄기</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QRadioButton" name="autoselect_length">
           <property name="font">
            <font>
             <family>ONE Mobile POP</family>
-            <pointsize>13</pointsize>
+            <pointsize>12</pointsize>
            </font>
           </property>
           <property name="text">
-           <string>일반칸 스탯 종류 표시</string>
+           <string>최단경로</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QRadioButton" name="autoselect_cost">
+            <property name="font">
+             <font>
+              <family>ONE Mobile POP</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>최소비용</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cost_1st">
+            <property name="font">
+             <font>
+              <family>ONE Mobile POP</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="placeholderText">
+             <string/>
+            </property>
+            <item>
+             <property name="text">
+              <string>1순위</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>황크</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>보크</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>골드</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cost_2nd">
+            <property name="font">
+             <font>
+              <family>ONE Mobile POP</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="placeholderText">
+             <string/>
+            </property>
+            <item>
+             <property name="text">
+              <string>2순위</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item>
       <widget class="QGroupBox" name="groupBox_setAll_3">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -756,201 +827,6 @@
            </widget>
           </item>
          </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QGroupBox" name="groupBox_setAll_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>2</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <family>ONE Mobile POP</family>
-         <pointsize>14</pointsize>
-        </font>
-       </property>
-       <property name="title">
-        <string>자동 선택 설정</string>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <widget class="QRadioButton" name="autoselect_off">
-          <property name="font">
-           <font>
-            <family>ONE Mobile POP</family>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>끄기</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="autoselect_length">
-          <property name="font">
-           <font>
-            <family>ONE Mobile POP</family>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>최단경로</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_5">
-          <item>
-           <widget class="QRadioButton" name="autoselect_cost">
-            <property name="font">
-             <font>
-              <family>ONE Mobile POP</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>최소비용</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="cost_1st">
-            <property name="font">
-             <font>
-              <family>ONE Mobile POP</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="placeholderText">
-             <string/>
-            </property>
-            <item>
-             <property name="text">
-              <string>1순위</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>황크</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>보크</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>골드</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="cost_2nd">
-            <property name="font">
-             <font>
-              <family>ONE Mobile POP</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="placeholderText">
-             <string/>
-            </property>
-            <item>
-             <property name="text">
-              <string>2순위</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QGroupBox" name="groupBox_save_undo">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-         <horstretch>3</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <family>ONE Mobile POP</family>
-         <pointsize>14</pointsize>
-        </font>
-       </property>
-       <property name="title">
-        <string>저장 / 취소</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-         <widget class="QPushButton" name="save_all_btn">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="font">
-           <font>
-            <family>ONE Mobile POP</family>
-            <pointsize>12</pointsize>
-            <strikeout>false</strikeout>
-           </font>
-          </property>
-          <property name="text">
-           <string>모두 저장</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QPushButton" name="undo_cur_btn">
-          <property name="font">
-           <font>
-            <family>ONE Mobile POP</family>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>현재 페이지 변경사항 취소</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QPushButton" name="save_cur_btn">
-          <property name="font">
-           <font>
-            <family>ONE Mobile POP</family>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>현재 페이지 저장</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QPushButton" name="undo_all_btn">
-          <property name="font">
-           <font>
-            <family>ONE Mobile POP</family>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>변경사항 모두 취소</string>
-          </property>
-         </widget>
         </item>
        </layout>
       </widget>

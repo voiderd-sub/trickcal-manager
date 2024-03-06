@@ -23,12 +23,11 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         self.setInitialState()
 
     def setInitialState(self):
-        self.reload = dict()
+        self.reload = {"account": True}
         self.setting_name_list = ["auto_update_yes", "use_equip_yes", "hallow_13_yes",
                                   "research_level","candy_buying", "use_standard_yes",
                                   "daily_elleaf_yes", "lecture_level", "cur_standard",
                                   "daily_candy_yes", "auto_update_yes", "round_yes"]
-        self.loadUserData()
 
         self.research_level.setValidator(QIntValidator(0, 8, self.research_level))
         self.candy_buying.setValidator(QIntValidator(0, 10, self.candy_buying))
@@ -69,7 +68,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
 
     def updateGoalList(self):
         res = self.window().resource
-        goal_list = res.userGet("GoalList")
+        goal_list = res.userGet("GoalIdToName").values()
 
         self.goal_list.clear()
         self.goal_list.addItems(goal_list)
@@ -320,7 +319,9 @@ class PageEquip3(Ui_page_equip_3, QWidget):
 
     def saveCurrentSettings(self):
         main = self.window()
-        cur_user: sqlite3.Cursor = main.conn_user.cursor()
+        res = main.resource
+        calc_settings = res.userGet("CalcSettings")
+        calc_settings.clear()
 
         for setting_name in self.setting_name_list:
             widget = getattr(self, setting_name)
@@ -334,9 +335,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                 if criteria != QValidator.State.Acceptable:
                     raise Exception
                 value = int(text)
-            cur_user.execute("INSERT OR REPLACE INTO calc_settings (setting_name, value) VALUES (?, ?)", (setting_name, value))
-        main.conn_user.commit()
-        main.resource.delete("CalcSettings")
+            calc_settings[setting_name] = value
     
 
     def material_name_to_id(self, name):
@@ -364,3 +363,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             self.updateGoalList()
         
         self.reload = dict()
+    
+
+    def savePageData(self):
+        self.saveCurrentSettings()

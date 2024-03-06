@@ -17,6 +17,8 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
         self.setInitialState()
 
     def setInitialState(self):
+        self.reload = {"account": True}
+
         for name_kr, name_en in self.window().resource.masterGet("Stat").values():
             pixmap = QPixmap()
             pixmap.load(f"icon/status/Icon_{name_en}.png")
@@ -24,7 +26,7 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
             label: QLabel = getattr(self, f"icon{name_en}")
             label.setPixmap(pixmap)
         
-        self.updateEquipStatAbstract()
+        # self.updateEquipStatAbstract()
         self.containerAll_2.setStyleSheet("background-color: white; border-radius: 8px;")
 
         self.vertical_layout = QVBoxLayout(self.scroll_container)
@@ -33,10 +35,8 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
         self.goal_list.currentIndexChanged.connect(self.updateEquipState)
         self.check_show_completed.stateChanged.connect(self.showModeChanged)
         self.radio_equip_show.toggled.connect(self.updateEquipState)
-        self.updateGoalList()
-        self.updateEquipState()
-
-        self.reload = dict()
+        # self.updateGoalList()
+        # self.updateEquipState()
 
 
     def updateEquipStatAbstract(self):
@@ -75,7 +75,7 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
     
 
     def updateGoalList(self):
-        goal_list = self.window().resource.userGet("GoalList")
+        goal_list = list(self.window().resource.userGet("GoalIdToName").values())
         self.goal_list.blockSignals(True)
         self.goal_list.clear()
         self.goal_list.addItems(["현재 랭크"] + goal_list)

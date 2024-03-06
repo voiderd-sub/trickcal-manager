@@ -26,7 +26,7 @@ class Ui_page_equip_1(object):
     def setupUi(self, page_equip_1):
         if not page_equip_1.objectName():
             page_equip_1.setObjectName(u"page_equip_1")
-        page_equip_1.resize(800, 633)
+        page_equip_1.resize(903, 633)
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -58,7 +58,7 @@ class Ui_page_equip_1(object):
         self.filter_btn.setObjectName(u"filter_btn")
         font1 = QFont()
         font1.setFamilies([u"ONE Mobile POP"])
-        font1.setPointSize(12)
+        font1.setPointSize(14)
         self.filter_btn.setFont(font1)
 
         self.horizontalLayout_3.addWidget(self.filter_btn)
@@ -110,39 +110,39 @@ class Ui_page_equip_1(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
-        self.horizontalLayout_7 = QHBoxLayout()
-        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Minimum)
 
-        self.horizontalLayout_7.addItem(self.horizontalSpacer_2)
+        self.verticalLayout_2.addItem(self.verticalSpacer_2)
 
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.groupBox_mode = QGroupBox(page_equip_1)
         self.groupBox_mode.setObjectName(u"groupBox_mode")
-        font3 = QFont()
-        font3.setFamilies([u"ONE Mobile POP"])
-        font3.setPointSize(11)
-        self.groupBox_mode.setFont(font3)
-        self.horizontalLayout_5 = QHBoxLayout(self.groupBox_mode)
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.groupBox_mode.setFont(font1)
+        self.gridLayout = QGridLayout(self.groupBox_mode)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.gridLayout.setContentsMargins(15, 10, 15, 10)
         self.radio_cur_mode = QRadioButton(self.groupBox_mode)
         self.radio_cur_mode.setObjectName(u"radio_cur_mode")
+        font3 = QFont()
+        font3.setFamilies([u"ONE Mobile POP"])
+        font3.setPointSize(13)
         self.radio_cur_mode.setFont(font3)
 
-        self.horizontalLayout_5.addWidget(self.radio_cur_mode)
+        self.gridLayout.addWidget(self.radio_cur_mode, 0, 0, 1, 1)
 
         self.radio_goal_mode = QRadioButton(self.groupBox_mode)
         self.radio_goal_mode.setObjectName(u"radio_goal_mode")
         self.radio_goal_mode.setFont(font3)
 
-        self.horizontalLayout_5.addWidget(self.radio_goal_mode)
-
-        self.horizontalSpacer_4 = QSpacerItem(30, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
-
-        self.horizontalLayout_5.addItem(self.horizontalSpacer_4)
+        self.gridLayout.addWidget(self.radio_goal_mode, 0, 1, 1, 1)
 
         self.widget = QWidget(self.groupBox_mode)
         self.widget.setObjectName(u"widget")
-        self.widget.setFont(font3)
+        font4 = QFont()
+        font4.setFamilies([u"ONE Mobile POP"])
+        font4.setPointSize(11)
+        self.widget.setFont(font4)
         self.horizontalLayout_4 = QHBoxLayout(self.widget)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.label_3 = QLabel(self.widget)
@@ -155,43 +155,33 @@ class Ui_page_equip_1(object):
         self.cur_goal.setObjectName(u"cur_goal")
         sizePolicy1.setHeightForWidth(self.cur_goal.sizePolicy().hasHeightForWidth())
         self.cur_goal.setSizePolicy(sizePolicy1)
-        self.cur_goal.setMinimumSize(QSize(150, 0))
-        self.cur_goal.setFont(font1)
+        self.cur_goal.setMinimumSize(QSize(150, 35))
+        self.cur_goal.setFont(font3)
 
         self.horizontalLayout_4.addWidget(self.cur_goal)
 
         self.goal_setting_btn = QPushButton(self.widget)
         self.goal_setting_btn.setObjectName(u"goal_setting_btn")
-        self.goal_setting_btn.setFont(font1)
+        self.goal_setting_btn.setMinimumSize(QSize(0, 35))
+        self.goal_setting_btn.setFont(font3)
 
         self.horizontalLayout_4.addWidget(self.goal_setting_btn)
 
 
-        self.horizontalLayout_5.addWidget(self.widget)
+        self.gridLayout.addWidget(self.widget, 1, 0, 1, 2)
 
 
-        self.horizontalLayout_7.addWidget(self.groupBox_mode)
-
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_7.addItem(self.horizontalSpacer_3)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_7)
+        self.horizontalLayout_5.addWidget(self.groupBox_mode)
 
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.groupBox_setAll = QGroupBox(page_equip_1)
         self.groupBox_setAll.setObjectName(u"groupBox_setAll")
-        self.groupBox_setAll.setFont(font3)
+        self.groupBox_setAll.setFont(font1)
         self.verticalLayout = QVBoxLayout(self.groupBox_setAll)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_6.addItem(self.horizontalSpacer)
-
         self.widget_2 = QWidget(self.groupBox_setAll)
         self.widget_2.setObjectName(u"widget_2")
         sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
@@ -199,7 +189,7 @@ class Ui_page_equip_1(object):
         sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.widget_2.sizePolicy().hasHeightForWidth())
         self.widget_2.setSizePolicy(sizePolicy3)
-        self.widget_2.setFont(font3)
+        self.widget_2.setFont(font4)
         self.horizontalLayout_2 = QHBoxLayout(self.widget_2)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.label = QLabel(self.widget_2)
@@ -229,63 +219,39 @@ class Ui_page_equip_1(object):
 
         self.horizontalLayout_6.addWidget(self.widget_2)
 
-        self.horizontalSpacer_7 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_6.addItem(self.horizontalSpacer_7)
-
 
         self.verticalLayout.addLayout(self.horizontalLayout_6)
 
-        self.set_goal_w_stat_btn = QPushButton(self.groupBox_setAll)
+        self.widget_3 = QWidget(self.groupBox_setAll)
+        self.widget_3.setObjectName(u"widget_3")
+        self.horizontalLayout_7 = QHBoxLayout(self.widget_3)
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.horizontalSpacer = QSpacerItem(93, 38, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_7.addItem(self.horizontalSpacer)
+
+        self.set_goal_w_stat_btn = QPushButton(self.widget_3)
         self.set_goal_w_stat_btn.setObjectName(u"set_goal_w_stat_btn")
+        self.set_goal_w_stat_btn.setMinimumSize(QSize(230, 35))
         self.set_goal_w_stat_btn.setFont(font3)
 
-        self.verticalLayout.addWidget(self.set_goal_w_stat_btn)
+        self.horizontalLayout_7.addWidget(self.set_goal_w_stat_btn)
+
+        self.horizontalSpacer_2 = QSpacerItem(10, 38, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_7.addItem(self.horizontalSpacer_2)
+
+
+        self.verticalLayout.addWidget(self.widget_3)
 
 
         self.horizontalLayout_8.addWidget(self.groupBox_setAll)
 
-        self.groupBox_save_undo = QGroupBox(page_equip_1)
-        self.groupBox_save_undo.setObjectName(u"groupBox_save_undo")
-        sizePolicy.setHeightForWidth(self.groupBox_save_undo.sizePolicy().hasHeightForWidth())
-        self.groupBox_save_undo.setSizePolicy(sizePolicy)
-        self.groupBox_save_undo.setFont(font3)
-        self.gridLayout = QGridLayout(self.groupBox_save_undo)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.undo_cur_btn = QPushButton(self.groupBox_save_undo)
-        self.undo_cur_btn.setObjectName(u"undo_cur_btn")
-        self.undo_cur_btn.setFont(font3)
 
-        self.gridLayout.addWidget(self.undo_cur_btn, 1, 1, 1, 1)
-
-        self.save_all_btn = QPushButton(self.groupBox_save_undo)
-        self.save_all_btn.setObjectName(u"save_all_btn")
-        self.save_all_btn.setEnabled(True)
-        font4 = QFont()
-        font4.setFamilies([u"ONE Mobile POP"])
-        font4.setPointSize(11)
-        font4.setStrikeOut(False)
-        self.save_all_btn.setFont(font4)
-
-        self.gridLayout.addWidget(self.save_all_btn, 0, 0, 1, 1)
-
-        self.save_cur_btn = QPushButton(self.groupBox_save_undo)
-        self.save_cur_btn.setObjectName(u"save_cur_btn")
-        self.save_cur_btn.setFont(font3)
-
-        self.gridLayout.addWidget(self.save_cur_btn, 0, 1, 1, 1)
-
-        self.undo_all_btn = QPushButton(self.groupBox_save_undo)
-        self.undo_all_btn.setObjectName(u"undo_all_btn")
-        self.undo_all_btn.setFont(font3)
-
-        self.gridLayout.addWidget(self.undo_all_btn, 1, 0, 1, 1)
+        self.horizontalLayout_5.addLayout(self.horizontalLayout_8)
 
 
-        self.horizontalLayout_8.addWidget(self.groupBox_save_undo)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_8)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_5)
 
 
         self.retranslateUi(page_equip_1)
@@ -308,10 +274,5 @@ class Ui_page_equip_1(object):
         self.label_2.setText(QCoreApplication.translate("page_equip_1", u"\ub7ad\ud06c\uae4c\uc9c0", None))
         self.set_check_btn.setText(QCoreApplication.translate("page_equip_1", u"\uccb4\ud06c", None))
         self.set_goal_w_stat_btn.setText(QCoreApplication.translate("page_equip_1", u"\uc2a4\ud0ef \ubcc4 \ub7ad\ud06c\uc791 \ubaa9\ud45c \uc77c\uad04 \uc124\uc815", None))
-        self.groupBox_save_undo.setTitle(QCoreApplication.translate("page_equip_1", u"\uc800\uc7a5 / \ucde8\uc18c", None))
-        self.undo_cur_btn.setText(QCoreApplication.translate("page_equip_1", u"\ud604\uc7ac \ud398\uc774\uc9c0 \ubcc0\uacbd\uc0ac\ud56d \ucde8\uc18c", None))
-        self.save_all_btn.setText(QCoreApplication.translate("page_equip_1", u"\ubaa8\ub450 \uc800\uc7a5", None))
-        self.save_cur_btn.setText(QCoreApplication.translate("page_equip_1", u"\ud604\uc7ac \ud398\uc774\uc9c0 \uc800\uc7a5", None))
-        self.undo_all_btn.setText(QCoreApplication.translate("page_equip_1", u"\ubcc0\uacbd\uc0ac\ud56d \ubaa8\ub450 \ucde8\uc18c", None))
     # retranslateUi
 
