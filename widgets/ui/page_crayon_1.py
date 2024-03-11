@@ -99,10 +99,7 @@ class Ui_page_crayon_1(object):
         self.board_table.setSizePolicy(sizePolicy1)
         self.board_table.setMinimumSize(QSize(0, 370))
         self.board_table.setMaximumSize(QSize(16777215, 350))
-        font3 = QFont()
-        font3.setFamilies([u"ONE Mobile POP"])
-        font3.setPointSize(10)
-        self.board_table.setFont(font3)
+        self.board_table.setFont(font2)
         self.board_table.setColumnCount(0)
 
         self.horizontalLayout.addWidget(self.board_table)
@@ -126,10 +123,10 @@ class Ui_page_crayon_1(object):
 
         self.currency_widget = QGroupBox(page_crayon_1)
         self.currency_widget.setObjectName(u"currency_widget")
-        font4 = QFont()
-        font4.setFamilies([u"ONE Mobile POP"])
-        font4.setPointSize(14)
-        self.currency_widget.setFont(font4)
+        font3 = QFont()
+        font3.setFamilies([u"ONE Mobile POP"])
+        font3.setPointSize(14)
+        self.currency_widget.setFont(font3)
         self.horizontalLayout_8 = QHBoxLayout(self.currency_widget)
         self.horizontalLayout_8.setSpacing(40)
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
@@ -150,7 +147,7 @@ class Ui_page_crayon_1(object):
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.IconGold = QLabel(self.widget)
         self.IconGold.setObjectName(u"IconGold")
-        self.IconGold.setFont(font4)
+        self.IconGold.setFont(font3)
 
         self.horizontalLayout_2.addWidget(self.IconGold)
 
@@ -291,7 +288,7 @@ class Ui_page_crayon_1(object):
         self.groupBox_setAll_2.setObjectName(u"groupBox_setAll_2")
         sizePolicy3.setHeightForWidth(self.groupBox_setAll_2.sizePolicy().hasHeightForWidth())
         self.groupBox_setAll_2.setSizePolicy(sizePolicy3)
-        self.groupBox_setAll_2.setFont(font4)
+        self.groupBox_setAll_2.setFont(font3)
         self.verticalLayout_4 = QVBoxLayout(self.groupBox_setAll_2)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.autoselect_off = QRadioButton(self.groupBox_setAll_2)
@@ -342,17 +339,17 @@ class Ui_page_crayon_1(object):
         self.groupBox_setAll_3.setObjectName(u"groupBox_setAll_3")
         sizePolicy5.setHeightForWidth(self.groupBox_setAll_3.sizePolicy().hasHeightForWidth())
         self.groupBox_setAll_3.setSizePolicy(sizePolicy5)
-        self.groupBox_setAll_3.setFont(font4)
+        self.groupBox_setAll_3.setFont(font3)
         self.verticalLayout_2 = QVBoxLayout(self.groupBox_setAll_3)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.label = QLabel(self.groupBox_setAll_3)
         self.label.setObjectName(u"label")
-        font5 = QFont()
-        font5.setFamilies([u"ONE Mobile POP"])
-        font5.setPointSize(13)
-        self.label.setFont(font5)
+        font4 = QFont()
+        font4.setFamilies([u"ONE Mobile POP"])
+        font4.setPointSize(13)
+        self.label.setFont(font4)
 
         self.horizontalLayout_6.addWidget(self.label)
 
@@ -363,25 +360,25 @@ class Ui_page_crayon_1(object):
         self.select_normal_1_btn = QPushButton(self.groupBox_setAll_3)
         self.select_normal_1_btn.setObjectName(u"select_normal_1_btn")
         self.select_normal_1_btn.setEnabled(True)
-        font6 = QFont()
-        font6.setFamilies([u"ONE Mobile POP"])
-        font6.setPointSize(12)
-        font6.setStrikeOut(False)
-        self.select_normal_1_btn.setFont(font6)
+        font5 = QFont()
+        font5.setFamilies([u"ONE Mobile POP"])
+        font5.setPointSize(12)
+        font5.setStrikeOut(False)
+        self.select_normal_1_btn.setFont(font5)
 
         self.horizontalLayout_6.addWidget(self.select_normal_1_btn)
 
         self.select_normal_2_btn = QPushButton(self.groupBox_setAll_3)
         self.select_normal_2_btn.setObjectName(u"select_normal_2_btn")
         self.select_normal_2_btn.setEnabled(True)
-        self.select_normal_2_btn.setFont(font6)
+        self.select_normal_2_btn.setFont(font5)
 
         self.horizontalLayout_6.addWidget(self.select_normal_2_btn)
 
         self.select_normal_3_btn = QPushButton(self.groupBox_setAll_3)
         self.select_normal_3_btn.setObjectName(u"select_normal_3_btn")
         self.select_normal_3_btn.setEnabled(True)
-        self.select_normal_3_btn.setFont(font6)
+        self.select_normal_3_btn.setFont(font5)
 
         self.horizontalLayout_6.addWidget(self.select_normal_3_btn)
 
@@ -392,7 +389,7 @@ class Ui_page_crayon_1(object):
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.label_2 = QLabel(self.groupBox_setAll_3)
         self.label_2.setObjectName(u"label_2")
-        self.label_2.setFont(font5)
+        self.label_2.setFont(font4)
 
         self.horizontalLayout_4.addWidget(self.label_2)
 
@@ -403,21 +400,21 @@ class Ui_page_crayon_1(object):
         self.select_all_1_btn = QPushButton(self.groupBox_setAll_3)
         self.select_all_1_btn.setObjectName(u"select_all_1_btn")
         self.select_all_1_btn.setEnabled(True)
-        self.select_all_1_btn.setFont(font6)
+        self.select_all_1_btn.setFont(font5)
 
         self.horizontalLayout_4.addWidget(self.select_all_1_btn)
 
         self.select_all_2_btn = QPushButton(self.groupBox_setAll_3)
         self.select_all_2_btn.setObjectName(u"select_all_2_btn")
         self.select_all_2_btn.setEnabled(True)
-        self.select_all_2_btn.setFont(font6)
+        self.select_all_2_btn.setFont(font5)
 
         self.horizontalLayout_4.addWidget(self.select_all_2_btn)
 
         self.select_all_3_btn = QPushButton(self.groupBox_setAll_3)
         self.select_all_3_btn.setObjectName(u"select_all_3_btn")
         self.select_all_3_btn.setEnabled(True)
-        self.select_all_3_btn.setFont(font6)
+        self.select_all_3_btn.setFont(font5)
 
         self.horizontalLayout_4.addWidget(self.select_all_3_btn)
 

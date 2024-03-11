@@ -1,9 +1,12 @@
 from PySide6.QtCore import Qt, QSortFilterProxyModel
-from PySide6.QtWidgets import (QCompleter, QComboBox, QProxyStyle,QStyledItemDelegate,
+from PySide6.QtWidgets import (QWidget, QCompleter, QComboBox, QProxyStyle,QStyledItemDelegate,
                                QTableWidget, QItemDelegate, QLineEdit, QLayout, QStyle,
-                               QSizePolicy)
-from PySide6.QtGui import QFont, QColor, QRegularExpressionValidator
+                               QSizePolicy, QPushButton)
+from PySide6.QtGui import QFont, QColor, QRegularExpressionValidator, QPixmap
 from PySide6.QtCore import QRegularExpression, Qt, QRect, QPoint, QSize
+
+from widgets.ui.crayon_stat_container import Ui_CrayonStatContainer
+
 
 # Combobox with search-filtering
 class ExtendedComboBox(QComboBox):
@@ -261,3 +264,28 @@ class FlowLayout(QLayout):
         else:
             return parent.spacing()
 
+class CrayonStatContainer(Ui_CrayonStatContainer, QWidget):
+    def __init__(self, parent=None):
+        super(CrayonStatContainer, self).__init__(parent)
+        self.setupUi(self)
+    
+    def setTexts(self, values):
+        for attr_name, value in values.items():
+            getattr(self, attr_name).setText(str(value))
+    
+    def setIcon(self, stat_name):
+        self.icon.setPixmap(QPixmap(f"icon/status/Icon_{stat_name}.png"))
+
+
+class QCheckButton(QPushButton):
+    def __init__(self, parent=None):
+        super(QCheckButton, self).__init__(parent)
+        self.setCheckable(True)
+        self.clicked.connect(self.setBtnText)
+        self.setBtnText()
+
+    def setBtnText(self):
+        if self.isChecked():
+            self.setText("✔️")
+        else:
+            self.setText("")

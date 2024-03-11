@@ -181,7 +181,7 @@
        <property name="font">
         <font>
          <family>ONE Mobile POP</family>
-         <pointsize>10</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="columnCount">

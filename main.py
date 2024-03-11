@@ -80,7 +80,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     
     def setInitialState(self):
-
         self.stacked_window.setCurrentIndex(0)
         self.last_page_idx = 0
 
@@ -192,6 +191,12 @@ CREATE TABLE IF NOT EXISTS "calc_settings" (    -- 계산 설정
     "value"    INTEGER NOT NULL,                   -- 설정 값
     PRIMARY KEY("setting_name")
 );
+CREATE TABLE IF NOT EXISTS "user_board" (           -- 보드판
+    "hero_id"    INTEGER NOT NULL,             -- 사도 id
+    "board_status"    TEXT NOT NULL,           -- 보드판 정보
+    "boundary"    TEXT NOT NULL,               -- 보드판 경계 정보
+    PRIMARY KEY("hero_id")
+);
 PRAGMA journal_mode=wal;
 """)
         cur.execute("SELECT count(_rowid_) FROM user_goal_equip_names")
@@ -247,7 +252,10 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         # User data is already saved in sidebar.changeAccount or account_settings.saveCurrentState
         self.userDBInit()
         self.resource.deleteAll(user=True)
-        need_to_update_list = ["page_hero", "page_equip_abstract", "page_equip_1", "page_equip_2", "page_equip_3"]
+        need_to_update_list = ["page_hero", "page_equip_abstract", "page_equip_1",
+                               "page_equip_2", "page_equip_3", "page_crayon_abstract",
+                               "page_crayon_1", "page_crayon_2"
+                               ]
         self.changeReloadState(need_to_update_list, "account")
 
     
@@ -260,6 +268,10 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         need_to_update_list = []
         self.changeReloadState(need_to_update_list, "extrinsic")
 
+    def changeBoardCascade(self):
+        need_to_update_list = ["page_crayon_abstract", "page_crayon_2"]
+        self.changeReloadState(need_to_update_list, "board")
+
 
     def masterDBUpdateCascade(self):
         # save user data
@@ -270,7 +282,8 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         # reload all resources
         self.resource.deleteAll(user=True, master=True)
         self.resource.masterInit()
-        need_to_update_list = ["page_hero", "page_equip_abstract", "page_equip_1", "page_equip_2"]
+        need_to_update_list = ["page_hero", "page_equip_abstract", "page_equip_1",
+                               "page_equip_2", "page_crayon_1"]
         self.changeReloadState(need_to_update_list, "master")
 
 

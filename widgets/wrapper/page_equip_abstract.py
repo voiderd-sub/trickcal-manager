@@ -26,7 +26,6 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
             label: QLabel = getattr(self, f"icon{name_en}")
             label.setPixmap(pixmap)
         
-        # self.updateEquipStatAbstract()
         self.containerAll_2.setStyleSheet("background-color: white; border-radius: 8px;")
 
         self.vertical_layout = QVBoxLayout(self.scroll_container)

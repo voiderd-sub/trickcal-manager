@@ -46,7 +46,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>6</number>
+       <number>8</number>
       </property>
       <widget class="PageHome" name="page_home"/>
       <widget class="PageHero" name="page_hero"/>
@@ -54,8 +54,9 @@
       <widget class="PageEquip1" name="page_equip_1"/>
       <widget class="PageEquip2" name="page_equip_2"/>
       <widget class="PageEquip3" name="page_equip_3"/>
+      <widget class="PageCrayonAbstract" name="page_crayon_abstract"/>
       <widget class="PageCrayon1" name="page_crayon_1"/>
-      <widget class="QWidget" name="page_crayon_2"/>
+      <widget class="PageCrayon2" name="page_crayon_2"/>
       <widget class="QWidget" name="page_food_1"/>
       <widget class="QWidget" name="page_food_2"/>
       <widget class="QWidget" name="page_food_3"/>
@@ -114,6 +115,18 @@
    <class>PageCrayon1</class>
    <extends>QWidget</extends>
    <header>widgets/wrapper/page_crayon_1.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageCrayonAbstract</class>
+   <extends>QWidget</extends>
+   <header>widgets/wrapper/page_crayon_abstract.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageCrayon2</class>
+   <extends>QWidget</extends>
+   <header>widgets/wrapper/page_crayon_2.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -59,12 +59,6 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         # has the same effect as clicking go_right/left_btn
         table.keyPressEvent = lambda event: self.changeHeroSelectIndex(1) if event.key()==Qt.Key.Key_Right else self.changeHeroSelectIndex(-1) if event.key()==Qt.Key.Key_Left else None
 
-        # Connect save/undo buttons
-        # self.save_all_btn.clicked.connect(self.saveUserEquipAll)
-        # self.save_cur_btn.clicked.connect(self.saveUserEquipCur)
-        # self.undo_all_btn.clicked.connect(self.undoUserEquipAll)
-        # self.undo_cur_btn.clicked.connect(self.undoUserEquipCur)
-
         self.last_mode = True   # True: cur_mode, False: goal_mode
         self.radio_cur_mode.setChecked(True)
         self.radio_cur_mode.toggled.connect(self.updateCurrentEquipTable)
