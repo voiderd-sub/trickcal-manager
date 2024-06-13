@@ -29,7 +29,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                                   "daily_candy_yes", "auto_update_yes", "round_yes"]
         self.loadUserData()
 
-        self.research_level.setValidator(QIntValidator(0, 8, self.research_level))
+        self.research_level.setValidator(QIntValidator(0, 10, self.research_level))
         self.candy_buying.setValidator(QIntValidator(0, 10, self.candy_buying))
         self.lecture_level.setValidator(QIntValidator(0, 25, self.lecture_level))
         self.cur_standard.setValidator(QIntValidator(0, 999999, self.cur_standard))

@@ -651,7 +651,7 @@ class Ui_page_equip_3(object):
         self.daily_candy_no.setText(QCoreApplication.translate("page_equip_3", u"\uc544\ub2c8", None))
         self.hallow_13_yes.setText(QCoreApplication.translate("page_equip_3", u"\uc751", None))
         self.hallow_13_no.setText(QCoreApplication.translate("page_equip_3", u"\uc544\ub2c8", None))
-        self.research_level.setPlaceholderText(QCoreApplication.translate("page_equip_3", u"0 ~ 8", None))
+        self.research_level.setPlaceholderText(QCoreApplication.translate("page_equip_3", u"0 ~ 10", None))
         self.candy_buying.setPlaceholderText(QCoreApplication.translate("page_equip_3", u"0 ~ 10", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("page_equip_3", u"\uc815\uc11d", None))
         self.label_9.setText(QCoreApplication.translate("page_equip_3", u"\uc815\uc11d \uc0ac\uc6a9\ud560\uae4c\uc694?", None))
