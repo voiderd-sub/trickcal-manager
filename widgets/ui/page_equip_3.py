@@ -662,7 +662,7 @@ class Ui_page_equip_3(object):
         self.use_standard_no.setText(QCoreApplication.translate("page_equip_3", u"\uc544\ub2c8", None))
         self.daily_elleaf_yes.setText(QCoreApplication.translate("page_equip_3", u"\uc751", None))
         self.daily_elleaf_no.setText(QCoreApplication.translate("page_equip_3", u"\uc544\ub2c8", None))
-        self.lecture_level.setPlaceholderText(QCoreApplication.translate("page_equip_3", u"0 ~ 25", None))
+        self.lecture_level.setPlaceholderText(QCoreApplication.translate("page_equip_3", u"0 ~ 30", None))
         self.cur_standard.setPlaceholderText(QCoreApplication.translate("page_equip_3", u"0 ~ 999,999", None))
         self.groupBox_4.setTitle(QCoreApplication.translate("page_equip_3", u"\uae30\ud0c0", None))
         self.label_13.setText(QCoreApplication.translate("page_equip_3", u"\ucd5c\uc2e0 \ub4dc\ub78d\ub960 \ub370\uc774\ud130\ub97c\n"

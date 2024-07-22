@@ -27,7 +27,9 @@ class Ui_page_equip_2(object):
             page_equip_2.setObjectName(u"page_equip_2")
         page_equip_2.resize(800, 600)
         self.verticalLayout_3 = QVBoxLayout(page_equip_2)
+        self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setContentsMargins(15, 20, 15, 20)
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.widget = QWidget(page_equip_2)
@@ -159,41 +161,6 @@ class Ui_page_equip_2(object):
 
         self.verticalLayout_3.addLayout(self.horizontalLayout_3)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Fixed)
-
-        self.verticalLayout_3.addItem(self.verticalSpacer)
-
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout.addItem(self.horizontalSpacer_2)
-
-        self.save_btn = QPushButton(page_equip_2)
-        self.save_btn.setObjectName(u"save_btn")
-        sizePolicy3.setHeightForWidth(self.save_btn.sizePolicy().hasHeightForWidth())
-        self.save_btn.setSizePolicy(sizePolicy3)
-        self.save_btn.setMinimumSize(QSize(120, 0))
-        self.save_btn.setFont(font2)
-
-        self.horizontalLayout.addWidget(self.save_btn)
-
-        self.cancel_btn = QPushButton(page_equip_2)
-        self.cancel_btn.setObjectName(u"cancel_btn")
-        sizePolicy3.setHeightForWidth(self.cancel_btn.sizePolicy().hasHeightForWidth())
-        self.cancel_btn.setSizePolicy(sizePolicy3)
-        self.cancel_btn.setMinimumSize(QSize(120, 0))
-        self.cancel_btn.setFont(font2)
-
-        self.horizontalLayout.addWidget(self.cancel_btn)
-
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout.addItem(self.horizontalSpacer_3)
-
-
-        self.verticalLayout_3.addLayout(self.horizontalLayout)
-
 
         self.retranslateUi(page_equip_2)
 
@@ -206,7 +173,5 @@ class Ui_page_equip_2(object):
         self.label_2.setText(QCoreApplication.translate("page_equip_2", u"\ubcf4\uc720 \uc644\uc81c\ud488", None))
         self.add_btn.setText(QCoreApplication.translate("page_equip_2", u"\ucd94\uac00", None))
         self.delete_btn.setText(QCoreApplication.translate("page_equip_2", u"\uc0ad\uc81c", None))
-        self.save_btn.setText(QCoreApplication.translate("page_equip_2", u"\uc800\uc7a5", None))
-        self.cancel_btn.setText(QCoreApplication.translate("page_equip_2", u"\ucde8\uc18c", None))
     # retranslateUi
 

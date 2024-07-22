@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplication, QGridLayout,
-    QHBoxLayout, QHeaderView, QLayout, QPushButton,
-    QSizePolicy, QSpacerItem, QTableWidget, QTableWidgetItem,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplication, QComboBox,
+    QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
+    QPushButton, QSizePolicy, QSpacerItem, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget)
 
 class Ui_page_hero(object):
     def setupUi(self, page_hero):
@@ -62,7 +62,7 @@ class Ui_page_hero(object):
         self.hero_table.setSizePolicy(sizePolicy1)
         font1 = QFont()
         font1.setFamilies([u"ONE \ubaa8\ubc14\uc77cPOP"])
-        font1.setPointSize(14)
+        font1.setPointSize(15)
         self.hero_table.setFont(font1)
         self.hero_table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.hero_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -75,10 +75,7 @@ class Ui_page_hero(object):
         self.update_btn = QPushButton(self.hero_table_container)
         self.update_btn.setObjectName(u"update_btn")
         self.update_btn.setMinimumSize(QSize(0, 40))
-        font2 = QFont()
-        font2.setFamilies([u"ONE \ubaa8\ubc14\uc77cPOP"])
-        font2.setPointSize(15)
-        self.update_btn.setFont(font2)
+        self.update_btn.setFont(font1)
 
         self.verticalLayout_2.addWidget(self.update_btn)
 
@@ -98,77 +95,71 @@ class Ui_page_hero(object):
         self.button_area.setFont(font)
         self.verticalLayout_4 = QVBoxLayout(self.button_area)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.verticalLayout = QVBoxLayout()
-        self.verticalLayout.setSpacing(3)
+        self.order_box = QComboBox(self.button_area)
+        self.order_box.addItem("")
+        self.order_box.addItem("")
+        self.order_box.setObjectName(u"order_box")
+        self.order_box.setMinimumSize(QSize(0, 40))
+        self.order_box.setFont(font1)
+
+        self.verticalLayout_4.addWidget(self.order_box)
+
+        self.verticalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Minimum, QSizePolicy.Fixed)
+
+        self.verticalLayout_4.addItem(self.verticalSpacer_2)
+
+        self.groupBox = QGroupBox(self.button_area)
+        self.groupBox.setObjectName(u"groupBox")
+        self.groupBox.setFont(font1)
+        self.verticalLayout = QVBoxLayout(self.groupBox)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setSizeConstraint(QLayout.SetFixedSize)
-        self.star_1_btn = QPushButton(self.button_area)
+        self.star_1_btn = QPushButton(self.groupBox)
         self.star_1_btn.setObjectName(u"star_1_btn")
-        self.star_1_btn.setMinimumSize(QSize(0, 30))
-        font3 = QFont()
-        font3.setFamilies([u"ONE \ubaa8\ubc14\uc77cPOP"])
-        font3.setPointSize(13)
-        self.star_1_btn.setFont(font3)
+        self.star_1_btn.setMinimumSize(QSize(0, 40))
+        self.star_1_btn.setFont(font1)
 
         self.verticalLayout.addWidget(self.star_1_btn)
 
-        self.star_2_btn = QPushButton(self.button_area)
+        self.star_2_btn = QPushButton(self.groupBox)
         self.star_2_btn.setObjectName(u"star_2_btn")
-        self.star_2_btn.setMinimumSize(QSize(0, 30))
-        self.star_2_btn.setFont(font3)
+        self.star_2_btn.setMinimumSize(QSize(0, 40))
+        self.star_2_btn.setFont(font1)
 
         self.verticalLayout.addWidget(self.star_2_btn)
 
-        self.all_check_btn = QPushButton(self.button_area)
+        self.all_check_btn = QPushButton(self.groupBox)
         self.all_check_btn.setObjectName(u"all_check_btn")
-        self.all_check_btn.setMinimumSize(QSize(0, 30))
-        self.all_check_btn.setFont(font3)
+        self.all_check_btn.setMinimumSize(QSize(0, 40))
+        self.all_check_btn.setFont(font1)
 
         self.verticalLayout.addWidget(self.all_check_btn)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.verticalSpacer_3 = QSpacerItem(20, 13, QSizePolicy.Minimum, QSizePolicy.Fixed)
 
-        self.verticalLayout.addItem(self.verticalSpacer_2)
+        self.verticalLayout.addItem(self.verticalSpacer_3)
 
-        self.all_uncheck_btn = QPushButton(self.button_area)
+        self.all_uncheck_btn = QPushButton(self.groupBox)
         self.all_uncheck_btn.setObjectName(u"all_uncheck_btn")
-        self.all_uncheck_btn.setMinimumSize(QSize(0, 30))
-        self.all_uncheck_btn.setFont(font3)
+        self.all_uncheck_btn.setMinimumSize(QSize(0, 40))
+        self.all_uncheck_btn.setFont(font1)
 
         self.verticalLayout.addWidget(self.all_uncheck_btn)
 
 
-        self.verticalLayout_4.addLayout(self.verticalLayout)
+        self.verticalLayout_4.addWidget(self.groupBox)
 
         self.verticalSpacer = QSpacerItem(20, 339, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_4.addItem(self.verticalSpacer)
-
-        self.verticalLayout_3 = QVBoxLayout()
-        self.verticalLayout_3.setSpacing(3)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.save_btn = QPushButton(self.button_area)
-        self.save_btn.setObjectName(u"save_btn")
-        self.save_btn.setMinimumSize(QSize(0, 30))
-        self.save_btn.setFont(font3)
-
-        self.verticalLayout_3.addWidget(self.save_btn)
-
-        self.undo_btn = QPushButton(self.button_area)
-        self.undo_btn.setObjectName(u"undo_btn")
-        self.undo_btn.setMinimumSize(QSize(0, 30))
-        self.undo_btn.setFont(font3)
-
-        self.verticalLayout_3.addWidget(self.undo_btn)
-
-
-        self.verticalLayout_4.addLayout(self.verticalLayout_3)
 
 
         self.horizontalLayout.addWidget(self.button_area)
 
 
         self.retranslateUi(page_hero)
+
+        self.order_box.setCurrentIndex(0)
+
 
         QMetaObject.connectSlotsByName(page_hero)
     # setupUi
@@ -182,11 +173,14 @@ class Ui_page_hero(object):
         ___qtablewidgetitem2 = self.hero_table.horizontalHeaderItem(2)
         ___qtablewidgetitem2.setText(QCoreApplication.translate("page_hero", u"\ud604\uc7ac \ub4f1\uae09", None));
         self.update_btn.setText(QCoreApplication.translate("page_hero", u"\uc0ac\ub3c4 \ub370\uc774\ud130 \uc5c5\ub370\uc774\ud2b8", None))
+        self.order_box.setItemText(0, QCoreApplication.translate("page_hero", u"\uae30\ubcf8 \uc815\ub82c", None))
+        self.order_box.setItemText(1, QCoreApplication.translate("page_hero", u"\uac00\ub098\ub2e4 \uc21c", None))
+
+        self.order_box.setPlaceholderText("")
+        self.groupBox.setTitle(QCoreApplication.translate("page_hero", u"\uc77c\uad04 \uc120\ud0dd", None))
         self.star_1_btn.setText(QCoreApplication.translate("page_hero", u"1\uc131 \uc804\ubd80 \ubcf4\uc720 \uc911", None))
         self.star_2_btn.setText(QCoreApplication.translate("page_hero", u"2\uc131 \uc804\ubd80 \ubcf4\uc720 \uc911", None))
         self.all_check_btn.setText(QCoreApplication.translate("page_hero", u"\uc804 \uc0ac\ub3c4 \ubcf4\uc720 \uc911", None))
         self.all_uncheck_btn.setText(QCoreApplication.translate("page_hero", u"\uc804\ubd80 \ubbf8\ubcf4\uc720", None))
-        self.save_btn.setText(QCoreApplication.translate("page_hero", u"\uc800\uc7a5", None))
-        self.undo_btn.setText(QCoreApplication.translate("page_hero", u"\ubcc0\uacbd\uc0ac\ud56d \ucde8\uc18c", None))
     # retranslateUi
 

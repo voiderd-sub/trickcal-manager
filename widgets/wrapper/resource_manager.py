@@ -35,8 +35,57 @@ class ResourceManager:
             self._resourceUser.clear()
         if master:
             self._resourceMaster.clear()
-
     
+    
+    def saveAllUserResource(self):
+        # For each key in _resourceUser, save the value to the database
+        conn = self.main.conn_user
+        cur = conn.cursor()
+        for userdata_name, userdata in self._resourceUser.items():
+            match userdata_name:
+                case "HeroIdToStarExtrinsic":
+                    cur.executemany("INSERT OR REPLACE INTO user_hero(hero_id, star_extrinsic) VALUES(?,?)",
+                                    userdata.items())
+                    
+                case "CurEquip":
+                    data = [(idx, rank, ",".join(str(i) for i in equips) if equips else None)
+                            for idx, (rank, equips) in userdata.items()]
+                    cur.executemany("INSERT OR REPLACE INTO user_cur_equip(hero_id, rank, equips) VALUES(?,?,?)", data)
+
+                case "GoalIdToName":
+                    cur.execute("DELETE FROM user_goal_equip_names")
+                    cur.executemany("INSERT INTO user_goal_equip_names(id, name, goal_type) VALUES(?,?,?)",
+                                    [(id, name, goal_type) for id, (name, goal_type) in userdata.items()])
+                    
+                case "GoalEquip":
+                    cur.execute("DELETE FROM user_goal_equip")
+                    data = [(goal_id, hero_id, rank, ",".join(str(i) for i in equips) if equips else None) for goal_id, hero_dict in userdata.items() for hero_id, (rank, equips) in hero_dict.items()]
+                    cur.executemany("INSERT INTO user_goal_equip(goal_id, hero_id, rank, equips) VALUES(?,?,?,?)", data)
+
+                case "CalcSettings":
+                    cur.executemany("INSERT OR REPLACE INTO calc_settings(setting_name, value) VALUES(?,?)",
+                                    userdata.items())
+                
+                case "BagEquips":
+                    cur.execute("DELETE FROM user_bag_equips")
+                    cur.executemany("INSERT INTO user_bag_equips(id, count) VALUES(?,?)",
+                                    userdata.items())
+                
+                case "UserItems":
+                    cur.executemany("REPLACE INTO user_items(name, count) VALUES(?,?)",
+                                    userdata.items())
+                    
+                case "UserBoard":
+                    user_board = [(hero_id,
+                                   ";".join("".join(str(i) for i in checked_list)
+                                            for checked_list in board_status_tuple))
+                                  for hero_id, (board_status_tuple, boundary) in userdata.items()]
+                    cur.executemany("INSERT OR REPLACE INTO user_board(hero_id, board_status) VALUES(?,?)",
+                                    user_board)
+
+        conn.commit()
+    
+
     def getHeroIdToStarExtrinsic(self):
         cur_user = self.main.conn_user.cursor()
         cur_user.execute("SELECT hero_id, star_extrinsic FROM user_hero")
@@ -66,12 +115,12 @@ class ResourceManager:
         return user_equip
     
 
-    def getGoalList(self):
+    def getGoalIdToName(self):
         cur_user = self.main.conn_user.cursor()
-        cur_user.execute("SELECT name FROM user_goal_equip_names order by id asc;")
-        goal_list = [name for (name,) in cur_user]
-        self._resourceUser["goal_list"] = goal_list
-        return goal_list
+        cur_user.execute("SELECT id, name, goal_type FROM user_goal_equip_names order by id asc;")
+        goal_id_to_name = {id: (name, goal_type) for (id, name, goal_type) in cur_user}
+        self._resourceUser["GoalIdToName"] = goal_id_to_name
+        return goal_id_to_name
     
 
     def getGoalEquip(self):
@@ -108,6 +157,53 @@ class ResourceManager:
         return user_items
     
 
+    def getUserBoard(self):
+        # {hero_id : (gateways, crayon1, ..., crayon4)}
+        cur_user = self.main.conn_user.cursor()
+        cur_user.execute("SELECT * FROM user_board")
+        user_board = {hero_id: tuple([int(checked_char) for checked_char in checked_str]
+                      for checked_str in board_status.split(";"))
+                      for (hero_id, board_status) in cur_user}
+        
+        # construct board array for each boardtype
+        board_type = self.masterGet("BoardType")
+        hero_id_to_board_data = self.masterGet("HeroIdToBoardData")
+
+        for hero_id, board_status_tuple in user_board.items():
+            # if no cell is selected, set boundary to (0, start_point)
+            # find start_point by using index of board_type_data[0]'s item is 10
+            crayon_indices = [0] * 5
+            boundary = []
+            board_type_id = hero_id_to_board_data[hero_id][0]
+            board_type_data = board_type[board_type_id]["seq"]
+
+            if sum(sum(row) for row in board_status_tuple) == 0:
+                for col, cell in enumerate(board_type_data[0]):
+                    if cell == 10:
+                        boundary.append((0, col))
+                        break
+                user_board[hero_id] = (board_status_tuple, boundary)
+                continue
+
+            for row in range(1, len(board_type_data)):
+                for col in range(len(board_type_data[row])):
+                    cell_type = board_type_data[row][col]
+                    if cell_type != 0:
+                        is_selected = board_status_tuple[cell_type%10][crayon_indices[cell_type%10]]
+                        if is_selected:
+                            # check is there any unselected cell in (x+-1, y) and (x, y+-1)
+                            for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                                if 0 <= row+dx < len(board_type_data) and 0 <= col+dy < len(board_type_data[row]):
+                                    if board_type_data[row+dx][col+dy] == 0:
+                                        boundary.append((row, col))
+                                        break
+                        crayon_indices[cell_type%10] += 1
+            
+            user_board[hero_id] = (board_status_tuple, boundary)
+        self._resourceUser["UserBoard"] = user_board
+        return user_board
+
+
     def masterInit(self):
         cur = self.main.conn_master.cursor()
 
@@ -121,11 +217,11 @@ class ResourceManager:
         hero_id_to_metadata = dict()
         meta_names = ["name_kr", "name_en", "star_in", "attack_type", "pos", "class", "personality", "race"]
         cur.execute("SELECT * FROM hero") # idx, name_kr, name_en, star_in, attack_type, pos, class, personality, race
-        for data in cur:
-            idx = data[0]
-            hero_name_to_id[data[1]] = idx
+        for board_seq in cur:
+            idx = board_seq[0]
+            hero_name_to_id[board_seq[1]] = idx
             hero_id_to_metadata[idx] = dict()
-            for meta_name, meta_val in zip(meta_names, data[1:]):
+            for meta_name, meta_val in zip(meta_names, board_seq[1:]):
                 hero_id_to_metadata[idx][meta_name] = meta_val
 
         self._resourceMaster["HeroNameToId"] = hero_name_to_id
@@ -200,9 +296,12 @@ class ResourceManager:
         self._resourceMaster["HeroIdToRankStatType"] = hero_rank_stat_type
 
         # Stat
-        cur.execute("SELECT * FROM stat")
+        cur.execute("SELECT id, name_kr, name_en FROM stat")
         stat = {id: (name_kr, name_en) for (id, name_kr, name_en) in cur}
         self._resourceMaster["Stat"] = stat
+        cur.execute("SELECT id, short FROM stat")
+        stat_short = {id: short for (id, short) in cur}
+        self._resourceMaster["StatShort"] = stat_short
 
         # StageToDrop
         cur.execute("SELECT * FROM drop_table")
@@ -212,6 +311,92 @@ class ResourceManager:
             stage_to_drop[stage][item_2] = item_2_drop_rate
             stage_to_drop[stage].pop(None, None)
         self._resourceMaster["StageToDrop"] = stage_to_drop
+
+
+        # BoardType
+        cur.execute("""SELECT id, board, board_type.is_star_1, num_crayon_type
+                    FROM board_type JOIN board_num_each_crayon
+                    ON (board_type.is_star_1=board_num_each_crayon.is_star_1)""")
+        board_type = dict()
+        for (id, board, is_star_1, num_crayon_type) in cur:
+            data = dict()
+            board_seq = list()
+            start_points = {3 : list(), 4 : list()}
+            point_to_idx = dict()
+            crayon_indices = [0] * 4
+            gates = []
+            for level, seq in enumerate(board.split(";"), start=1):
+                if len(seq) == 1:
+                    board_seq.append([0] * 7)
+                    board_seq[-1][int(seq)-1] = 10
+                    gates.append((len(board_seq)-1, int(seq)-1))
+                    for type in start_points:
+                        start_points[type].append([])
+                else:
+                    for seq_idx, type in enumerate(seq):
+                        type = int(type)
+                        col = seq_idx % 7
+                        if col == 0:
+                            board_seq.append([0] * 7)
+                        board_seq[-1][col] = type
+                        if type > 0:
+                            point_to_idx[(len(board_seq)-1, col)] = crayon_indices[type-1]
+                            crayon_indices[type-1] += 1
+                        if type >= 3:
+                            start_points[type][-1].append((len(board_seq)-1, col))
+
+            data["seq"] = board_seq
+            data["is_star_1"] = bool(is_star_1)
+            data["start_points"] = start_points
+            data["gates"] = gates
+            data["point_to_idx"] = point_to_idx
+
+            num_crayon_types = [list() for _ in range(4)]
+            for num_types in num_crayon_type.split(";"):
+                for idx, num_type in enumerate(num_types.split(",")):
+                    num_crayon_types[idx].append(int(num_type) + num_crayon_types[idx][-1] if num_crayon_types[idx] else int(num_type))
+            for idx, num_type in enumerate(num_crayon_types):
+                num_crayon_types[idx] = tuple(num_type)
+            data["num_crayon_type"] = tuple(num_crayon_types)
+            board_type[id] = data
+        self._resourceMaster["BoardType"] = board_type
+
+
+        # BoardCost
+        cur.execute("SELECT level, type, gold, crayons FROM board_cost")
+        board_cost = dict()
+        for (level, type, gold, crayons) in cur:
+            board_cost[(level, type)] = (gold, *(int(i) for i in crayons.split(";")))
+        self._resourceMaster["BoardCost"] = board_cost
+
+
+        # BoardStat
+        cur.execute("SELECT stat_id, is_star_1, crayon_type, value FROM board_stats")
+        board_stat = dict()
+        for (stat_id, is_star_1, crayon_type, value) in cur:
+            if is_star_1 > 1:
+                board_stat[(stat_id, False, crayon_type)] = board_stat[(stat_id, True, crayon_type)] = value
+            else:
+                board_stat[(stat_id, bool(is_star_1), crayon_type)] = value
+        self._resourceMaster["BoardStat"] = board_stat
+
+
+        # BoardMinCostPath
+        cur.execute("SELECT * FROM board_min_cost_path")
+        min_cost_path = defaultdict(lambda: defaultdict(lambda: dict()))
+        for (board_id, start_point, end_point, cost, path) in cur:
+            start_point = tuple(int(i) for i in start_point.split(","))
+            end_point = tuple(int(i) for i in end_point.split(","))
+            path = tuple(tuple(int(i) for i in point.split(",")) for point in path.split(";"))
+            min_cost_path[board_id][start_point][end_point] = (cost, path)
+        self._resourceMaster["BoardMinCostPath"] = min_cost_path
+
+
+        # HeroIdToBoardData
+        cur.execute("SELECT * FROM hero_board_type")
+        hero_id_to_board_data = {hero_id: (board_type, tuple(int(i) for i in board_stats.split(";"))) for (hero_id, board_type, board_stats) in cur}
+        self._resourceMaster["HeroIdToBoardData"] = hero_id_to_board_data
+
 
         # HeroDefaultOrder
         hero_default_order = list()

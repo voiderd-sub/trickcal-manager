@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>280</width>
-    <height>710</height>
+    <height>736</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -190,7 +190,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QPushButton" name="equip_sub_btn_abstract">
+       <widget class="QPushButton" name="equip_abstract_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -218,7 +218,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="equip_sub_btn_1">
+       <widget class="QPushButton" name="equip_1_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -246,7 +246,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="equip_sub_btn_2">
+       <widget class="QPushButton" name="equip_2_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -274,7 +274,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="equip_sub_btn_3">
+       <widget class="QPushButton" name="equip_3_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -313,7 +313,7 @@
       </font>
      </property>
      <property name="text">
-      <string>보드 (준비중)</string>
+      <string>보드</string>
      </property>
      <property name="icon">
       <iconset>
@@ -343,7 +343,7 @@
        <family>ONE Mobile POP</family>
       </font>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0">
       <property name="spacing">
        <number>0</number>
       </property>
@@ -360,7 +360,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QPushButton" name="crayon_sub_btn_1">
+       <widget class="QPushButton" name="crayon_abstract_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -368,7 +368,7 @@
          </font>
         </property>
         <property name="text">
-         <string>보드작 현황</string>
+         <string>전체 보드 현황</string>
         </property>
         <property name="iconSize">
          <size>
@@ -388,7 +388,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="crayon_sub_btn_2">
+       <widget class="QPushButton" name="crayon_1_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -396,7 +396,35 @@
          </font>
         </property>
         <property name="text">
-         <string>황크칸 찍는 비용 계산</string>
+         <string>보드작 현황 기록</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>25</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>false</bool>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">crayon_group</string>
+        </attribute>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="crayon_2_btn">
+        <property name="font">
+         <font>
+          <family>ONE Mobile POP</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>최소 비용 보드판</string>
         </property>
         <property name="iconSize">
          <size>
@@ -474,7 +502,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QPushButton" name="food_sub_btn_1">
+       <widget class="QPushButton" name="food_1_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -502,7 +530,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="food_sub_btn_2">
+       <widget class="QPushButton" name="food_2_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -530,7 +558,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="food_sub_btn_3">
+       <widget class="QPushButton" name="food_3_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -616,7 +644,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QPushButton" name="lab_sub_btn_1">
+       <widget class="QPushButton" name="lab_1_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -644,7 +672,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="lab_sub_btn_2">
+       <widget class="QPushButton" name="lab_2_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -672,7 +700,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="lab_sub_btn_3">
+       <widget class="QPushButton" name="lab_3_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -792,10 +820,10 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="crayon_group"/>
-  <buttongroup name="equip_group"/>
-  <buttongroup name="lab_group"/>
-  <buttongroup name="food_group"/>
   <buttongroup name="main_menu_group"/>
+  <buttongroup name="equip_group"/>
+  <buttongroup name="food_group"/>
+  <buttongroup name="lab_group"/>
+  <buttongroup name="crayon_group"/>
  </buttongroups>
 </ui>

@@ -17,6 +17,8 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
         self.setInitialState()
 
     def setInitialState(self):
+        self.reload = {"account": True}
+
         for name_kr, name_en in self.window().resource.masterGet("Stat").values():
             pixmap = QPixmap()
             pixmap.load(f"icon/status/Icon_{name_en}.png")
@@ -24,7 +26,6 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
             label: QLabel = getattr(self, f"icon{name_en}")
             label.setPixmap(pixmap)
         
-        self.updateEquipStatAbstract()
         self.containerAll_2.setStyleSheet("background-color: white; border-radius: 8px;")
 
         self.vertical_layout = QVBoxLayout(self.scroll_container)
@@ -33,8 +34,8 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
         self.goal_list.currentIndexChanged.connect(self.updateEquipState)
         self.check_show_completed.stateChanged.connect(self.showModeChanged)
         self.radio_equip_show.toggled.connect(self.updateEquipState)
-        self.updateGoalList()
-        self.updateEquipState()
+        # self.updateGoalList()
+        # self.updateEquipState()
 
 
     def updateEquipStatAbstract(self):
@@ -70,16 +71,10 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
             getattr(self, f"rate{name_en}").setText(f"({ratio})")
         
         self.rateAll.setText(f"{cur_cnt * 100 / all_cnt:.1f}%")
-
-
-    def goalListChanged(self):
-        self.updateGoalList()
-        self.updateEquipState()
-        self.updateEquipStatAbstract()
     
 
     def updateGoalList(self):
-        goal_list = self.window().resource.userGet("GoalList")
+        goal_list = list(name for (name, type) in self.window().resource.userGet("GoalIdToName").values())
         self.goal_list.blockSignals(True)
         self.goal_list.clear()
         self.goal_list.addItems(["현재 랭크"] + goal_list)
@@ -198,7 +193,7 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
                 if not no_goal or self.radio_equip_show.isChecked():
                     label = QLabel(hero_container)
                     if not no_goal:
-                        cur_rank = min(user_equip[hero_id][0], 7)
+                        cur_rank = min(user_equip[hero_id][0], max_rank)
                         text.append(f"{cur_rank}")
                     if self.radio_equip_show.isChecked():
                         text.append(f"{ratio_text}")
@@ -220,3 +215,15 @@ class PageEquipAbstract(QWidget, Ui_page_equip_abstract):
     def showModeChanged(self):
         if self.goal_list.currentIndex() != 0:
             self.updateEquipState()
+    
+
+    def reloadPage(self):
+        if not any(self.reload.values()):
+            return
+        
+        if self.reload.get("goal", False) or self.reload.get("account", False):
+            self.updateGoalList()
+        
+        self.updateEquipStatAbstract()
+        self.updateEquipState()
+        self.reload = dict()

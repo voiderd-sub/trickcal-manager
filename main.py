@@ -72,7 +72,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.setupUi(self)
         self.setInitialState()
-        self.stacked_window.setCurrentIndex(0)
 
         # generate subwindows
         self.account_settings = AccountSettings(parent=self)
@@ -81,10 +80,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     
     def setInitialState(self):
+        self.stacked_window.setCurrentIndex(0)
+        self.last_page_idx = 0
+
         # Connect btns with pages with each page
         for i, name in enumerate(self.sidebar.btn_with_pages):
             btn=getattr(self.sidebar, name)
+            page_name = "page_" + name[:-4]
             btn.clicked.connect(partial(self.stacked_window.setCurrentIndex, i))
+        self.stacked_window.currentChanged.connect(self.saveLastPageData)
+        self.stacked_window.currentChanged.connect(self.reloadPage)
     
 
     def showEvent(self, event):
@@ -101,6 +106,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def closeEvent(self, event):
+        self.saveLastPageData()
+        self.resource.saveAllUserResource()
         self.conn_master.close()
         self.conn_user.close()
         with open('db/config.yaml', 'w') as f:
@@ -135,6 +142,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def userDBInit(self):
+        if hasattr(self, "conn_user"):
+            self.conn_user.close()
+        
         user_name = self.config["account_list"][self.config["cur_account_idx"]]
         db_path = f"db/{user_name}.db"
 
@@ -155,7 +165,8 @@ CREATE TABLE IF NOT EXISTS "user_cur_equip" (                 -- 유저의 현�
 );
 CREATE TABLE IF NOT EXISTS "user_goal_equip_names" (          -- 유저가 설정한 목표 이름
     "id"	INTEGER PRIMARY KEY,
-    "name"	TEXT NOT NULL UNIQUE
+    "name"	TEXT NOT NULL UNIQUE,
+    "goal_type" TEXT NOT NULL                   -- 목표 타입 : Rank(특정 랭크), Stat(특정 스탯), StatMax(다음 랭크 고려한 특정 스탯), User(사용자 정의)
 );
 CREATE TABLE IF NOT EXISTS "user_goal_equip" (                -- 유저가 설정한 목표 상세 내역
     "goal_id"	INTEGER NOT NULL,               -- 목표 id
@@ -179,11 +190,16 @@ CREATE TABLE IF NOT EXISTS "calc_settings" (    -- 계산 설정
     "value"    INTEGER NOT NULL,                   -- 설정 값
     PRIMARY KEY("setting_name")
 );
+CREATE TABLE IF NOT EXISTS "user_board" (           -- 보드판
+    "hero_id"    INTEGER NOT NULL,             -- 사도 id
+    "board_status"    TEXT NOT NULL,           -- 보드판 정보
+    PRIMARY KEY("hero_id")
+);
 PRAGMA journal_mode=wal;
 """)
         cur.execute("SELECT count(_rowid_) FROM user_goal_equip_names")
         if cur.fetchone()[0] == 0:
-            cur.execute("""INSERT INTO "user_goal_equip_names" (id, name) VALUES (1, '기본 목표');""")
+            cur.execute("""INSERT INTO "user_goal_equip_names" (id, name, goal_type) VALUES (1, '기본 목표', 'User');""")
         
         master_cur = self.conn_master.cursor()
         master_cur.execute("""
@@ -197,7 +213,12 @@ join item_type t on (i.type = t.type_id)
         cur.executemany("INSERT INTO user_items VALUES (?,?)", ((i, 0) for i in list(valid_item_names - user_item_names)))
         cur.executemany("DELETE FROM user_items WHERE name=?", ((i,) for i in list(user_item_names - valid_item_names)))
 
-        # TODO: check user_version and add/modify columns
+        # v0.2.6 : new column user_goal_equip_names.goal_type #
+        cur.execute("PRAGMA table_info(user_goal_equip_names)")
+        if set(i[1] for i in cur) == {"id", "name"}:
+            # add new column
+            cur.execute("ALTER TABLE user_goal_equip_names ADD COLUMN goal_type TEXT NOT NULL DEFAULT 'User';")
+        # =================================================== #
 
         conn.commit()
         conn.close()
@@ -220,41 +241,76 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
             self.config = yaml.load(f, Loader=yaml.FullLoader)
     
     def updateAccountList(self):
-        self.sidebar.updateLocalAccountList(True)
+        # account_list is already updated, and cur_account_idx = 0
+        self.sidebar.updateAccountList()
+        self.changeAccountCascade()
+
 
     def updateGoalList(self):
-        self.resource.delete("GoalList")
-        self.page_equip_abstract.goalListChanged()
-        self.page_equip_1.updateGoalNameList()
-        self.page_equip_3.updateGoalList()
+        need_to_update_list = ["page_equip_abstract", "page_equip_1", "page_equip_3"]
+        self.changeReloadState(need_to_update_list, "goal")
+        self.reloadPage()
+
 
     def changeAccountCascade(self):
+        # User data is already saved in sidebar.changeAccount or account_settings.saveCurrentState
         self.userDBInit()
         self.resource.deleteAll(user=True)
-        self.page_hero.updateTable()
-        self.page_equip_abstract.goalListChanged()
-        self.page_equip_1.changeAccount()
-        self.page_equip_2.reloadData()
-        self.page_equip_3.loadUserData()
+        need_to_update_list = ["page_hero", "page_equip_abstract", "page_equip_1",
+                               "page_equip_2", "page_equip_3", "page_crayon_abstract",
+                               "page_crayon_1", "page_crayon_2"
+                               ]
+        self.changeReloadState(need_to_update_list, "account")
+        self.reloadPage()
+
     
     def changeEquipCascade(self):
-        self.page_equip_abstract.goalListChanged()
-    
+        need_to_update_list = ["page_equip_abstract"]
+        self.changeReloadState(need_to_update_list, "equip")
+
+
     def changeExtrinsicStarsCascade(self):
-        self.resource.delete("HeroIdToStarExtrinsic")
-    
+        need_to_update_list = []
+        self.changeReloadState(need_to_update_list, "extrinsic")
+
+    def changeBoardCascade(self):
+        need_to_update_list = ["page_crayon_abstract", "page_crayon_2"]
+        self.changeReloadState(need_to_update_list, "board")
+
+
     def masterDBUpdateCascade(self):
+        # save user data
+        self.saveLastPageData()
+        self.resource.saveAllUserResource()
+        # update master db
         self.masterDBInit(force=True)
-        self.resource.deleteAll(master=True)
+        # reload all resources
+        self.resource.deleteAll(user=True, master=True)
         self.resource.masterInit()
-        self.page_hero.constructTable()
-        self.page_equip_abstract.goalListChanged()
-        self.page_equip_1.masterDBUpdated()
-        self.page_equip_2.loadMaterialTableColumns()
-        self.page_equip_2.reloadData()
-        
-        # TODO : update hero list of page_crayon_1
+        need_to_update_list = ["page_hero", "page_equip_abstract", "page_equip_1",
+                               "page_equip_2", "page_crayon_1"]
+        self.changeReloadState(need_to_update_list, "master")
+        self.reloadPage()
+
+
+    def changeReloadState(self, need_to_reload, reason):
+        for name in need_to_reload:
+            page = getattr(self, name)
+            page.reload[reason] = True
+
+
+    def saveLastPageData(self):
+        last_page = self.stacked_window.widget(self.last_page_idx)
+        if hasattr(last_page, "savePageData"):
+            last_page.savePageData()
+        self.last_page_idx = self.stacked_window.currentIndex()
     
+
+    def reloadPage(self):
+        current_page = self.stacked_window.currentWidget()
+        if hasattr(current_page, "reloadPage"):
+            current_page.reloadPage()
+
 
     def updateProgram(self, auto):
         api_url = f"https://api.github.com/repos/{USERNAME}/{REPO}/"

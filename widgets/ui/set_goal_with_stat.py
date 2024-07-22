@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout, QLabel,
-    QMainWindow, QPushButton, QSizePolicy, QSpacerItem,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QGridLayout, QHBoxLayout,
+    QLabel, QMainWindow, QPushButton, QSizePolicy,
+    QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_SetGoalWithStat(object):
     def setupUi(self, SetGoalWithStat):
@@ -175,15 +175,21 @@ class Ui_SetGoalWithStat(object):
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.over_max_rank_box = QCheckBox(self.centralwidget)
+        self.over_max_rank_box.setObjectName(u"over_max_rank_box")
+        font2 = QFont()
+        font2.setFamilies([u"ONE \ubaa8\ubc14\uc77cPOP"])
+        font2.setPointSize(13)
+        self.over_max_rank_box.setFont(font2)
+
+        self.horizontalLayout.addWidget(self.over_max_rank_box)
+
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer_2)
 
         self.save_btn = QPushButton(self.centralwidget)
         self.save_btn.setObjectName(u"save_btn")
-        font2 = QFont()
-        font2.setFamilies([u"ONE \ubaa8\ubc14\uc77cPOP"])
-        font2.setPointSize(13)
         self.save_btn.setFont(font2)
 
         self.horizontalLayout.addWidget(self.save_btn)
@@ -216,6 +222,7 @@ class Ui_SetGoalWithStat(object):
         self.CriticalResist.setText(QCoreApplication.translate("SetGoalWithStat", u"\uce58\uba85\ud0c0 \uc800\ud56d", None))
         self.DefenseMagic.setText(QCoreApplication.translate("SetGoalWithStat", u"\ub9c8\ubc95 \ubc29\uc5b4\ub825", None))
         self.CriticalMultResist.setText(QCoreApplication.translate("SetGoalWithStat", u"\uce58\uba85 \ud53c\ud574 \uc800\ud56d", None))
+        self.over_max_rank_box.setText(QCoreApplication.translate("SetGoalWithStat", u"\ub2e4\uc74c \ub7ad\ud06c \ud655\uc7a5 \ub300\ube44\ud558\uae30", None))
         self.save_btn.setText(QCoreApplication.translate("SetGoalWithStat", u"\ud655\uc778", None))
         self.cancel_btn.setText(QCoreApplication.translate("SetGoalWithStat", u"\ucde8\uc18c", None))
     # retranslateUi

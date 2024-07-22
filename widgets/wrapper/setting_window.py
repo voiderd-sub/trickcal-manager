@@ -18,11 +18,6 @@ class SettingWindow(Ui_setting_window, QMainWindow):
             version = file.read()
         self.label_version.setText(f"v{version}")
 
-        for attr in dir(self):
-            if attr.startswith("setting_") and type(getattr(self, attr)) == QPushButton:
-                btn = getattr(self, attr)
-                btn.clicked.connect(self.setBtnText)
-
         self.loadSettings()
 
         self.update_btn_program.clicked.connect(self.parent().updateProgram)
@@ -31,14 +26,6 @@ class SettingWindow(Ui_setting_window, QMainWindow):
 
         self.save_btn.clicked.connect(self.saveSettings)
         self.exit_btn.clicked.connect(self.close)
-
-    
-    def setBtnText(self):
-        btn = self.sender()
-        if btn.isChecked():
-            btn.setText("✔️")
-        else:
-            btn.setText("")
     
 
     def loadSettings(self):

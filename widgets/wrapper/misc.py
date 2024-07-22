@@ -1,9 +1,12 @@
 from PySide6.QtCore import Qt, QSortFilterProxyModel
-from PySide6.QtWidgets import (QCompleter, QComboBox, QProxyStyle,QStyledItemDelegate,
+from PySide6.QtWidgets import (QWidget, QCompleter, QComboBox, QProxyStyle,QStyledItemDelegate,
                                QTableWidget, QItemDelegate, QLineEdit, QLayout, QStyle,
-                               QSizePolicy)
-from PySide6.QtGui import QFont, QColor, QRegularExpressionValidator
-from PySide6.QtCore import QRegularExpression, Qt, QRect, QPoint, QSize
+                               QSizePolicy, QPushButton)
+from PySide6.QtGui import QFont, QColor, QRegularExpressionValidator, QPixmap
+from PySide6.QtCore import QRegularExpression, Qt, QRect, QPoint, QSize, Signal
+
+from widgets.ui.crayon_stat_container import Ui_CrayonStatContainer
+
 
 # Combobox with search-filtering
 class ExtendedComboBox(QComboBox):
@@ -141,6 +144,22 @@ class MaterialTableWidget(QTableWidget):
         self.setItemDelegate(MaterialTableDelegate())
 
 
+class BoardTableDelegate(QStyledItemDelegate):
+    def initStyleOption(self, option, index):
+        super(BoardTableDelegate, self).initStyleOption(option, index)
+
+        if not index.model().flags(index) & Qt.ItemIsEnabled:
+            option.backgroundBrush = QColor(227, 227, 227)  # Set the background color for disabled items
+
+
+class BoardTableWidget(QTableWidget):
+    def __init__(self, *args, **kwargs):
+        super(BoardTableWidget, self).__init__(*args, **kwargs)
+
+        # Set the item delegate to the customized delegate
+        self.setItemDelegate(BoardTableDelegate())
+
+
 # FlowLayout for wrapping widgets
 class FlowLayout(QLayout):
     def __init__(self, parent=None, margin=-1, hspacing=-1, vspacing=-1):
@@ -245,3 +264,49 @@ class FlowLayout(QLayout):
         else:
             return parent.spacing()
 
+class CrayonStatContainer(Ui_CrayonStatContainer, QWidget):
+    def __init__(self, parent=None):
+        super(CrayonStatContainer, self).__init__(parent)
+        self.setupUi(self)
+    
+    def setTexts(self, values):
+        for attr_name, value in values.items():
+            getattr(self, attr_name).setText(str(value))
+    
+    def setIcon(self, stat_name):
+        self.icon.setPixmap(QPixmap(f"icon/status/Icon_{stat_name}.png"))
+
+
+class QCheckButton(QPushButton):
+    def __init__(self, parent=None):
+        super(QCheckButton, self).__init__(parent)
+        self.setCheckable(True)
+        self.clicked.connect(self.setBtnText)
+        self.setBtnText()
+
+    def setBtnText(self):
+        if self.isChecked():
+            self.setText("✔️")
+        else:
+            self.setText("")
+
+
+# dragable & checkable button
+# parent class
+# 1. must have buttonPressed and buttonReleased methods
+# 2. the mouseMoveEvent method should be overridden
+class DragCheckableButton(QPushButton):
+    mousePressedSignal = Signal(tuple)
+    mouseReleasedSignal = Signal(tuple)
+    def __init__(self, parent=None, key=None):
+        super().__init__(parent=parent)
+        self.setCheckable(True)
+        self.key = key
+        self.mousePressedSignal.connect(parent.buttonPressed)
+        self.mouseReleasedSignal.connect(parent.buttonReleased)
+
+    def mousePressEvent(self, event):
+        self.mousePressedSignal.emit(self.key)
+
+    def mouseReleaseEvent(self, event):
+        self.mouseReleasedSignal.emit(self.key)

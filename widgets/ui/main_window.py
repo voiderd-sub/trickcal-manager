@@ -18,6 +18,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QMainWindow, QSizePolicy,
     QStackedWidget, QWidget)
 
+from widgets.wrapper.page_crayon_1 import PageCrayon1
+from widgets.wrapper.page_crayon_2 import PageCrayon2
+from widgets.wrapper.page_crayon_abstract import PageCrayonAbstract
 from widgets.wrapper.page_equip_1 import PageEquip1
 from widgets.wrapper.page_equip_2 import PageEquip2
 from widgets.wrapper.page_equip_3 import PageEquip3
@@ -72,10 +75,13 @@ class Ui_MainWindow(object):
         self.page_equip_3 = PageEquip3(self.stacked_window)
         self.page_equip_3.setObjectName(u"page_equip_3")
         self.stacked_window.addWidget(self.page_equip_3)
-        self.page_crayon_1 = QWidget()
+        self.page_crayon_abstract = PageCrayonAbstract(self.stacked_window)
+        self.page_crayon_abstract.setObjectName(u"page_crayon_abstract")
+        self.stacked_window.addWidget(self.page_crayon_abstract)
+        self.page_crayon_1 = PageCrayon1(self.stacked_window)
         self.page_crayon_1.setObjectName(u"page_crayon_1")
         self.stacked_window.addWidget(self.page_crayon_1)
-        self.page_crayon_2 = QWidget()
+        self.page_crayon_2 = PageCrayon2(self.stacked_window)
         self.page_crayon_2.setObjectName(u"page_crayon_2")
         self.stacked_window.addWidget(self.page_crayon_2)
         self.page_food_1 = QWidget()
@@ -103,7 +109,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stacked_window.setCurrentIndex(2)
+        self.stacked_window.setCurrentIndex(8)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

@@ -19,6 +19,8 @@ from PySide6.QtWidgets import (QApplication, QGroupBox, QHBoxLayout, QLabel,
     QMainWindow, QPushButton, QSizePolicy, QSpacerItem,
     QStackedWidget, QVBoxLayout, QWidget)
 
+from widgets.wrapper.misc import QCheckButton
+
 class Ui_setting_window(object):
     def setupUi(self, setting_window):
         if not setting_window.objectName():
@@ -124,7 +126,7 @@ class Ui_setting_window(object):
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer_2)
 
-        self.setting_update_program = QPushButton(self.page_update)
+        self.setting_update_program = QCheckButton(self.page_update)
         self.setting_update_program.setObjectName(u"setting_update_program")
         self.setting_update_program.setEnabled(True)
         sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -172,7 +174,7 @@ class Ui_setting_window(object):
 
         self.horizontalLayout_4.addItem(self.horizontalSpacer_3)
 
-        self.setting_update_drop = QPushButton(self.page_update)
+        self.setting_update_drop = QCheckButton(self.page_update)
         self.setting_update_drop.setObjectName(u"setting_update_drop")
         self.setting_update_drop.setEnabled(True)
         sizePolicy2.setHeightForWidth(self.setting_update_drop.sizePolicy().hasHeightForWidth())

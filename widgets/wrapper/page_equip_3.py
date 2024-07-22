@@ -23,11 +23,11 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         self.setInitialState()
 
     def setInitialState(self):
+        self.reload = {"account": True}
         self.setting_name_list = ["auto_update_yes", "use_equip_yes", "hallow_13_yes",
                                   "research_level","candy_buying", "use_standard_yes",
                                   "daily_elleaf_yes", "lecture_level", "cur_standard",
                                   "daily_candy_yes", "auto_update_yes", "round_yes"]
-        self.loadUserData()
 
         self.research_level.setValidator(QIntValidator(0, 10, self.research_level))
         self.candy_buying.setValidator(QIntValidator(0, 10, self.candy_buying))
@@ -68,7 +68,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
 
     def updateGoalList(self):
         res = self.window().resource
-        goal_list = res.userGet("GoalList")
+        goal_list = list(name for (name, type) in self.window().resource.userGet("GoalIdToName").values())
 
         self.goal_list.clear()
         self.goal_list.addItems(goal_list)
@@ -167,7 +167,6 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         for equip_id, count in needs_each_equip.items():
             item_rank, type_id = equip_id_to_rank_and_type[equip_id]
             needs_each_type[item_rank][type_id] += count
-
         for item_rank in needs_each_type:
             for type_id, count in needs_each_type[item_rank].items():
                 for item_name, item_count in recipe[(item_rank, type_id)].items():
@@ -265,6 +264,13 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             val = pulp.value(v)
             if val >= needs_each_item[k] + 1:
                 partial_res+=f"{k} - {val - needs_each_item[k]:.0f}개 남음\n"
+
+        no_data_cnt = needs_each_type[0][0]
+        if no_data_cnt != 0:
+            partial_res+="\n"+"="*30+"\n"
+            partial_res+=f"데이터 없음 : {no_data_cnt}개\n"
+            partial_res+="DB에 사도 착용 장비 정보가 없는 경우, 계산에서 제외됩니다.\n"
+
         result.append(partial_res)
 
         partial_res = ""
@@ -319,7 +325,9 @@ class PageEquip3(Ui_page_equip_3, QWidget):
 
     def saveCurrentSettings(self):
         main = self.window()
-        cur_user: sqlite3.Cursor = main.conn_user.cursor()
+        res = main.resource
+        calc_settings = res.userGet("CalcSettings")
+        calc_settings.clear()
 
         for setting_name in self.setting_name_list:
             widget = getattr(self, setting_name)
@@ -333,9 +341,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                 if criteria != QValidator.State.Acceptable:
                     raise Exception
                 value = int(text)
-            cur_user.execute("INSERT OR REPLACE INTO calc_settings (setting_name, value) VALUES (?, ?)", (setting_name, value))
-        main.conn_user.commit()
-        main.resource.delete("CalcSettings")
+            calc_settings[setting_name] = value
     
 
     def material_name_to_id(self, name):
@@ -350,3 +356,20 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         suffix = self.window().pr_to_id[suffix]
         
         return (-rank, prefix, suffix)
+    
+
+    def reloadPage(self):
+        if not any(self.reload.values()):
+            return
+        
+        if self.reload.get("account", False):
+            self.loadUserData()
+
+        elif self.reload.get("goal", False):
+            self.updateGoalList()
+        
+        self.reload = dict()
+    
+
+    def savePageData(self):
+        self.saveCurrentSettings()
