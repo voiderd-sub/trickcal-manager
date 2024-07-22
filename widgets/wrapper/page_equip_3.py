@@ -29,9 +29,9 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                                   "daily_elleaf_yes", "lecture_level", "cur_standard",
                                   "daily_candy_yes", "auto_update_yes", "round_yes"]
 
-        self.research_level.setValidator(QIntValidator(0, 8, self.research_level))
+        self.research_level.setValidator(QIntValidator(0, 10, self.research_level))
         self.candy_buying.setValidator(QIntValidator(0, 10, self.candy_buying))
-        self.lecture_level.setValidator(QIntValidator(0, 25, self.lecture_level))
+        self.lecture_level.setValidator(QIntValidator(0, 30, self.lecture_level))
         self.cur_standard.setValidator(QIntValidator(0, 999999, self.cur_standard))
 
         self.update_btn.clicked.connect(self.window().updateDropTable)
@@ -68,7 +68,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
 
     def updateGoalList(self):
         res = self.window().resource
-        goal_list = res.userGet("GoalIdToName").values()
+        goal_list = list(name for (name, type) in self.window().resource.userGet("GoalIdToName").values())
 
         self.goal_list.clear()
         self.goal_list.addItems(goal_list)
@@ -167,7 +167,6 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         for equip_id, count in needs_each_equip.items():
             item_rank, type_id = equip_id_to_rank_and_type[equip_id]
             needs_each_type[item_rank][type_id] += count
-
         for item_rank in needs_each_type:
             for type_id, count in needs_each_type[item_rank].items():
                 for item_name, item_count in recipe[(item_rank, type_id)].items():
@@ -265,6 +264,13 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             val = pulp.value(v)
             if val >= needs_each_item[k] + 1:
                 partial_res+=f"{k} - {val - needs_each_item[k]:.0f}개 남음\n"
+
+        no_data_cnt = needs_each_type[0][0]
+        if no_data_cnt != 0:
+            partial_res+="\n"+"="*30+"\n"
+            partial_res+=f"데이터 없음 : {no_data_cnt}개\n"
+            partial_res+="DB에 사도 착용 장비 정보가 없는 경우, 계산에서 제외됩니다.\n"
+
         result.append(partial_res)
 
         partial_res = ""

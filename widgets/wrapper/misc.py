@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (QWidget, QCompleter, QComboBox, QProxyStyle,QStyl
                                QTableWidget, QItemDelegate, QLineEdit, QLayout, QStyle,
                                QSizePolicy, QPushButton)
 from PySide6.QtGui import QFont, QColor, QRegularExpressionValidator, QPixmap
-from PySide6.QtCore import QRegularExpression, Qt, QRect, QPoint, QSize
+from PySide6.QtCore import QRegularExpression, Qt, QRect, QPoint, QSize, Signal
 
 from widgets.ui.crayon_stat_container import Ui_CrayonStatContainer
 
@@ -289,3 +289,24 @@ class QCheckButton(QPushButton):
             self.setText("✔️")
         else:
             self.setText("")
+
+
+# dragable & checkable button
+# parent class
+# 1. must have buttonPressed and buttonReleased methods
+# 2. the mouseMoveEvent method should be overridden
+class DragCheckableButton(QPushButton):
+    mousePressedSignal = Signal(tuple)
+    mouseReleasedSignal = Signal(tuple)
+    def __init__(self, parent=None, key=None):
+        super().__init__(parent=parent)
+        self.setCheckable(True)
+        self.key = key
+        self.mousePressedSignal.connect(parent.buttonPressed)
+        self.mouseReleasedSignal.connect(parent.buttonReleased)
+
+    def mousePressEvent(self, event):
+        self.mousePressedSignal.emit(self.key)
+
+    def mouseReleaseEvent(self, event):
+        self.mouseReleasedSignal.emit(self.key)

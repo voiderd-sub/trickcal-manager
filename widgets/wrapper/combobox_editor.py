@@ -37,7 +37,7 @@ class ComboBoxEditor(Ui_combobox_editor, QMainWindow):
     """
     A class for a window that edits a list of names.
     You must override loadList and saveCurrentState;
-    loadList: Initialize name_list and deleted_name_list
+    loadList: Initialize name_list
     saveCurrentState: Save the current state of the list
     """
     def __init__(self, *args, **kwargs):
@@ -109,11 +109,8 @@ class ComboBoxEditor(Ui_combobox_editor, QMainWindow):
         for row in selected_rows:
             self.table.removeRow(row)
 
-        self.deleted_name_list.extend([name for name in selected_names
-                                          if name != self.placeholder_name])
 
-
-    # Initialize name_list and deleted_name_list
+    # Initialize name_list
     def loadList(self):
         raise NotImplementedError
 

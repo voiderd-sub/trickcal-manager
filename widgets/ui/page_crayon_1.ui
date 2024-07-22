@@ -525,124 +525,6 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
-      <widget class="QGroupBox" name="groupBox_setAll_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>2</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <family>ONE Mobile POP</family>
-         <pointsize>14</pointsize>
-        </font>
-       </property>
-       <property name="title">
-        <string>자동 선택 설정</string>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <widget class="QRadioButton" name="autoselect_off">
-          <property name="font">
-           <font>
-            <family>ONE Mobile POP</family>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>끄기</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="autoselect_length">
-          <property name="font">
-           <font>
-            <family>ONE Mobile POP</family>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>최단경로</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_5">
-          <item>
-           <widget class="QRadioButton" name="autoselect_cost">
-            <property name="font">
-             <font>
-              <family>ONE Mobile POP</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>최소비용</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="cost_1st">
-            <property name="font">
-             <font>
-              <family>ONE Mobile POP</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="placeholderText">
-             <string/>
-            </property>
-            <item>
-             <property name="text">
-              <string>1순위</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>황크</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>보크</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>골드</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="cost_2nd">
-            <property name="font">
-             <font>
-              <family>ONE Mobile POP</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="placeholderText">
-             <string/>
-            </property>
-            <item>
-             <property name="text">
-              <string>2순위</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
       <widget class="QGroupBox" name="groupBox_setAll_3">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -657,10 +539,112 @@
         </font>
        </property>
        <property name="title">
-        <string>간편 선택</string>
+        <string>간편 선택 (2번 누르면 해제)</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
+       <layout class="QGridLayout" name="gridLayout">
+        <property name="leftMargin">
+         <number>20</number>
+        </property>
+        <property name="topMargin">
+         <number>10</number>
+        </property>
+        <property name="rightMargin">
+         <number>20</number>
+        </property>
+        <property name="bottomMargin">
+         <number>10</number>
+        </property>
+        <property name="horizontalSpacing">
+         <number>30</number>
+        </property>
+        <property name="verticalSpacing">
+         <number>10</number>
+        </property>
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_10">
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="font">
+             <font>
+              <family>ONE Mobile POP</family>
+              <pointsize>13</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>보크/황크</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Preferred</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="select_special_1_btn">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="font">
+             <font>
+              <family>ONE Mobile POP</family>
+              <pointsize>12</pointsize>
+              <strikeout>false</strikeout>
+             </font>
+            </property>
+            <property name="text">
+             <string>1관</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="select_special_2_btn">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="font">
+             <font>
+              <family>ONE Mobile POP</family>
+              <pointsize>12</pointsize>
+              <strikeout>false</strikeout>
+             </font>
+            </property>
+            <property name="text">
+             <string>2관</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="select_special_3_btn">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="font">
+             <font>
+              <family>ONE Mobile POP</family>
+              <pointsize>12</pointsize>
+              <strikeout>false</strikeout>
+             </font>
+            </property>
+            <property name="text">
+             <string>3관</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
            <widget class="QLabel" name="label">
@@ -671,7 +655,7 @@
              </font>
             </property>
             <property name="text">
-             <string>일반칸 일괄선택</string>
+             <string>일반</string>
             </property>
            </widget>
           </item>
@@ -744,7 +728,7 @@
           </item>
          </layout>
         </item>
-        <item>
+        <item row="0" column="1">
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
            <widget class="QLabel" name="label_2">
@@ -755,7 +739,7 @@
              </font>
             </property>
             <property name="text">
-             <string>전체칸 일괄선택</string>
+             <string>모두</string>
             </property>
            </widget>
           </item>

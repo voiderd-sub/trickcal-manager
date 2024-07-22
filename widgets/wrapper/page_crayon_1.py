@@ -1,4 +1,5 @@
 from widgets.ui.page_crayon_1 import Ui_page_crayon_1
+from widgets.wrapper.misc import DragCheckableButton
 
 from PySide6.QtWidgets import (QWidget, QAbstractItemView, QPushButton, QTableWidgetItem,
                                QLabel, QTableWidget)
@@ -91,13 +92,23 @@ QPushButton:pressed, QPushButton:checked{
         # same as page_equip_1
         self.go_left_btn.clicked.connect(partial(self.changeHeroSelectIndex, -1))
         self.go_right_btn.clicked.connect(partial(self.changeHeroSelectIndex, 1))
-        table.keyPressEvent = lambda event: self.changeHeroSelectIndex(1) if event.key()==Qt.Key.Key_Right else self.changeHeroSelectIndex(-1) if event.key()==Qt.Key.Key_Left else None
+
 
         # change wheel event of table to scroll horizontally; scroll 6 cells per 1 scroll
         table.setHorizontalScrollMode(QTableWidget.ScrollMode.ScrollPerPixel)
         table.wheelEvent = lambda event: table.horizontalScrollBar().setValue(
-            table.horizontalScrollBar().value() - event.angleDelta().y() / 120 * 50 * 6)
+            table.horizontalScrollBar().value() - event.angleDelta().y() / 120 * 50 * 12)
 
+        # initialize data for drag-to-select
+        self.dragging = False
+        self.drag_mode = None
+        # set table's mouseMoveEvent to trigger drag-to-select
+        table.mouseMoveEvent = self.mouseMoveEvent
+
+        for i in range(1, 4):
+            for target in ["normal", "special", "all"]:
+                btn = getattr(self, f"select_{target}_{i}_btn")
+                btn.clicked.connect(partial(self.easy_select, i, target))
 
 
     def setupTable(self):
@@ -147,6 +158,8 @@ QPushButton:pressed, QPushButton:checked{
         crayon_indices = [0] * 5
         self.costs = [0] * 5
         self.cost_gateway = 0
+        self.board_buttons = [list() for _ in range(3)]     # HARD CODED
+        board_cnt = 0
 
         for j in range(num_cols):
             for i in range(num_rows):
@@ -165,8 +178,9 @@ QPushButton:pressed, QPushButton:checked{
                         item.setFont(font)
                         item.setFlags((item.flags() | Qt.ItemIsEnabled) & ~Qt.ItemIsEditable)
                     else:
-                        btn = QPushButton()
-                        btn.setCheckable(True)
+                        btn = DragCheckableButton(parent=self, key=(board_level-1, 0))
+                        board_cnt = 1
+                        self.board_buttons[board_level-1].append((btn, seq))
                         table.setCellWidget(6-i, j, btn)
                         icon = QPixmap("icon/board/Gateway.png")
                         icon = icon.scaled(50, 50, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
@@ -181,10 +195,10 @@ QPushButton:pressed, QPushButton:checked{
                         crayon_indices[0] += 1
 
                 else:
-                    btn = QPushButton()
-                    btn.setCheckable(True)
+                    btn = DragCheckableButton(parent=self, key=(board_level-1, board_cnt))
+                    board_cnt += 1
+                    self.board_buttons[board_level-1].append((btn, seq))
                     table.setCellWidget(6-i, j, btn)
-
                     if user_board[hero_id][0][seq][crayon_indices[seq]] == 1:
                         btn.setChecked(True)
                         for idx, item in enumerate(board_cost[(board_level, seq)]):
@@ -207,7 +221,49 @@ QPushButton:pressed, QPushButton:checked{
 
         self.changeCostLabels()
         self.last_hero_id = hero_id
-            
+
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Down:
+            self.changeHeroSelectIndex(1)
+        elif event.key() == Qt.Key.Key_Up:
+            self.changeHeroSelectIndex(-1)
+        elif event.key() == Qt.Key.Key_Right:
+            self.board_table.horizontalScrollBar().setValue(self.board_table.horizontalScrollBar().value() + 600)
+        elif event.key() == Qt.Key.Key_Left:
+            self.board_table.horizontalScrollBar().setValue(self.board_table.horizontalScrollBar().value() - 600)
+
+    
+    def buttonPressed(self, key):
+        board_level, idx = key
+        btn, seq = self.board_buttons[board_level][idx]
+        btn.setChecked(not btn.isChecked())
+        self.dragging = True
+        self.drag_mode = 'select' if btn.isChecked() else 'deselect'
+    
+    def buttonReleased(self, key):
+        self.dragging = False
+        self.drag_mode = None
+    
+    def mouseMoveEvent(self, event):
+        if self.dragging:
+            button = self.board_table.childAt(event.position().toPoint())
+            # check button is real button or not
+            if button and isinstance(button, DragCheckableButton):
+                if self.drag_mode == 'select':
+                    button.setChecked(True)
+                elif self.drag_mode == 'deselect':
+                    button.setChecked(False)
+    
+    def easy_select(self, board_level, target):
+        target_seqs = [1, 2, 3, 4] if target == "all" else ([3, 4] if target == "special" else [1, 2])
+        if board_level >= 2 and target != "special":
+            target_seqs.append(10)
+        target_btns = [btn for btn, seq in self.board_buttons[board_level-1] if seq in target_seqs]
+        
+        toCheck = not all(btn.isChecked() for btn in target_btns)
+        for btn in target_btns:
+            btn.setChecked(toCheck)
 
 
     def changeHeroSelectIndex(self, num):

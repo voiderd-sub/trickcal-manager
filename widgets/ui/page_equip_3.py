@@ -651,7 +651,7 @@ class Ui_page_equip_3(object):
         self.daily_candy_no.setText(QCoreApplication.translate("page_equip_3", u"\uc544\ub2c8", None))
         self.hallow_13_yes.setText(QCoreApplication.translate("page_equip_3", u"\uc751", None))
         self.hallow_13_no.setText(QCoreApplication.translate("page_equip_3", u"\uc544\ub2c8", None))
-        self.research_level.setPlaceholderText(QCoreApplication.translate("page_equip_3", u"0 ~ 8", None))
+        self.research_level.setPlaceholderText(QCoreApplication.translate("page_equip_3", u"0 ~ 10", None))
         self.candy_buying.setPlaceholderText(QCoreApplication.translate("page_equip_3", u"0 ~ 10", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("page_equip_3", u"\uc815\uc11d", None))
         self.label_9.setText(QCoreApplication.translate("page_equip_3", u"\uc815\uc11d \uc0ac\uc6a9\ud560\uae4c\uc694?", None))
@@ -662,7 +662,7 @@ class Ui_page_equip_3(object):
         self.use_standard_no.setText(QCoreApplication.translate("page_equip_3", u"\uc544\ub2c8", None))
         self.daily_elleaf_yes.setText(QCoreApplication.translate("page_equip_3", u"\uc751", None))
         self.daily_elleaf_no.setText(QCoreApplication.translate("page_equip_3", u"\uc544\ub2c8", None))
-        self.lecture_level.setPlaceholderText(QCoreApplication.translate("page_equip_3", u"0 ~ 25", None))
+        self.lecture_level.setPlaceholderText(QCoreApplication.translate("page_equip_3", u"0 ~ 30", None))
         self.cur_standard.setPlaceholderText(QCoreApplication.translate("page_equip_3", u"0 ~ 999,999", None))
         self.groupBox_4.setTitle(QCoreApplication.translate("page_equip_3", u"\uae30\ud0c0", None))
         self.label_13.setText(QCoreApplication.translate("page_equip_3", u"\ucd5c\uc2e0 \ub4dc\ub78d\ub960 \ub370\uc774\ud130\ub97c\n"

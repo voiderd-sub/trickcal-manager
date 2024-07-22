@@ -106,6 +106,10 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
             point_to_idx = hero_board_type_data["point_to_idx"]
             if hero_id in user_board:
                 board_selected, boundary = user_board[hero_id]
+                # if boundary is empty, it means that the hero's board is completed; so, skip this hero
+                if not boundary:
+                    print(f"{hero_name} is completed")
+                    continue
             else:
                 board_selected = [[0]*2] + [[0] * i[-1] for i in hero_board_type_data["num_crayon_type"]]
                 boundary = gate_points[:1]
@@ -156,6 +160,91 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
                 # add empty widget for spacing
                 empty_widget = QWidget()
                 sublayout.addWidget(empty_widget)
+
+
+    def updatePurpleCrayon(self):
+        res = self.window().resource
+        stat = res.masterGet("Stat")
+        board_type = res.masterGet("BoardType")
+        board_cost = res.masterGet("BoardCost")
+        hero_id_to_metadata = res.masterGet("HeroIdToMetadata")
+        hero_id_to_board_data = res.masterGet("HeroIdToBoardData")
+        user_board = res.userGet("UserBoard")
+        
+        # clear all widgets in all scroll area (in purple tab)
+        for i in range(0, self.subtab_purple.count()):
+            subtab = getattr(self, f"scroll_purple_{i}")
+            sublayout = subtab.layout()
+            for j in reversed(range(sublayout.count())):
+                sublayout.itemAt(j).widget().deleteLater()
+        
+        # make data for each stat
+        min_paths = [list() for _ in range(self.subtab_purple.count())]
+        already_selected = [list() for _ in range(self.subtab_purple.count())]
+
+        for hero_id in hero_id_to_metadata:
+            hero_name = hero_id_to_metadata[hero_id]["name_kr"]
+            hero_board_type_id, hero_board_stat_list = hero_id_to_board_data[hero_id]
+            hero_board_type_data = board_type[hero_board_type_id]
+            start_points = hero_board_type_data["start_points"][3]      # 3 is for purple
+            gate_points = hero_board_type_data["gates"]
+            point_to_idx = hero_board_type_data["point_to_idx"]
+            if hero_id in user_board:
+                board_selected, boundary = user_board[hero_id]
+                # if boundary is empty, it means that the hero's board is completed; so, skip this hero
+                if not boundary:
+                    print(f"{hero_name} is completed")
+                    continue
+            else:
+                board_selected = [[0]*2] + [[0] * i[-1] for i in hero_board_type_data["num_crayon_type"]]
+                boundary = gate_points[:1]
+            gate_selected = board_selected[0]
+            board_selected = board_selected[3]      # 3 is for purple
+
+            stat_cursor = 0
+            for level, point_list in enumerate(start_points, 1):
+                for point in point_list:
+                    stat_idx = hero_board_stat_list[stat_cursor%len(hero_board_stat_list)] - 1
+                    # already selected
+                    if board_selected[point_to_idx[point]] == 1:
+                        already_selected[stat_idx].append((hero_name, level, stat_cursor))
+                    else:
+                        # get min path (cost of starting point is not included in cost)
+                        cost, path = self.getMinPath(point, level, boundary, gate_points, gate_selected, hero_board_type_id)
+                        # Translate cost to readable form
+                        crayon_4, crayon_3, gold = cost//10000000, (cost%10000000)//10000, (cost%10000)/2
+                        # cost_start = board_cost[(level, 5)]
+                        # crayon_4 += cost_start[4]
+                        # crayon_3 += cost_start[3]
+                        # gold += cost_start[0] / 10000
+                        min_paths[stat_idx].append((hero_name, stat_cursor+1, (crayon_4, crayon_3, gold), path))
+                    stat_cursor += 1
+
+        # sort min_paths by cost (crayon_4, crayon_3, gold) ascending
+        for i in range(len(min_paths)):
+            min_paths[i].sort(key=lambda x: x[2])
+
+        # update widgets
+        for i in range(len(min_paths)):
+            subwidget = getattr(self, f"scroll_purple_{i}")
+            sublayout = subwidget.layout()
+            font = subwidget.font()
+            for hero_name, stat_cursor, (crayon_4, crayon_3, gold), path in min_paths[i]:
+                label = QLabel(f"{hero_name}, {stat_cursor}번째 칸 : 황크 {crayon_4}개, 보크 {crayon_3}개, 골드 {gold:.1f}만")
+                sublayout.addWidget(label)
+                font.setPointSize(13)
+                label.setFont(font)
+
+                # label = QLabel(str(path))
+                # label.setWordWrap(True)
+                # font.setPointSize(10)
+                # label.setFont(font)
+                # sublayout.addWidget(label)
+
+                # add empty widget for spacing
+                empty_widget = QWidget()
+                sublayout.addWidget(empty_widget)
+                    
                     
 
     def reloadPage(self):
@@ -163,4 +252,5 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
             return
         
         self.updateGoldCrayon()
+        self.updatePurpleCrayon()
         self.reload = dict()

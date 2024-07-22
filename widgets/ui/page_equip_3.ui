@@ -443,7 +443,7 @@
                   </font>
                  </property>
                  <property name="placeholderText">
-                  <string>0 ~ 8</string>
+                  <string>0 ~ 10</string>
                  </property>
                 </widget>
                </item>
@@ -782,7 +782,7 @@
                   </font>
                  </property>
                  <property name="placeholderText">
-                  <string>0 ~ 25</string>
+                  <string>0 ~ 30</string>
                  </property>
                 </widget>
                </item>

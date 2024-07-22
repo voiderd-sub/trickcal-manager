@@ -51,7 +51,6 @@ class PageCrayonAbstract(Ui_page_crayon_abstract, QWidget):
         num_painted_board = [[0]*num_crayon_types for _ in range(num_board_areas)]
         num_gateways = [0] * (num_board_areas - 1)
         num_apply_all = [[0]*2 for _ in range(len(stat))]
-
         for hero_id, user_board_data in user_board.items():
             board_status = user_board_data[0]
             board_id = hero_id_to_board_data[hero_id][0]

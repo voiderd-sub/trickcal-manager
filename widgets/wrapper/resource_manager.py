@@ -54,8 +54,8 @@ class ResourceManager:
 
                 case "GoalIdToName":
                     cur.execute("DELETE FROM user_goal_equip_names")
-                    cur.executemany("INSERT INTO user_goal_equip_names(id, name) VALUES(?,?)",
-                                    [(id, name) for id, name in userdata.items()])
+                    cur.executemany("INSERT INTO user_goal_equip_names(id, name, goal_type) VALUES(?,?,?)",
+                                    [(id, name, goal_type) for id, (name, goal_type) in userdata.items()])
                     
                 case "GoalEquip":
                     cur.execute("DELETE FROM user_goal_equip")
@@ -78,10 +78,9 @@ class ResourceManager:
                 case "UserBoard":
                     user_board = [(hero_id,
                                    ";".join("".join(str(i) for i in checked_list)
-                                            for checked_list in board_status_tuple),
-                                    ";".join(",".join(str(i) for i in coord) for coord in boundary))
+                                            for checked_list in board_status_tuple))
                                   for hero_id, (board_status_tuple, boundary) in userdata.items()]
-                    cur.executemany("INSERT OR REPLACE INTO user_board(hero_id, board_status, boundary) VALUES(?,?,?)",
+                    cur.executemany("INSERT OR REPLACE INTO user_board(hero_id, board_status) VALUES(?,?)",
                                     user_board)
 
         conn.commit()
@@ -118,8 +117,8 @@ class ResourceManager:
 
     def getGoalIdToName(self):
         cur_user = self.main.conn_user.cursor()
-        cur_user.execute("SELECT id, name FROM user_goal_equip_names order by id asc;")
-        goal_id_to_name = {id: name for (id, name) in cur_user}
+        cur_user.execute("SELECT id, name, goal_type FROM user_goal_equip_names order by id asc;")
+        goal_id_to_name = {id: (name, goal_type) for (id, name, goal_type) in cur_user}
         self._resourceUser["GoalIdToName"] = goal_id_to_name
         return goal_id_to_name
     
@@ -162,10 +161,45 @@ class ResourceManager:
         # {hero_id : (gateways, crayon1, ..., crayon4)}
         cur_user = self.main.conn_user.cursor()
         cur_user.execute("SELECT * FROM user_board")
-        user_board = {hero_id: (tuple([int(checked_char) for checked_char in checked_str]
-                      for checked_str in board_status.split(";")),
-                      [tuple(int(j) for j in i.split(",")) for i in boundary_coordinates.split(";")])
-                      for (hero_id, board_status, boundary_coordinates) in cur_user}
+        user_board = {hero_id: tuple([int(checked_char) for checked_char in checked_str]
+                      for checked_str in board_status.split(";"))
+                      for (hero_id, board_status) in cur_user}
+        
+        # construct board array for each boardtype
+        board_type = self.masterGet("BoardType")
+        hero_id_to_board_data = self.masterGet("HeroIdToBoardData")
+
+        for hero_id, board_status_tuple in user_board.items():
+            # if no cell is selected, set boundary to (0, start_point)
+            # find start_point by using index of board_type_data[0]'s item is 10
+            crayon_indices = [0] * 5
+            boundary = []
+            board_type_id = hero_id_to_board_data[hero_id][0]
+            board_type_data = board_type[board_type_id]["seq"]
+
+            if sum(sum(row) for row in board_status_tuple) == 0:
+                for col, cell in enumerate(board_type_data[0]):
+                    if cell == 10:
+                        boundary.append((0, col))
+                        break
+                user_board[hero_id] = (board_status_tuple, boundary)
+                continue
+
+            for row in range(1, len(board_type_data)):
+                for col in range(len(board_type_data[row])):
+                    cell_type = board_type_data[row][col]
+                    if cell_type != 0:
+                        is_selected = board_status_tuple[cell_type%10][crayon_indices[cell_type%10]]
+                        if is_selected:
+                            # check is there any unselected cell in (x+-1, y) and (x, y+-1)
+                            for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                                if 0 <= row+dx < len(board_type_data) and 0 <= col+dy < len(board_type_data[row]):
+                                    if board_type_data[row+dx][col+dy] == 0:
+                                        boundary.append((row, col))
+                                        break
+                        crayon_indices[cell_type%10] += 1
+            
+            user_board[hero_id] = (board_status_tuple, boundary)
         self._resourceUser["UserBoard"] = user_board
         return user_board
 

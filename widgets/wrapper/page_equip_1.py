@@ -360,7 +360,7 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         main = self.window()
         self.cur_goal.blockSignals(True)
         self.cur_goal.clear()
-        self.cur_goal.addItems(main.resource.userGet("GoalIdToName").values())
+        self.cur_goal.addItems(name for (name, type) in main.resource.userGet("GoalIdToName").values())
         self.cur_goal.setCurrentIndex(0)
         self.last_goal_idx = 0
         self.cur_goal.blockSignals(False)
@@ -385,25 +385,26 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         cur_rank = self.combo_set_goal.currentIndex()
         res = self.window().resource
         hero_id_to_equip_names = res.masterGet("HeroIdToEquipNames")
+        cur_goal_idx = self.cur_goal.currentIndex() + 1
 
         if cur_rank==0:
             return
         for hero_id in hero_id_to_equip_names.keys():
             if is_goal:
-                res.userGet("GoalEquip")[self.cur_goal.currentIndex()+1][hero_id] = (cur_rank, set())
+                res.userGet("GoalEquip")[cur_goal_idx][hero_id] = (cur_rank, set())
             else:
                 res.userGet("CurEquip")[hero_id] = (cur_rank, set())
         self.updateEquipTableAtInit()
     
 
-    def setGoalStat(self, stat_list):
+    def setGoalStat(self, stat_list, over_max_rank):
         assert len(stat_list) >= 1, "stat_list must have at least one element"
         
         main = self.window()
         res = main.resource
         stat_name_to_id = {name_kr: id for (id, (name_kr, name_en)) in res.masterGet("Stat").items()}
         goal_stat_ids = {stat_name_to_id[stat_name] for stat_name in stat_list}
-        max_rank = res.masterGet("MaxRank")
+        max_rank = res.masterGet("MaxRank") + int(over_max_rank)
         rank_type_id_to_goal_rank = dict()
 
         for rank_type_id, rank_to_stat_dict in res.masterGet("RankStatType").items():

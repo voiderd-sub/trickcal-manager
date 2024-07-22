@@ -34,6 +34,12 @@ class SetGoalWithStat(QMainWindow, Ui_SetGoalWithStat):
             btn = getattr(self, name_en)
             if btn.isChecked():
                 checked_stat.append(btn.text())
+                btn.setChecked(False)
+        
+        over_max_rank = self.over_max_rank_box.isChecked()
+        self.over_max_rank_box.setChecked(False)
+
         self.close()
+
         if len(checked_stat) != 0:
-            self.parent().setGoalStat(checked_stat)
+            self.parent().setGoalStat(checked_stat, over_max_rank)

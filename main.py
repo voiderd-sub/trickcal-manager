@@ -87,11 +87,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for i, name in enumerate(self.sidebar.btn_with_pages):
             btn=getattr(self.sidebar, name)
             page_name = "page_" + name[:-4]
-            page = getattr(self, page_name)
-            if hasattr(page, "reloadPage"):
-                btn.clicked.connect(page.reloadPage)
             btn.clicked.connect(partial(self.stacked_window.setCurrentIndex, i))
         self.stacked_window.currentChanged.connect(self.saveLastPageData)
+        self.stacked_window.currentChanged.connect(self.reloadPage)
     
 
     def showEvent(self, event):
@@ -167,7 +165,8 @@ CREATE TABLE IF NOT EXISTS "user_cur_equip" (                 -- 유저의 현�
 );
 CREATE TABLE IF NOT EXISTS "user_goal_equip_names" (          -- 유저가 설정한 목표 이름
     "id"	INTEGER PRIMARY KEY,
-    "name"	TEXT NOT NULL UNIQUE
+    "name"	TEXT NOT NULL UNIQUE,
+    "goal_type" TEXT NOT NULL                   -- 목표 타입 : Rank(특정 랭크), Stat(특정 스탯), StatMax(다음 랭크 고려한 특정 스탯), User(사용자 정의)
 );
 CREATE TABLE IF NOT EXISTS "user_goal_equip" (                -- 유저가 설정한 목표 상세 내역
     "goal_id"	INTEGER NOT NULL,               -- 목표 id
@@ -194,14 +193,13 @@ CREATE TABLE IF NOT EXISTS "calc_settings" (    -- 계산 설정
 CREATE TABLE IF NOT EXISTS "user_board" (           -- 보드판
     "hero_id"    INTEGER NOT NULL,             -- 사도 id
     "board_status"    TEXT NOT NULL,           -- 보드판 정보
-    "boundary"    TEXT NOT NULL,               -- 보드판 경계 정보
     PRIMARY KEY("hero_id")
 );
 PRAGMA journal_mode=wal;
 """)
         cur.execute("SELECT count(_rowid_) FROM user_goal_equip_names")
         if cur.fetchone()[0] == 0:
-            cur.execute("""INSERT INTO "user_goal_equip_names" (id, name) VALUES (1, '기본 목표');""")
+            cur.execute("""INSERT INTO "user_goal_equip_names" (id, name, goal_type) VALUES (1, '기본 목표', 'User');""")
         
         master_cur = self.conn_master.cursor()
         master_cur.execute("""
@@ -215,7 +213,12 @@ join item_type t on (i.type = t.type_id)
         cur.executemany("INSERT INTO user_items VALUES (?,?)", ((i, 0) for i in list(valid_item_names - user_item_names)))
         cur.executemany("DELETE FROM user_items WHERE name=?", ((i,) for i in list(user_item_names - valid_item_names)))
 
-        # TODO: check user_version and add/modify columns
+        # v0.2.6 : new column user_goal_equip_names.goal_type #
+        cur.execute("PRAGMA table_info(user_goal_equip_names)")
+        if set(i[1] for i in cur) == {"id", "name"}:
+            # add new column
+            cur.execute("ALTER TABLE user_goal_equip_names ADD COLUMN goal_type TEXT NOT NULL DEFAULT 'User';")
+        # =================================================== #
 
         conn.commit()
         conn.close()
@@ -246,6 +249,7 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
     def updateGoalList(self):
         need_to_update_list = ["page_equip_abstract", "page_equip_1", "page_equip_3"]
         self.changeReloadState(need_to_update_list, "goal")
+        self.reloadPage()
 
 
     def changeAccountCascade(self):
@@ -257,6 +261,7 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
                                "page_crayon_1", "page_crayon_2"
                                ]
         self.changeReloadState(need_to_update_list, "account")
+        self.reloadPage()
 
     
     def changeEquipCascade(self):
@@ -285,22 +290,26 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         need_to_update_list = ["page_hero", "page_equip_abstract", "page_equip_1",
                                "page_equip_2", "page_crayon_1"]
         self.changeReloadState(need_to_update_list, "master")
+        self.reloadPage()
 
 
     def changeReloadState(self, need_to_reload, reason):
         for name in need_to_reload:
             page = getattr(self, name)
             page.reload[reason] = True
-        current_page = self.stacked_window.currentWidget()
-        if hasattr(current_page, "reloadPage"):
-            current_page.reloadPage()
-    
+
 
     def saveLastPageData(self):
         last_page = self.stacked_window.widget(self.last_page_idx)
         if hasattr(last_page, "savePageData"):
             last_page.savePageData()
         self.last_page_idx = self.stacked_window.currentIndex()
+    
+
+    def reloadPage(self):
+        current_page = self.stacked_window.currentWidget()
+        if hasattr(current_page, "reloadPage"):
+            current_page.reloadPage()
 
 
     def updateProgram(self, auto):
