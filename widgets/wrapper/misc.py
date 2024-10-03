@@ -75,7 +75,7 @@ class ExtendedComboBox(QComboBox):
 # Proxy style for wrapping text in QPushButton
 class wrapStyle(QProxyStyle):
     def __init__(self):
-        super().__init__()
+        super().__init__("WindowsVista")
 
     def drawItemText(self, painter, rect, flags, pal, enabled, text, textRole):
         flags |= Qt.TextWordWrap

@@ -394,7 +394,7 @@ class ResourceManager:
 
         # HeroIdToBoardData
         cur.execute("SELECT * FROM hero_board_type")
-        hero_id_to_board_data = {hero_id: (board_type, tuple(int(i) for i in board_stats.split(";"))) for (hero_id, board_type, board_stats) in cur}
+        hero_id_to_board_data = {hero_id: (board_type, tuple(int(i) for i in purple.split(",")), tuple(int(i) for i in gold.split(","))) for (hero_id, board_type, purple, gold) in cur}
         self._resourceMaster["HeroIdToBoardData"] = hero_id_to_board_data
 
 

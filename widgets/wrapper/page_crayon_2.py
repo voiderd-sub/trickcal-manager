@@ -99,7 +99,7 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
 
         for hero_id in hero_id_to_metadata:
             hero_name = hero_id_to_metadata[hero_id]["name_kr"]
-            hero_board_type_id, hero_board_stat_list = hero_id_to_board_data[hero_id]
+            hero_board_type_id, purple_crayon_list, gold_crayon_list = hero_id_to_board_data[hero_id]
             hero_board_type_data = board_type[hero_board_type_id]
             start_points = hero_board_type_data["start_points"][4]      # 4 is for gold
             gate_points = hero_board_type_data["gates"]
@@ -119,7 +119,7 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
             stat_cursor = 0
             for level, point_list in enumerate(start_points, 1):
                 for point in point_list:
-                    stat_idx = hero_board_stat_list[stat_cursor%len(hero_board_stat_list)]
+                    stat_idx = gold_crayon_list[stat_cursor]
                     stat_idx -= 2 if stat_idx >= 3 else 1       # 공격력 하나로 합치고, 나머지는 하나씩 땡겨짐
                     # already selected
                     if board_selected[point_to_idx[point]] == 1:
@@ -184,7 +184,7 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
 
         for hero_id in hero_id_to_metadata:
             hero_name = hero_id_to_metadata[hero_id]["name_kr"]
-            hero_board_type_id, hero_board_stat_list = hero_id_to_board_data[hero_id]
+            hero_board_type_id, purple_crayon_list, gold_crayon_list = hero_id_to_board_data[hero_id]
             hero_board_type_data = board_type[hero_board_type_id]
             start_points = hero_board_type_data["start_points"][3]      # 3 is for purple
             gate_points = hero_board_type_data["gates"]
@@ -204,7 +204,7 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
             stat_cursor = 0
             for level, point_list in enumerate(start_points, 1):
                 for point in point_list:
-                    stat_idx = hero_board_stat_list[stat_cursor%len(hero_board_stat_list)] - 1
+                    stat_idx = purple_crayon_list[stat_cursor] - 1
                     # already selected
                     if board_selected[point_to_idx[point]] == 1:
                         already_selected[stat_idx].append((hero_name, level, stat_cursor))
