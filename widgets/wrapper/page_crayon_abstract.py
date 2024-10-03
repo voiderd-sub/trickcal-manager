@@ -54,7 +54,8 @@ class PageCrayonAbstract(Ui_page_crayon_abstract, QWidget):
         for hero_id, user_board_data in user_board.items():
             board_status = user_board_data[0]
             board_id = hero_id_to_board_data[hero_id][0]
-            apply_all_stats = hero_id_to_board_data[hero_id][1]
+            purple_crayon_stats = hero_id_to_board_data[hero_id][1]
+            gold_crayon_stats = hero_id_to_board_data[hero_id][1]
             num_crayon_per_each_area = board_type[board_id]["num_crayon_type"] # (num_crayons * num_areas)
             for (currency_idx, status) in enumerate(board_status):
                 if currency_idx == 0:
@@ -67,8 +68,10 @@ class PageCrayonAbstract(Ui_page_crayon_abstract, QWidget):
                             area_idx += 1
                         num_painted_board[area_idx-1][currency_idx-1] += painted
                     
-                        if currency_idx >= 3:
-                            num_apply_all[apply_all_stats[(board_cell_idx-1)%5]-1][currency_idx-3] += painted
+                        if currency_idx == 3:
+                            num_apply_all[purple_crayon_stats[board_cell_idx-1]-1][currency_idx-3] += painted
+                        elif currency_idx == 4:
+                            num_apply_all[gold_crayon_stats[board_cell_idx-1]-1][currency_idx-3] += painted
         
         gold_paint = 0
         gold_gateway = 0

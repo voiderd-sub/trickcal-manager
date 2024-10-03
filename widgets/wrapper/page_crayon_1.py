@@ -124,7 +124,7 @@ QPushButton:pressed, QPushButton:checked{
         res = self.window().resource
         hero_name = self.hero_select.currentText()
         hero_id = res.masterGet("HeroNameToId")[hero_name]
-        board_id, board_stats = res.masterGet("HeroIdToBoardData")[hero_id]
+        board_id, purple_crayon, gold_crayon = res.masterGet("HeroIdToBoardData")[hero_id]
         board_sequence = res.masterGet("BoardType")[board_id]["seq"]
         num_cols = len(board_sequence)
         num_rows = len(board_sequence[0])
@@ -205,10 +205,10 @@ QPushButton:pressed, QPushButton:checked{
                             self.costs[idx] += item
 
                     if seq == 3:
-                        btn.setText(f"{statshort[board_stats[crayon_indices[seq] % 5]]}")
+                        btn.setText(f"{statshort[purple_crayon[crayon_indices[seq]]]}")
                         btn.setStyleSheet(self.purple_style)
                     elif seq == 4:
-                        stat_idx = board_stats[crayon_indices[seq] % 5]
+                        stat_idx = gold_crayon[crayon_indices[seq]]
                         if stat_idx == 2 or stat_idx == 3:
                             stat_name = "공격력"
                         else:
@@ -300,7 +300,7 @@ QPushButton:pressed, QPushButton:checked{
         for idx, cost in enumerate(self.costs):
             if idx==0:
                 self.ValueGold.setText(f"{cost + self.cost_gateway:,}")
-                self.ValueEraserGold.setText(f"{int(cost*0.2):,}")
+                self.ValueEraserGold.setText("0")
             else:
                 getattr(self, f"ValueCrayon{idx}").setText(f"{cost:,}")
 

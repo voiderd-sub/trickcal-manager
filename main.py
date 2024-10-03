@@ -388,6 +388,7 @@ if __name__ == "__main__":
         downloadIcons()
 
     app = QApplication([])
+    app.setStyle('WindowsVista')
     app.setWindowIcon(QIcon('icon/icon.png'))
 
     window = MainWindow()
