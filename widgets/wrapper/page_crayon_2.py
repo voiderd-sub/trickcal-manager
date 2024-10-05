@@ -129,6 +129,8 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
                     # already selected
                     if board_selected[point_to_idx[point]] == 1:
                         already_selected[stat_idx].append((hero_name, level, stat_cursor))
+                        if self.checkbutton.isEnabled() and self.checkbutton.isChecked():
+                            min_paths[stat_idx].append((hero_name, stat_cursor+1, (0, 0, 0), []))
                     else:
                         # get min path (cost of starting point is not included in cost)
                         cost, path = self.getMinPath(point, level, boundary, gate_points, gate_selected, hero_board_type_id)
@@ -152,6 +154,11 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
             font = subwidget.font()
             for hero_name, stat_cursor, (crayon_4, crayon_3, gold), path in min_paths[i]:
                 label = QLabel(f"{hero_name}, {stat_cursor}번째 칸 : 황크 {crayon_4}개, 보크 {crayon_3}개, 골드 {gold:.1f}만")
+                if self.checkbutton.isEnabled() and self.checkbutton.isChecked():
+                    if(crayon_4, crayon_3, gold) == (0, 0, 0) and not path:
+                        label = QLabel(f"{hero_name}, {stat_cursor}번째 칸 : 이미 선택됨")
+                        label.setStyleSheet("color: red")
+
                 sublayout.addWidget(label)
                 font.setPointSize(13)
                 label.setFont(font)
@@ -217,6 +224,8 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
                     # already selected
                     if board_selected[point_to_idx[point]] == 1:
                         already_selected[stat_idx].append((hero_name, level, stat_cursor))
+                        if self.checkbutton.isEnabled() and self.checkbutton.isChecked():
+                            min_paths[stat_idx].append((hero_name, stat_cursor+1, (0, 0, 0), []))
                     else:
                         # get min path (cost of starting point is not included in cost)
                         cost, path = self.getMinPath(point, level, boundary, gate_points, gate_selected, hero_board_type_id)
@@ -240,6 +249,10 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
             font = subwidget.font()
             for hero_name, stat_cursor, (crayon_4, crayon_3, gold), path in min_paths[i]:
                 label = QLabel(f"{hero_name}, {stat_cursor}번째 칸 : 황크 {crayon_4}개, 보크 {crayon_3}개, 골드 {gold:.1f}만")
+                if self.checkbutton.isEnabled() and self.checkbutton.isChecked():
+                    if(crayon_4, crayon_3, gold) == (0, 0, 0) and not path:
+                        label = QLabel(f"{hero_name}, {stat_cursor}번째 칸 : 이미 선택됨")
+                        label.setStyleSheet("color: red")
                 sublayout.addWidget(label)
                 font.setPointSize(13)
                 label.setFont(font)
