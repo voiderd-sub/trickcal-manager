@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'page_crayon_2.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -36,16 +36,16 @@ class Ui_page_crayon_2(object):
         self.groupBox = QGroupBox(page_crayon_2)
         self.groupBox.setObjectName(u"groupBox")
         self.groupBox.setFont(font)
-        self.verticalLayout = QVBoxLayout(self.groupBox)
-        self.verticalLayout.setSpacing(0)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(10, 10, 10, 10)
+        self.horizontalLayout_2 = QHBoxLayout(self.groupBox)
+        self.horizontalLayout_2.setSpacing(0)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(10, 10, 10, 10)
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.checkbutton = QCheckButton(self.groupBox)
         self.checkbutton.setObjectName(u"checkbutton")
         self.checkbutton.setEnabled(True)
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.checkbutton.sizePolicy().hasHeightForWidth())
@@ -71,7 +71,31 @@ class Ui_page_crayon_2(object):
         self.horizontalLayout.addWidget(self.label_2)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.horizontalLayout_2.addLayout(self.horizontalLayout)
+
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.ownedHeroCheckButton = QCheckButton(self.groupBox)
+        self.ownedHeroCheckButton.setObjectName(u"ownedHeroCheckButton")
+        self.ownedHeroCheckButton.setEnabled(True)
+        sizePolicy.setHeightForWidth(self.ownedHeroCheckButton.sizePolicy().hasHeightForWidth())
+        self.ownedHeroCheckButton.setSizePolicy(sizePolicy)
+        self.ownedHeroCheckButton.setMinimumSize(QSize(25, 25))
+        self.ownedHeroCheckButton.setMaximumSize(QSize(25, 25))
+        self.ownedHeroCheckButton.setFont(font1)
+        self.ownedHeroCheckButton.setCheckable(True)
+        self.ownedHeroCheckButton.setChecked(False)
+
+        self.horizontalLayout_3.addWidget(self.ownedHeroCheckButton)
+
+        self.ownedHeroLabel = QLabel(self.groupBox)
+        self.ownedHeroLabel.setObjectName(u"ownedHeroLabel")
+        self.ownedHeroLabel.setFont(font2)
+
+        self.horizontalLayout_3.addWidget(self.ownedHeroLabel)
+
+
+        self.horizontalLayout_2.addLayout(self.horizontalLayout_3)
 
 
         self.verticalLayout_2.addWidget(self.groupBox)
@@ -91,7 +115,7 @@ class Ui_page_crayon_2(object):
 
         self.retranslateUi(page_crayon_2)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(page_crayon_2)
@@ -102,6 +126,8 @@ class Ui_page_crayon_2(object):
         self.groupBox.setTitle(QCoreApplication.translate("page_crayon_2", u"\ubcf4\uae30 \uc124\uc815", None))
         self.checkbutton.setText("")
         self.label_2.setText(QCoreApplication.translate("page_crayon_2", u"\uc774\ubbf8 \uce60\ud55c \uce78\ub3c4 \ud45c\uc2dc", None))
+        self.ownedHeroCheckButton.setText("")
+        self.ownedHeroLabel.setText(QCoreApplication.translate("page_crayon_2", u"\ubcf4\uc720 \uc0ac\ub3c4\ub9cc \ud45c\uc2dc", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_gold), QCoreApplication.translate("page_crayon_2", u"\ud669\ud06c\uce78", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_purple), QCoreApplication.translate("page_crayon_2", u"\ubcf4\ud06c\uce78", None))
     # retranslateUi
