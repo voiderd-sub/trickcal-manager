@@ -288,7 +288,7 @@ path_item_table: 1hntR5RyQ7UDXwfnEdjIu9Of369O_68FYRjIleBpdn7w
         self.resource.deleteAll(user=True, master=True)
         self.resource.masterInit()
         need_to_update_list = ["page_hero", "page_equip_abstract", "page_equip_1",
-                               "page_equip_2", "page_crayon_1"]
+                               "page_equip_2", "page_crayon_1", "page_crayon_2"]
         self.changeReloadState(need_to_update_list, "master")
         self.reloadPage()
 
