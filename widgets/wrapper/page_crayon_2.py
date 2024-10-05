@@ -12,6 +12,8 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
 
 
     def setInitialState(self):
+        self.checkbutton.clicked.connect(self.buttonPressReload)
+        self.ownedHeroCheckButton.clicked.connect(self.buttonPressReload)
         self.reload = {"master": True}
         res = self.window().resource
         stat = res.masterGet("Stat")
@@ -84,6 +86,7 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
         board_cost = res.masterGet("BoardCost")
         hero_id_to_metadata = res.masterGet("HeroIdToMetadata")
         hero_id_to_board_data = res.masterGet("HeroIdToBoardData")
+        hero_id_to_star_ex = res.userGet("HeroIdToStarExtrinsic")
         user_board = res.userGet("UserBoard")
         
         # clear all widgets in all scroll area (in gold tab)
@@ -96,8 +99,10 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
         # make data for each stat
         min_paths = [list() for _ in range(self.subtab_gold.count())]
         already_selected = [list() for _ in range(self.subtab_gold.count())]
-
         for hero_id in hero_id_to_metadata:
+            if self.ownedHeroCheckButton.isEnabled() and self.ownedHeroCheckButton.isChecked():
+                if hero_id_to_star_ex.get(hero_id, 0) == 0:
+                    continue
             hero_name = hero_id_to_metadata[hero_id]["name_kr"]
             hero_board_type_id, purple_crayon_list, gold_crayon_list = hero_id_to_board_data[hero_id]
             hero_board_type_data = board_type[hero_board_type_id]
@@ -169,6 +174,7 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
         board_cost = res.masterGet("BoardCost")
         hero_id_to_metadata = res.masterGet("HeroIdToMetadata")
         hero_id_to_board_data = res.masterGet("HeroIdToBoardData")
+        hero_id_to_star_ex = res.userGet("HeroIdToStarExtrinsic")
         user_board = res.userGet("UserBoard")
         
         # clear all widgets in all scroll area (in purple tab)
@@ -183,6 +189,9 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
         already_selected = [list() for _ in range(self.subtab_purple.count())]
 
         for hero_id in hero_id_to_metadata:
+            if self.ownedHeroCheckButton.isEnabled() and self.ownedHeroCheckButton.isChecked():
+                if hero_id_to_star_ex.get(hero_id, 0) == 0:
+                    continue
             hero_name = hero_id_to_metadata[hero_id]["name_kr"]
             hero_board_type_id, purple_crayon_list, gold_crayon_list = hero_id_to_board_data[hero_id]
             hero_board_type_data = board_type[hero_board_type_id]
@@ -245,12 +254,15 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
                 empty_widget = QWidget()
                 sublayout.addWidget(empty_widget)
                     
-                    
+    
 
     def reloadPage(self):
         if not any(self.reload.values()):
             return
-        
         self.updateGoldCrayon()
         self.updatePurpleCrayon()
         self.reload = dict()
+
+    def buttonPressReload(self):
+        self.updateGoldCrayon()
+        self.updatePurpleCrayon()
