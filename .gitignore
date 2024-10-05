@@ -1,1 +1,5 @@
 .venv
+icon
+*.pyc
+*.pyo
+db
