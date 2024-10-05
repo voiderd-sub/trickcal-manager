@@ -174,10 +174,6 @@ class PageHero(Ui_page_hero, QWidget):
         hero_id_to_extrinsic = res.userGet("HeroIdToStarExtrinsic")
         for i in range(self.hero_table.rowCount()):
             if(self.hero_table.cellWidget(i,2) == None):
-                print("cellWidget is None")
-                print(i)
-                print(self.hero_table.rowCount())
-                print(self.hero_table.cellWidget(i,2))
                 continue
             item: NonScrollComboBox = self.hero_table.cellWidget(i,2).comboBox
             star_text = item.currentText()
