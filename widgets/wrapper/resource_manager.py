@@ -305,7 +305,7 @@ class ResourceManager:
 
         # StageToDrop
         cur.execute("SELECT * FROM drop_table")
-        stage_to_drop = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+        stage_to_drop = defaultdict(lambda: defaultdict(int))
         for (stage, item_1, item_1_drop_rate, item_2, item_2_drop_rate) in cur:
             stage_to_drop[stage][item_1] = item_1_drop_rate
             stage_to_drop[stage][item_2] = item_2_drop_rate

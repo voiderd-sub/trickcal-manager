@@ -51,7 +51,7 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             if setting_name not in calc_settings:
                 # Initialize default value
                 if len(setting_name.split("_yes"))==2:
-                    value = 1
+                    value = 0 if setting_name.split("_yes")[0] == "auto_update" else 1
                 else:
                     value = ""
             else:
@@ -114,6 +114,48 @@ class PageEquip3(Ui_page_equip_3, QWidget):
         main_window.conn_master.commit()
 
 
+    # function to remove unusual stages
+    def remove_dominated_stages(self, stage_to_drop):
+        stage_keys = list(stage_to_drop.keys())
+        keys_to_remove = set()
+
+        for i in range(len(stage_keys)):
+            if stage_keys[i] in keys_to_remove:
+                continue
+            for j in range(i + 1, len(stage_keys)):
+                if stage_keys[j] in keys_to_remove:
+                    continue
+
+                A = stage_keys[i]
+                B = stage_keys[j]
+
+                if self.is_A_dominates_B(stage_to_drop[A], stage_to_drop[B], A, B):
+                    keys_to_remove.add(B)
+                elif self.is_A_dominates_B(stage_to_drop[B], stage_to_drop[A], B, A):
+                    keys_to_remove.add(A)
+
+        for key in keys_to_remove:
+            del stage_to_drop[key]
+
+    def is_A_dominates_B(self, dict_A, dict_B, key_A, key_B):
+        if not set(dict_B.keys()).issubset(set(dict_A.keys())):
+            return False
+        
+        for k in dict_B.keys():
+            if dict_A[k] < dict_B[k]:
+                return False
+        
+        if dict_A == dict_B:
+            a1, a2 = map(int, key_A.split("-"))
+            b1, b2 = map(int, key_B.split("-"))
+            if a1 == b1:
+                return a2 > b2
+            else:
+                return a1 > b1
+        
+        return True
+
+
     def calculate(self):
         try:
             self.saveCurrentSettings()
@@ -131,6 +173,8 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             for _, item_dict in stage_to_drop.items():
                 for item_name, drop_rate in item_dict.items():
                     item_dict[item_name] = round(drop_rate * 2, 1) / 2
+
+        self.remove_dominated_stages(stage_to_drop)
 
         # Calculate needs
         hero_id_to_equip_ids = res.masterGet("HeroIdToEquipIds")
@@ -285,8 +329,12 @@ class PageEquip3(Ui_page_equip_3, QWidget):
             if not k in constraints:
                 continue
             v = constraints[k]
-            partial_res+=f"[{k}]: 총 {pulp.value(v):.0f}개 필요\n"
             expval = pulp.value(v)
+            partial_res+=f"[{k}]: 총 {expval:.0f}개 파밍"
+            if expval >= needs_each_item[k] + 1:
+                partial_res += f" ({expval - needs_each_item[k]:.0f}개 남음)\n"
+            else:
+                partial_res += "\n"
             tmp_res = []
             for a in v:
                 val = a.varValue
@@ -299,13 +347,17 @@ class PageEquip3(Ui_page_equip_3, QWidget):
                         stage = False
 
                     if stage:
-                        tmp_res.append((name, val * stage_to_drop[name][k]/expval * 100))
+                        num_item = val* stage_to_drop[name][k]
+                        percent = val * stage_to_drop[name][k]/expval * 100
+                        tmp_res.append((name, f"{num_item:.0f}개", percent))
                     else:
                         rank = int(k.split("(")[1].rstrip("티어)"))
-                        tmp_res.append(("정석", val / rank_to_standard[rank] / expval * 100))
-            tmp_res.sort(key=lambda x: x[1], reverse=True)
-            for name, val in tmp_res:
-                partial_res+=f"{name} : {val:.1f}%\n"
+                        num_item = val / rank_to_standard[rank]
+                        percent = num_item / expval * 100
+                        tmp_res.append(("정석", f"재료 {num_item:.0f}개 대체, 정석 {val:.0f}개 사용", percent))
+            tmp_res.sort(key=lambda x: x[-1], reverse=True)
+            for name, val, percent in tmp_res:
+                partial_res+=f"{name} : {val} ({percent:.0f}%)\n"
             partial_res+="\n"
         result.append(partial_res)
 

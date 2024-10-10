@@ -47,12 +47,10 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
 
     def getMinPath(self, start, level, boundary, gate_points, gate_selected, board_type_id):
         res = self.window().resource
-        # print(start, level, boundary, gate_points, gate_selected, board_type_id)
         board_min_cost_path = res.masterGet("BoardMinCostPath")
         cost_path_list = []
         for end in boundary:
             level_end = 1 if end[0] < gate_points[1][0] else 2 if end[0] < gate_points[2][0] else 3
-            # print(level_end, gate_points)
             if level == level_end:
                 cost, path = board_min_cost_path[board_type_id][start][end]
                 cost_path_list.append((cost, path))
@@ -73,7 +71,6 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
                 continue # Never gonna be minimum path
         
         cost_path_list.sort(key=lambda x: x[0])
-        # print(cost_path_list)
         return cost_path_list[0]
 
 
@@ -96,7 +93,7 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
         # make data for each stat
         min_paths = [list() for _ in range(self.subtab_gold.count())]
         already_selected = [list() for _ in range(self.subtab_gold.count())]
-
+    
         for hero_id in hero_id_to_metadata:
             hero_name = hero_id_to_metadata[hero_id]["name_kr"]
             hero_board_type_id, purple_crayon_list, gold_crayon_list = hero_id_to_board_data[hero_id]
@@ -108,7 +105,7 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
                 board_selected, boundary = user_board[hero_id]
                 # if boundary is empty, it means that the hero's board is completed; so, skip this hero
                 if not boundary:
-                    print(f"{hero_name} is completed")
+                    # print(f"{hero_name} is completed")
                     continue
             else:
                 board_selected = [[0]*2] + [[0] * i[-1] for i in hero_board_type_data["num_crayon_type"]]
@@ -193,7 +190,7 @@ class PageCrayon2(Ui_page_crayon_2, QWidget):
                 board_selected, boundary = user_board[hero_id]
                 # if boundary is empty, it means that the hero's board is completed; so, skip this hero
                 if not boundary:
-                    print(f"{hero_name} is completed")
+                    # print(f"{hero_name} is completed")
                     continue
             else:
                 board_selected = [[0]*2] + [[0] * i[-1] for i in hero_board_type_data["num_crayon_type"]]

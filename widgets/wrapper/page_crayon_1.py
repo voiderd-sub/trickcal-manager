@@ -314,12 +314,13 @@ QPushButton:pressed, QPushButton:checked{
         first_gate_coordinate = res.masterGet("BoardType")[last_hero_board_id]["gates"][0]
         user_board = res.userGet("UserBoard")
         boundary_coordinates = []
+        hero_name = res.masterGet("HeroIdToMetadata")[self.last_hero_id]["name_kr"]
 
         def is_valid(x, y):
             return 0 <= x < table_rows and 0 <= y < table_cols and table.cellWidget(x, y) is not None
         
         def is_checked(x, y):
-            if (y, x) == first_gate_coordinate:
+            if (y, 6-x) == first_gate_coordinate:
                 return True
             widget = table.cellWidget(x, y)
             if widget is None:
