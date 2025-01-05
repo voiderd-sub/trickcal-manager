@@ -1,4 +1,4 @@
-from enums import *
+from widgets.dps.enums import *
 import heapq
 
 class BuffManager:
@@ -7,7 +7,7 @@ class BuffManager:
         self.buff_heap = []
         self.debuff_heap = []
         self.active_buffs = dict()
-        self.active_debuffs = dict()
+        self.active_debuffs = {debuff_name: 0 for debuff_name in DebuffType}
 
     def add_buff(self, buff):
         buff_id = f"{buff['content']['type']}_{buff['content']['targets']}"
@@ -33,6 +33,12 @@ class BuffManager:
             self.active_buffs[buff_id] = new_buff_start
 
         self.party.next_update[-1] = self.buff_heap[0].time
+    
+
+    def add_debuff(self, time, duration, debuff_name):
+        new_debuff_end = int(time + duration * MS_IN_SEC)
+        heapq.heappush(self.debuff_heap, (new_debuff_end, debuff_name))
+        self.active_debuffs[debuff_name] += 1
 
 
     def apply_buffs(self, t):
@@ -50,6 +56,10 @@ class BuffManager:
                     character = self.party.character_list[i]
                     if character:
                         self.apply_buff_effect(character, buff["type"], buff["value"] * event_type)
+
+        while self.debuff_heap and self.debuff_heap[0][0] == t:
+            _, debuff_name = heapq.heappop(self.debuff_heap)
+            self.active_debuffs[debuff_name] -= 1
 
 
     def apply_buff_effect(self, target, buff_type, buff_value):

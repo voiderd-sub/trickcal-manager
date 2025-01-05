@@ -1,8 +1,15 @@
-from .enums import *
-from .step_function import StepFunction
+from widgets.dps.enums import *
+from widgets.dps.step_function import StepFunction
 
 import numpy as np
 from collections import defaultdict
+
+
+def find_valid_skill_level(L, i):
+    for j in range(i-1, -1, -1):
+        if L[j] is not None:
+            return j+1
+    return 0
 
 
 class Hero:
@@ -14,6 +21,18 @@ class Hero:
         return self.name if hasattr(self, "name") else "HeroNameDefault"
 
     def init_simulation(self):
+        # Check skill level data is exists.
+        # If not, use the value of the level that has data but is lower than the user's skill level.
+        for skill_type in ["lowerskill", "upperskill"]:
+            skill_values = getattr(self, skill_type+"_value", None)
+            if not skill_values:
+                user_level = getattr(self, skill_type+"_level")
+                valid_level = find_valid_skill_level(skill_values, user_level)
+                if user_level != valid_level:
+                    setattr(self, skill_type+"_level", valid_level)
+                    print(f"Data for {skill_type} level {user_level} is not exists.")
+                    print(f"Use data of level {valid_level} instead.")
+
         self.aa_cd = int(300 * MS_IN_SEC / self.attack_speed)
         self.sp = self.init_sp
         self.sp_timer = 0
@@ -29,6 +48,7 @@ class Hero:
         self.action_log = []
         self.action_timestamps = {action: [] for action in ActionType if action != ActionType.Wait}
         self.damage_records = defaultdict(list)
+        self.debuff_damage_records = StepFunction.from_constant(0., 0.)
 
     def choose_action(self):
         if self.sp == self.max_sp:
@@ -84,74 +104,10 @@ class Hero:
         return t + dt
     
     def calculate_cumulative_damage(self, max_T):
-        """
-        action_log를 기반으로 누적 대미지를 계산합니다.
-        대미지는 일반공격, 강화공격, Lower Skill, Upper Skill로 나눠 계산됩니다.
-        """
-        # 공격 유형별로 대미지를 저장할 딕셔너리
-        cumulative_damage_data = {
-            ActionType.AutoAttackBasic: [],
-            ActionType.AutoAttackEnhanced: [],
-            ActionType.LowerSkill: [],
-            ActionType.UpperSkill: [],
-        }
-
-        # 각 공격 유형에 대한 기본 데이터
-        damage_data = {
-            ActionType.AutoAttackBasic: {
-                "motion_time": self.aa_motion_time[ActionType.AutoAttackBasic],
-                "coefficients": [0.5, 0.5],  # 예: 두 번의 타격, 각각 50% 대미지
-                "delay_factors": [0.5, 1.0],  # 예: 첫 번째 타격 50%, 두 번째 타격 100% 지연
-            },
-            ActionType.AutoAttackEnhanced: {
-                "motion_time": self.aa_motion_time[ActionType.AutoAttackEnhanced],
-                "coefficients": [1.0],  # 강화공격 한 번의 타격
-                "delay_factors": [0.7],  # 타격이 70% 모션 시간 후 발생
-            },
-            ActionType.LowerSkill: {
-                "motion_time": self.lower_skill_motion_time,
-                "coefficients": [1.5],  # 스킬의 총 대미지 계수
-                "delay_factors": [0.5],  # 50% 모션 시간 후 발생
-            },
-            ActionType.UpperSkill: {
-                "motion_time": self.upper_skill_motion_time,
-                "coefficients": [3.0, 1.0],  # 스킬의 여러 타격 계수
-                "delay_factors": [0.3, 0.9],  # 첫 타격 30%, 두 번째 타격 90% 후 발생
-            },
-        }
-
-        for timestamp, action in self.action_log:
-            if action not in damage_data:
-                continue
-
-            damage_info = damage_data[action]
-            motion_time = damage_info["motion_time"]
-            coefficients = damage_info["coefficients"]
-            delay_factors = damage_info["delay_factors"]
-
-            for coeff, delay_factor in zip(coefficients, delay_factors):
-                damage_time = timestamp + motion_time * delay_factor
-                damage = coeff * getattr(self, "attack_power", 1)  # 기본 공격력 1
-
-                # 타임스탬프와 대미지를 누적
-                cumulative_damage_data[action].append((damage_time, damage))
-
-        # 누적 대미지 리스트를 StepFunction으로 변환
         cumulative_damage = {}
-        for action, data in cumulative_damage_data.items():
-            if data:
-                breakpoints = [0] + [t for t, _ in data] + [max_T]
-                values = [0] + np.cumsum([d for _, d in data]).tolist()
-                cumulative_damage[action] = StepFunction(
-                    np.array(breakpoints, dtype=float),
-                    np.array(values, dtype=float)
-                )
-                print(action)
-                print(cumulative_damage[action].breakpoints)
-                print(cumulative_damage[action].values)
-            else:
-                cumulative_damage[action] = StepFunction.from_constant(0, 0, 0)
-
+        cumulative_damage["Timestep"], cumulative_damage["Debuff"] = self.debuff_damage_records.smooth(0, max_T)
+        for action, data in self.damage_records.items():
+            cumulative_damage[action] = StepFunction([(0., 0.)] + data).smooth(0, max_T)[1]
         return cumulative_damage
     
     def BasicAttack(self, t):
