@@ -40,17 +40,19 @@ class TargetHero(StrEnum):
     BackLine = auto()
 
 class EffectType(StrEnum):
-    INSTANT = auto()
-    PROJECTILE = auto()
-    DEBUFF = auto()
-    BUFF = auto()
+    Instant = auto()
+    Projectile = auto()
+    Debuff = auto()
+    Buff = auto()
 
 class BuffType(StrEnum):
     ATTACK_SPEED_ADD = auto()
     DAMAGE_INCREASE = auto()
 
-class DebuffType(StrEnum):
-    Sting = auto()          # 쓰라림 : 틱당 10%; 치감 50% (구현 X)
-    Burn = auto()           # 화상 : 틱당 30%
-    Frostbite = auto()      # 동상 : 틱당 10%; 받피증 효과는 버프로 처리
-    Poisoning = auto()      # 중독 : 틱당 7.5%; 공깎 30% (구현 X)
+
+class Personality(StrEnum):
+    Naive = auto()
+    Mad = auto()
+    Cool = auto()
+    Jolly = auto()
+    Gloomy = auto()

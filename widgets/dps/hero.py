@@ -41,6 +41,9 @@ class Hero:
         self.last_updated = 0
         self.last_action = ActionType.Wait
         self.last_action_time = 0
+        if not hasattr(self, "atk"):
+            self.atk = 100
+        self.amplify = 0.
         self.atk_coeff = 1.
         self.attack_speed_coeff = 1.
         self.acceleration = 1.
@@ -48,7 +51,6 @@ class Hero:
         self.action_log = []
         self.action_timestamps = {action: [] for action in ActionType if action != ActionType.Wait}
         self.damage_records = defaultdict(list)
-        self.debuff_damage_records = StepFunction.from_constant(0., 0.)
 
     def choose_action(self):
         if self.sp == self.max_sp:
@@ -104,12 +106,12 @@ class Hero:
         return t + dt
     
     def calculate_cumulative_damage(self, max_T):
-        cumulative_damage = {}
-        cumulative_damage["Timestep"], cumulative_damage["Debuff"] = self.debuff_damage_records.smooth(0, max_T)
-        for action, data in self.damage_records.items():
-            cumulative_damage[action] = StepFunction([(0., 0.)] + data).smooth(0, max_T)[1]
-        return cumulative_damage
-    
+        for key, record in self.damage_records.items():
+            for i in range(len(record) - 1, -1, -1):
+                if record[i][0] < max_T:
+                    self.damage_records[key] = record[i][1]
+                    break
+        
     def BasicAttack(self, t):
         pass
 
@@ -130,6 +132,12 @@ class Hero:
     
     def add_buff(self, buff):
         self.party.buff_manager.add_buff(buff)
+    
+    def get_damage(self, damage):
+        enemy_amplify = self.party.get_amplify(self)
+        additional_coeff = self.party.get_additional_coeff(self)
+        amplify = max(0.25, 1 + self.amplify + enemy_amplify)
+        return 0.8 * (self.atk * self.atk_coeff) * amplify * (damage/100) * additional_coeff
 
 
 class EnhancedAttackChecker:
