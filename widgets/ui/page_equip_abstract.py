@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'page_equip_abstract.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -29,7 +29,7 @@ class Ui_page_equip_abstract(object):
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.groupBox = QGroupBox(page_equip_abstract)
         self.groupBox.setObjectName(u"groupBox")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(1)
         sizePolicy.setHeightForWidth(self.groupBox.sizePolicy().hasHeightForWidth())
@@ -58,7 +58,7 @@ class Ui_page_equip_abstract(object):
         self.horizontalLayout.setContentsMargins(5, 0, 10, 0)
         self.iconHp = QLabel(self.containerHp)
         self.iconHp.setObjectName(u"iconHp")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.iconHp.sizePolicy().hasHeightForWidth())
@@ -73,7 +73,7 @@ class Ui_page_equip_abstract(object):
 
         self.nameHp = QLabel(self.containerHp)
         self.nameHp.setObjectName(u"nameHp")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         sizePolicy2.setHorizontalStretch(1)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.nameHp.sizePolicy().hasHeightForWidth())
@@ -88,7 +88,7 @@ class Ui_page_equip_abstract(object):
 
         self.statHp = QLabel(self.containerHp)
         self.statHp.setObjectName(u"statHp")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         sizePolicy3.setHorizontalStretch(2)
         sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.statHp.sizePolicy().hasHeightForWidth())
@@ -103,7 +103,7 @@ class Ui_page_equip_abstract(object):
 
         self.rateHp = QLabel(self.containerHp)
         self.rateHp.setObjectName(u"rateHp")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
         sizePolicy4.setHorizontalStretch(0)
         sizePolicy4.setVerticalStretch(0)
         sizePolicy4.setHeightForWidth(self.rateHp.sizePolicy().hasHeightForWidth())
@@ -580,7 +580,7 @@ class Ui_page_equip_abstract(object):
 
         self.widget = QWidget(page_equip_abstract)
         self.widget.setObjectName(u"widget")
-        sizePolicy5 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy5.setHorizontalStretch(0)
         sizePolicy5.setVerticalStretch(3)
         sizePolicy5.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
@@ -606,7 +606,7 @@ class Ui_page_equip_abstract(object):
 
         self.goal_list = QComboBox(self.widget_13)
         self.goal_list.setObjectName(u"goal_list")
-        sizePolicy6 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         sizePolicy6.setHorizontalStretch(0)
         sizePolicy6.setVerticalStretch(0)
         sizePolicy6.setHeightForWidth(self.goal_list.sizePolicy().hasHeightForWidth())
@@ -666,7 +666,7 @@ class Ui_page_equip_abstract(object):
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_6)
 
-        self.verticalSpacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.verticalSpacer = QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
 
         self.verticalLayout_4.addItem(self.verticalSpacer)
 

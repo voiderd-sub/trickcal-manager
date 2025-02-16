@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'crayon_stat_container.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -36,7 +36,7 @@ class Ui_CrayonStatContainer(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.icon = QLabel(CrayonStatContainer)
         self.icon.setObjectName(u"icon")
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.icon.sizePolicy().hasHeightForWidth())
@@ -54,7 +54,7 @@ class Ui_CrayonStatContainer(object):
 
         self.name = QLabel(CrayonStatContainer)
         self.name.setObjectName(u"name")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
         sizePolicy1.setHorizontalStretch(1)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.name.sizePolicy().hasHeightForWidth())
@@ -76,7 +76,7 @@ class Ui_CrayonStatContainer(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.stat_purple = QLabel(CrayonStatContainer)
         self.stat_purple.setObjectName(u"stat_purple")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.stat_purple.sizePolicy().hasHeightForWidth())

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -40,7 +40,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.sidebar = Sidebar(self.centralwidget)
         self.sidebar.setObjectName(u"sidebar")
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.sidebar.sizePolicy().hasHeightForWidth())
@@ -52,7 +52,7 @@ class Ui_MainWindow(object):
 
         self.stacked_window = QStackedWidget(self.centralwidget)
         self.stacked_window.setObjectName(u"stacked_window")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.stacked_window.sizePolicy().hasHeightForWidth())
@@ -84,24 +84,21 @@ class Ui_MainWindow(object):
         self.page_crayon_2 = PageCrayon2(self.stacked_window)
         self.page_crayon_2.setObjectName(u"page_crayon_2")
         self.stacked_window.addWidget(self.page_crayon_2)
-        self.page_food_1 = QWidget()
-        self.page_food_1.setObjectName(u"page_food_1")
-        self.stacked_window.addWidget(self.page_food_1)
-        self.page_food_2 = QWidget()
-        self.page_food_2.setObjectName(u"page_food_2")
-        self.stacked_window.addWidget(self.page_food_2)
-        self.page_food_3 = QWidget()
-        self.page_food_3.setObjectName(u"page_food_3")
-        self.stacked_window.addWidget(self.page_food_3)
-        self.page_lab_1 = QWidget()
-        self.page_lab_1.setObjectName(u"page_lab_1")
-        self.stacked_window.addWidget(self.page_lab_1)
-        self.page_lab_2 = QWidget()
-        self.page_lab_2.setObjectName(u"page_lab_2")
-        self.stacked_window.addWidget(self.page_lab_2)
-        self.page_lab_3 = QWidget()
-        self.page_lab_3.setObjectName(u"page_lab_3")
-        self.stacked_window.addWidget(self.page_lab_3)
+        self.page_dps_1 = QWidget()
+        self.page_dps_1.setObjectName(u"page_dps_1")
+        self.stacked_window.addWidget(self.page_dps_1)
+        self.page_dps_2 = QWidget()
+        self.page_dps_2.setObjectName(u"page_dps_2")
+        self.stacked_window.addWidget(self.page_dps_2)
+        self.page_cash_1 = QWidget()
+        self.page_cash_1.setObjectName(u"page_cash_1")
+        self.stacked_window.addWidget(self.page_cash_1)
+        self.page_cash_2 = QWidget()
+        self.page_cash_2.setObjectName(u"page_cash_2")
+        self.stacked_window.addWidget(self.page_cash_2)
+        self.page_cash_3 = QWidget()
+        self.page_cash_3.setObjectName(u"page_cash_3")
+        self.stacked_window.addWidget(self.page_cash_3)
 
         self.horizontalLayout.addWidget(self.stacked_window)
 
@@ -109,7 +106,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stacked_window.setCurrentIndex(8)
+        self.stacked_window.setCurrentIndex(13)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

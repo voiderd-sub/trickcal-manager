@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'page_equip_1.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -27,7 +27,7 @@ class Ui_page_equip_1(object):
         if not page_equip_1.objectName():
             page_equip_1.setObjectName(u"page_equip_1")
         page_equip_1.resize(903, 633)
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(page_equip_1.sizePolicy().hasHeightForWidth())
@@ -36,13 +36,13 @@ class Ui_page_equip_1(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.horizontalSpacer_5 = QSpacerItem(36, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
+        self.horizontalSpacer_5 = QSpacerItem(36, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer_5)
 
         self.hero_select = ExtendedComboBox(page_equip_1)
         self.hero_select.setObjectName(u"hero_select")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.hero_select.sizePolicy().hasHeightForWidth())
@@ -63,14 +63,14 @@ class Ui_page_equip_1(object):
 
         self.horizontalLayout_3.addWidget(self.filter_btn)
 
-        self.horizontalSpacer_6 = QSpacerItem(36, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
+        self.horizontalSpacer_6 = QSpacerItem(36, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer_6)
 
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_3)
 
-        self.verticalSpacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.verticalSpacer = QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
 
         self.verticalLayout_2.addItem(self.verticalSpacer)
 
@@ -78,7 +78,7 @@ class Ui_page_equip_1(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.go_left_btn = QPushButton(page_equip_1)
         self.go_left_btn.setObjectName(u"go_left_btn")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.go_left_btn.sizePolicy().hasHeightForWidth())
@@ -110,7 +110,7 @@ class Ui_page_equip_1(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
         self.verticalLayout_2.addItem(self.verticalSpacer_2)
 
@@ -184,7 +184,7 @@ class Ui_page_equip_1(object):
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.widget_2 = QWidget(self.groupBox_setAll)
         self.widget_2.setObjectName(u"widget_2")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.widget_2.sizePolicy().hasHeightForWidth())
@@ -226,7 +226,7 @@ class Ui_page_equip_1(object):
         self.widget_3.setObjectName(u"widget_3")
         self.horizontalLayout_7 = QHBoxLayout(self.widget_3)
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.horizontalSpacer = QSpacerItem(93, 38, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(93, 38, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_7.addItem(self.horizontalSpacer)
 
@@ -237,7 +237,7 @@ class Ui_page_equip_1(object):
 
         self.horizontalLayout_7.addWidget(self.set_goal_w_stat_btn)
 
-        self.horizontalSpacer_2 = QSpacerItem(10, 38, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_2 = QSpacerItem(10, 38, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_7.addItem(self.horizontalSpacer_2)
 

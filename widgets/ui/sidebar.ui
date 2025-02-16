@@ -27,7 +27,7 @@
         </font>
        </property>
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -58,7 +58,7 @@
         </font>
        </property>
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -82,8 +82,8 @@
       <string>내실 요약 (준비중)</string>
      </property>
      <property name="icon">
-      <iconset>
-       <normaloff>icon/sidebar/home.png</normaloff>icon/sidebar/home.png</iconset>
+      <iconset resource="../../icon_resource.qrc">
+       <normaloff>:/icon/icon/sidebar/home.png</normaloff>:/icon/icon/sidebar/home.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -114,8 +114,8 @@
       <string>사도</string>
      </property>
      <property name="icon">
-      <iconset>
-       <normaloff>icon/sidebar/hero.png</normaloff>icon/sidebar/hero.png</iconset>
+      <iconset resource="../../icon_resource.qrc">
+       <normaloff>:/icon/icon/sidebar/hero.png</normaloff>:/icon/icon/sidebar/hero.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -146,8 +146,8 @@
       <string>랭크작</string>
      </property>
      <property name="icon">
-      <iconset>
-       <normaloff>icon/sidebar/equip.png</normaloff>icon/sidebar/equip.png</iconset>
+      <iconset resource="../../icon_resource.qrc">
+       <normaloff>:/icon/icon/sidebar/equip.png</normaloff>:/icon/icon/sidebar/equip.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -316,8 +316,8 @@
       <string>보드</string>
      </property>
      <property name="icon">
-      <iconset>
-       <normaloff>icon/sidebar/crayon.png</normaloff>icon/sidebar/crayon.png</iconset>
+      <iconset resource="../../icon_resource.qrc">
+       <normaloff>:/icon/icon/sidebar/crayon.png</normaloff>:/icon/icon/sidebar/crayon.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -447,7 +447,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="food_btn">
+    <widget class="QPushButton" name="dps_btn">
      <property name="font">
       <font>
        <family>ONE Mobile POP</family>
@@ -455,11 +455,11 @@
       </font>
      </property>
      <property name="text">
-      <string>호감도 (준비중)</string>
+      <string>DPS 계산기</string>
      </property>
      <property name="icon">
-      <iconset>
-       <normaloff>icon/sidebar/food.png</normaloff>icon/sidebar/food.png</iconset>
+      <iconset resource="../../icon_resource.qrc">
+       <normaloff>:/icon/icon/sidebar/dps.png</normaloff>:/icon/icon/sidebar/dps.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -479,7 +479,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="food_sub" native="true">
+    <widget class="QWidget" name="dps_sub" native="true">
      <property name="font">
       <font>
        <family>ONE Mobile POP</family>
@@ -502,7 +502,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QPushButton" name="food_1_btn">
+       <widget class="QPushButton" name="dps_1_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -510,7 +510,7 @@
          </font>
         </property>
         <property name="text">
-         <string>친밀 레벨 현황 및 목표 설정</string>
+         <string>덱 및 계산 설정 (카드렙 기록도 여기서)</string>
         </property>
         <property name="iconSize">
          <size>
@@ -525,12 +525,12 @@
          <bool>false</bool>
         </property>
         <attribute name="buttonGroup">
-         <string notr="true">food_group</string>
+         <string notr="true">dps_group</string>
         </attribute>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="food_2_btn">
+       <widget class="QPushButton" name="dps_2_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -538,7 +538,7 @@
          </font>
         </property>
         <property name="text">
-         <string>보유 음식 및 재료</string>
+         <string>실제 계산하기? (메뉴 나눠야함?)</string>
         </property>
         <property name="iconSize">
          <size>
@@ -553,35 +553,7 @@
          <bool>false</bool>
         </property>
         <attribute name="buttonGroup">
-         <string notr="true">food_group</string>
-        </attribute>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="food_3_btn">
-        <property name="font">
-         <font>
-          <family>ONE Mobile POP</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>파밍 동선 및 음식 제작 계산</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>25</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="autoExclusive">
-         <bool>false</bool>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">food_group</string>
+         <string notr="true">dps_group</string>
         </attribute>
        </widget>
       </item>
@@ -589,7 +561,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="lab_btn">
+    <widget class="QPushButton" name="cash_btn">
      <property name="font">
       <font>
        <family>ONE Mobile POP</family>
@@ -597,11 +569,11 @@
       </font>
      </property>
      <property name="text">
-      <string>연구 (준비중)</string>
+      <string>과금 효율 계산기</string>
      </property>
      <property name="icon">
-      <iconset>
-       <normaloff>icon/sidebar/lab.png</normaloff>icon/sidebar/lab.png</iconset>
+      <iconset resource="../../icon_resource.qrc">
+       <normaloff>:/icon/icon/sidebar/cash.png</normaloff>:/icon/icon/sidebar/cash.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -621,7 +593,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="lab_sub" native="true">
+    <widget class="QWidget" name="cash_sub" native="true">
      <property name="font">
       <font>
        <family>ONE Mobile POP</family>
@@ -644,7 +616,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QPushButton" name="lab_1_btn">
+       <widget class="QPushButton" name="cash_1_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -652,7 +624,7 @@
          </font>
         </property>
         <property name="text">
-         <string>연구 현황 및 목표 설정</string>
+         <string>기본 설정</string>
         </property>
         <property name="iconSize">
          <size>
@@ -667,12 +639,12 @@
          <bool>false</bool>
         </property>
         <attribute name="buttonGroup">
-         <string notr="true">lab_group</string>
+         <string notr="true">cash_group</string>
         </attribute>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="lab_2_btn">
+       <widget class="QPushButton" name="cash_2_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -680,7 +652,7 @@
          </font>
         </property>
         <property name="text">
-         <string>보유 연구 재료</string>
+         <string>계산하기</string>
         </property>
         <property name="iconSize">
          <size>
@@ -695,12 +667,12 @@
          <bool>false</bool>
         </property>
         <attribute name="buttonGroup">
-         <string notr="true">lab_group</string>
+         <string notr="true">cash_group</string>
         </attribute>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="lab_3_btn">
+       <widget class="QPushButton" name="cash_3_btn">
         <property name="font">
          <font>
           <family>ONE Mobile POP</family>
@@ -708,7 +680,7 @@
          </font>
         </property>
         <property name="text">
-         <string>파밍 동선 계산</string>
+         <string>이 버튼 삭제할까?</string>
         </property>
         <property name="iconSize">
          <size>
@@ -723,7 +695,7 @@
          <bool>false</bool>
         </property>
         <attribute name="buttonGroup">
-         <string notr="true">lab_group</string>
+         <string notr="true">cash_group</string>
         </attribute>
        </widget>
       </item>
@@ -738,7 +710,7 @@
       </font>
      </property>
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -817,13 +789,15 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../icon_resource.qrc"/>
+ </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="main_menu_group"/>
-  <buttongroup name="equip_group"/>
-  <buttongroup name="food_group"/>
-  <buttongroup name="lab_group"/>
   <buttongroup name="crayon_group"/>
+  <buttongroup name="main_menu_group"/>
+  <buttongroup name="dps_group"/>
+  <buttongroup name="cash_group"/>
+  <buttongroup name="equip_group"/>
  </buttongroups>
 </ui>

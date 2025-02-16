@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'page_hero.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -31,7 +31,7 @@ class Ui_page_hero(object):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.hero_table_container = QWidget(page_hero)
         self.hero_table_container.setObjectName(u"hero_table_container")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(2)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.hero_table_container.sizePolicy().hasHeightForWidth())
@@ -55,7 +55,7 @@ class Ui_page_hero(object):
         __qtablewidgetitem2 = QTableWidgetItem()
         self.hero_table.setHorizontalHeaderItem(2, __qtablewidgetitem2)
         self.hero_table.setObjectName(u"hero_table")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.hero_table.sizePolicy().hasHeightForWidth())
@@ -87,7 +87,7 @@ class Ui_page_hero(object):
 
         self.button_area = QWidget(page_hero)
         self.button_area.setObjectName(u"button_area")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         sizePolicy2.setHorizontalStretch(1)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.button_area.sizePolicy().hasHeightForWidth())
@@ -104,7 +104,7 @@ class Ui_page_hero(object):
 
         self.verticalLayout_4.addWidget(self.order_box)
 
-        self.verticalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.verticalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
 
         self.verticalLayout_4.addItem(self.verticalSpacer_2)
 
@@ -134,7 +134,7 @@ class Ui_page_hero(object):
 
         self.verticalLayout.addWidget(self.all_check_btn)
 
-        self.verticalSpacer_3 = QSpacerItem(20, 13, QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.verticalSpacer_3 = QSpacerItem(20, 13, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
 
         self.verticalLayout.addItem(self.verticalSpacer_3)
 
@@ -148,7 +148,7 @@ class Ui_page_hero(object):
 
         self.verticalLayout_4.addWidget(self.groupBox)
 
-        self.verticalSpacer = QSpacerItem(20, 339, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 339, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_4.addItem(self.verticalSpacer)
 

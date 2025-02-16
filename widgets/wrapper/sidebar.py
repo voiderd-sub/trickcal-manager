@@ -16,12 +16,12 @@ class Sidebar(Ui_sidebar, QWidget):
         # define main buttons & sub buttons
         self.main_btn_dict = dict()
         self.sub_menu_dict = dict()
-        self.menu_names = ["home", "hero", "equip", "crayon", "food", "lab"]
+        self.menu_names = ["home", "hero", "equip", "crayon", "dps", "cash"]
 
         f = lambda x: [f"{x[0]}_{i}_btn" for i in range(1, x[1]+1)]
         self.btn_with_pages = ["home_btn", "hero_btn", "equip_abstract_btn"]\
                             +f(("equip",3)) + ["crayon_abstract_btn"]\
-                            +f(("crayon",2)) + f(("food",3)) + f(("lab",3))
+                            +f(("crayon",2)) + f(("dps",2)) + f(("cash",3))
         
         for name in self.menu_names:
             self.main_btn_dict[name] = getattr(self, name+"_btn")
