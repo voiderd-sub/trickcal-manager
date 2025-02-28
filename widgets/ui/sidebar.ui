@@ -82,8 +82,8 @@
       <string>내실 요약 (준비중)</string>
      </property>
      <property name="icon">
-      <iconset resource="../../icon_resource.qrc">
-       <normaloff>:/icon/icon/sidebar/home.png</normaloff>:/icon/icon/sidebar/home.png</iconset>
+      <iconset>
+       <normaloff>icon/sidebar/home.png</normaloff>icon/sidebar/home.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -114,8 +114,8 @@
       <string>사도</string>
      </property>
      <property name="icon">
-      <iconset resource="../../icon_resource.qrc">
-       <normaloff>:/icon/icon/sidebar/hero.png</normaloff>:/icon/icon/sidebar/hero.png</iconset>
+      <iconset>
+       <normaloff>icon/sidebar/hero.png</normaloff>icon/sidebar/hero.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -146,8 +146,8 @@
       <string>랭크작</string>
      </property>
      <property name="icon">
-      <iconset resource="../../icon_resource.qrc">
-       <normaloff>:/icon/icon/sidebar/equip.png</normaloff>:/icon/icon/sidebar/equip.png</iconset>
+      <iconset>
+       <normaloff>icon/sidebar/equip.png</normaloff>icon/sidebar/equip.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -316,8 +316,8 @@
       <string>보드</string>
      </property>
      <property name="icon">
-      <iconset resource="../../icon_resource.qrc">
-       <normaloff>:/icon/icon/sidebar/crayon.png</normaloff>:/icon/icon/sidebar/crayon.png</iconset>
+      <iconset>
+       <normaloff>icon/sidebar/crayon.png</normaloff>icon/sidebar/crayon.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -458,8 +458,8 @@
       <string>DPS 계산기</string>
      </property>
      <property name="icon">
-      <iconset resource="../../icon_resource.qrc">
-       <normaloff>:/icon/icon/sidebar/dps.png</normaloff>:/icon/icon/sidebar/dps.png</iconset>
+      <iconset>
+       <normaloff>icon/sidebar/dps.png</normaloff>icon/sidebar/dps.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -479,88 +479,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="dps_sub" native="true">
-     <property name="font">
-      <font>
-       <family>ONE Mobile POP</family>
-      </font>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_4">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QPushButton" name="dps_1_btn">
-        <property name="font">
-         <font>
-          <family>ONE Mobile POP</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>덱 및 계산 설정 (카드렙 기록도 여기서)</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>25</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="autoExclusive">
-         <bool>false</bool>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">dps_group</string>
-        </attribute>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="dps_2_btn">
-        <property name="font">
-         <font>
-          <family>ONE Mobile POP</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>실제 계산하기? (메뉴 나눠야함?)</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>25</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="autoExclusive">
-         <bool>false</bool>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">dps_group</string>
-        </attribute>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <widget class="QPushButton" name="cash_btn">
      <property name="font">
       <font>
@@ -572,8 +490,8 @@
       <string>과금 효율 계산기</string>
      </property>
      <property name="icon">
-      <iconset resource="../../icon_resource.qrc">
-       <normaloff>:/icon/icon/sidebar/cash.png</normaloff>:/icon/icon/sidebar/cash.png</iconset>
+      <iconset>
+       <normaloff>icon/sidebar/cash.png</normaloff>icon/sidebar/cash.png</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -789,15 +707,12 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../../icon_resource.qrc"/>
- </resources>
+ <resources/>
  <connections/>
  <buttongroups>
+  <buttongroup name="equip_group"/>
+  <buttongroup name="cash_group"/>
   <buttongroup name="crayon_group"/>
   <buttongroup name="main_menu_group"/>
-  <buttongroup name="dps_group"/>
-  <buttongroup name="cash_group"/>
-  <buttongroup name="equip_group"/>
  </buttongroups>
 </ui>

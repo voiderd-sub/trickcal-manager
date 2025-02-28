@@ -21,7 +21,7 @@ class Sidebar(Ui_sidebar, QWidget):
         f = lambda x: [f"{x[0]}_{i}_btn" for i in range(1, x[1]+1)]
         self.btn_with_pages = ["home_btn", "hero_btn", "equip_abstract_btn"]\
                             +f(("equip",3)) + ["crayon_abstract_btn"]\
-                            +f(("crayon",2)) + f(("dps",2)) + f(("cash",3))
+                            +f(("crayon",2)) + ["dps_btn"] + f(("cash",3))
         
         for name in self.menu_names:
             self.main_btn_dict[name] = getattr(self, name+"_btn")

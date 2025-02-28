@@ -48,7 +48,7 @@ class Ui_CrayonStatContainer(object):
         font1.setPointSize(15)
         self.icon.setFont(font1)
         self.icon.setScaledContents(True)
-        self.icon.setAlignment(Qt.AlignCenter)
+        self.icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.horizontalLayout.addWidget(self.icon)
 
@@ -64,7 +64,7 @@ class Ui_CrayonStatContainer(object):
         font2.setFamilies([u"ONE \ubaa8\ubc14\uc77cPOP"])
         font2.setPointSize(17)
         self.name.setFont(font2)
-        self.name.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+        self.name.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
 
         self.horizontalLayout.addWidget(self.name)
 
@@ -82,7 +82,7 @@ class Ui_CrayonStatContainer(object):
         sizePolicy2.setHeightForWidth(self.stat_purple.sizePolicy().hasHeightForWidth())
         self.stat_purple.setSizePolicy(sizePolicy2)
         self.stat_purple.setFont(font1)
-        self.stat_purple.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.stat_purple.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout.addWidget(self.stat_purple)
 
@@ -91,7 +91,7 @@ class Ui_CrayonStatContainer(object):
         sizePolicy2.setHeightForWidth(self.stat_gold.sizePolicy().hasHeightForWidth())
         self.stat_gold.setSizePolicy(sizePolicy2)
         self.stat_gold.setFont(font1)
-        self.stat_gold.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.stat_gold.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout.addWidget(self.stat_gold)
 
@@ -107,7 +107,7 @@ class Ui_CrayonStatContainer(object):
         self.num_purple.setSizePolicy(sizePolicy)
         self.num_purple.setMinimumSize(QSize(120, 0))
         self.num_purple.setFont(font1)
-        self.num_purple.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.num_purple.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_2.addWidget(self.num_purple)
 
@@ -117,7 +117,7 @@ class Ui_CrayonStatContainer(object):
         self.num_gold.setSizePolicy(sizePolicy)
         self.num_gold.setMinimumSize(QSize(120, 0))
         self.num_gold.setFont(font1)
-        self.num_gold.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.num_gold.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_2.addWidget(self.num_gold)
 

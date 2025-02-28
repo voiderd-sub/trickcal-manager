@@ -1,6 +1,5 @@
 
 from widgets.dps.enums import *
-from widgets.dps.step_function import StepFunction
 
 def instant_effect(hero, action_type, time, damage_coeff):
     time = int(time)

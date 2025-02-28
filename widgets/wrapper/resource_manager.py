@@ -295,10 +295,12 @@ class ResourceManager:
         hero_rank_stat_type = {hero_id: stat_type for (hero_id, stat_type) in cur}
         self._resourceMaster["HeroIdToRankStatType"] = hero_rank_stat_type
 
-        # Stat
+        # Stat, StatFull
         cur.execute("SELECT id, name_kr, name_en FROM stat")
-        stat = {id: (name_kr, name_en) for (id, name_kr, name_en) in cur}
+        stat_full = {id: (name_kr, name_en) for (id, name_kr, name_en) in cur}
+        stat = {k: v for k, v in stat_full.items() if k < 10}
         self._resourceMaster["Stat"] = stat
+        self._resourceMaster["StatFull"] = stat_full
         cur.execute("SELECT id, short FROM stat")
         stat_short = {id: short for (id, short) in cur}
         self._resourceMaster["StatShort"] = stat_short

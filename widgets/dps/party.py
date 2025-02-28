@@ -70,9 +70,9 @@ class Party:
                         hero_name_to_dmg[character.name][dmg_type].append(value)
                     # hero_name_to_dmg[character.name]["Total"].append(sum(character.damage_records.values()))
             
-        self.plot_boxplot(hero_name_to_dmg["Daya"])
+        self.plot_chara_data(hero_name_to_dmg["Daya"])
             
-    def plot_boxplot(self, data):
+    def plot_chara_data(self, data):
         df = pd.DataFrame([
             {"Damage type": key, "value": value} 
             for key, values in data.items() 
@@ -80,10 +80,22 @@ class Party:
             for value in values
         ])
 
+        stats = df.groupby("Damage type")["value"].agg(
+            mean_value="mean",
+            percentile_10=lambda x: np.percentile(x, 10),
+            percentile_90=lambda x: np.percentile(x, 90)
+        )
+
+        stats["error_lower"] = stats["mean_value"] - stats["percentile_10"]
+        stats["error_upper"] = stats["percentile_90"] - stats["mean_value"]
+
         plt.figure(figsize=(8, 6))
-        
-        # Boxplot 생성
-        sns.boxplot(data=df, x="Damage type", y="value", color="skyblue")
+        sns.barplot(x=stats.index, y=stats["mean_value"], capsize=0.2, color='cornflowerblue')
+        plt.errorbar(stats.index, stats["mean_value"], 
+                    yerr=[stats["error_lower"], stats["error_upper"]], 
+                    fmt='none', capsize=5, color='black', lw=1.5)
+
+        # plt.figure(figsize=(8, 6))
         
         # Labeling
         plt.title("Total Damage", fontsize=16)

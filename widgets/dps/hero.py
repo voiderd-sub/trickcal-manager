@@ -1,5 +1,4 @@
 from widgets.dps.enums import *
-from widgets.dps.step_function import StepFunction
 
 import numpy as np
 from collections import defaultdict

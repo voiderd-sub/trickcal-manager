@@ -18,7 +18,6 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QButtonGroup, QComboBox, QGroupBox,
     QHBoxLayout, QLabel, QPushButton, QSizePolicy,
     QSpacerItem, QVBoxLayout, QWidget)
-import widgets.icon_resource_rc
 
 class Ui_sidebar(object):
     def setupUi(self, sidebar):
@@ -60,7 +59,7 @@ class Ui_sidebar(object):
         font1.setPointSize(15)
         self.home_btn.setFont(font1)
         icon = QIcon()
-        icon.addFile(u":/icon/icon/sidebar/home.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon.addFile(u"icon/sidebar/home.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.home_btn.setIcon(icon)
         self.home_btn.setIconSize(QSize(25, 25))
         self.home_btn.setCheckable(True)
@@ -73,7 +72,7 @@ class Ui_sidebar(object):
         self.hero_btn.setObjectName(u"hero_btn")
         self.hero_btn.setFont(font1)
         icon1 = QIcon()
-        icon1.addFile(u":/icon/icon/sidebar/hero.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon1.addFile(u"icon/sidebar/hero.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.hero_btn.setIcon(icon1)
         self.hero_btn.setIconSize(QSize(25, 25))
         self.hero_btn.setCheckable(True)
@@ -86,7 +85,7 @@ class Ui_sidebar(object):
         self.equip_btn.setObjectName(u"equip_btn")
         self.equip_btn.setFont(font1)
         icon2 = QIcon()
-        icon2.addFile(u":/icon/icon/sidebar/equip.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon2.addFile(u"icon/sidebar/equip.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.equip_btn.setIcon(icon2)
         self.equip_btn.setIconSize(QSize(25, 25))
         self.equip_btn.setCheckable(True)
@@ -156,7 +155,7 @@ class Ui_sidebar(object):
         self.crayon_btn.setObjectName(u"crayon_btn")
         self.crayon_btn.setFont(font1)
         icon3 = QIcon()
-        icon3.addFile(u":/icon/icon/sidebar/crayon.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon3.addFile(u"icon/sidebar/crayon.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.crayon_btn.setIcon(icon3)
         self.crayon_btn.setIconSize(QSize(25, 25))
         self.crayon_btn.setCheckable(True)
@@ -211,7 +210,7 @@ class Ui_sidebar(object):
         self.dps_btn.setObjectName(u"dps_btn")
         self.dps_btn.setFont(font1)
         icon4 = QIcon()
-        icon4.addFile(u":/icon/icon/sidebar/dps.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon4.addFile(u"icon/sidebar/dps.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.dps_btn.setIcon(icon4)
         self.dps_btn.setIconSize(QSize(25, 25))
         self.dps_btn.setCheckable(True)
@@ -219,44 +218,12 @@ class Ui_sidebar(object):
 
         self.verticalLayout_5.addWidget(self.dps_btn)
 
-        self.dps_sub = QWidget(sidebar)
-        self.dps_sub.setObjectName(u"dps_sub")
-        self.dps_sub.setFont(font2)
-        self.verticalLayout_4 = QVBoxLayout(self.dps_sub)
-        self.verticalLayout_4.setSpacing(0)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
-        self.dps_1_btn = QPushButton(self.dps_sub)
-        self.dps_group = QButtonGroup(sidebar)
-        self.dps_group.setObjectName(u"dps_group")
-        self.dps_group.addButton(self.dps_1_btn)
-        self.dps_1_btn.setObjectName(u"dps_1_btn")
-        self.dps_1_btn.setFont(font3)
-        self.dps_1_btn.setIconSize(QSize(25, 25))
-        self.dps_1_btn.setCheckable(True)
-        self.dps_1_btn.setAutoExclusive(False)
-
-        self.verticalLayout_4.addWidget(self.dps_1_btn)
-
-        self.dps_2_btn = QPushButton(self.dps_sub)
-        self.dps_group.addButton(self.dps_2_btn)
-        self.dps_2_btn.setObjectName(u"dps_2_btn")
-        self.dps_2_btn.setFont(font3)
-        self.dps_2_btn.setIconSize(QSize(25, 25))
-        self.dps_2_btn.setCheckable(True)
-        self.dps_2_btn.setAutoExclusive(False)
-
-        self.verticalLayout_4.addWidget(self.dps_2_btn)
-
-
-        self.verticalLayout_5.addWidget(self.dps_sub)
-
         self.cash_btn = QPushButton(sidebar)
         self.main_menu_group.addButton(self.cash_btn)
         self.cash_btn.setObjectName(u"cash_btn")
         self.cash_btn.setFont(font1)
         icon5 = QIcon()
-        icon5.addFile(u":/icon/icon/sidebar/cash.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon5.addFile(u"icon/sidebar/cash.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.cash_btn.setIcon(icon5)
         self.cash_btn.setIconSize(QSize(25, 25))
         self.cash_btn.setCheckable(True)
@@ -366,8 +333,6 @@ class Ui_sidebar(object):
         self.crayon_1_btn.setText(QCoreApplication.translate("sidebar", u"\ubcf4\ub4dc\uc791 \ud604\ud669 \uae30\ub85d", None))
         self.crayon_2_btn.setText(QCoreApplication.translate("sidebar", u"\ucd5c\uc18c \ube44\uc6a9 \ubcf4\ub4dc\ud310", None))
         self.dps_btn.setText(QCoreApplication.translate("sidebar", u"DPS \uacc4\uc0b0\uae30", None))
-        self.dps_1_btn.setText(QCoreApplication.translate("sidebar", u"\ub371 \ubc0f \uacc4\uc0b0 \uc124\uc815 (\uce74\ub4dc\ub819 \uae30\ub85d\ub3c4 \uc5ec\uae30\uc11c)", None))
-        self.dps_2_btn.setText(QCoreApplication.translate("sidebar", u"\uc2e4\uc81c \uacc4\uc0b0\ud558\uae30? (\uba54\ub274 \ub098\ub220\uc57c\ud568?)", None))
         self.cash_btn.setText(QCoreApplication.translate("sidebar", u"\uacfc\uae08 \ud6a8\uc728 \uacc4\uc0b0\uae30", None))
         self.cash_1_btn.setText(QCoreApplication.translate("sidebar", u"\uae30\ubcf8 \uc124\uc815", None))
         self.cash_2_btn.setText(QCoreApplication.translate("sidebar", u"\uacc4\uc0b0\ud558\uae30", None))

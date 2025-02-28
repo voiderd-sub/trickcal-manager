@@ -46,7 +46,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>13</number>
+       <number>9</number>
       </property>
       <widget class="PageHome" name="page_home"/>
       <widget class="PageHero" name="page_hero"/>
@@ -57,7 +57,7 @@
       <widget class="PageCrayonAbstract" name="page_crayon_abstract"/>
       <widget class="PageCrayon1" name="page_crayon_1"/>
       <widget class="PageCrayon2" name="page_crayon_2"/>
-      <widget class="QWidget" name="page_dps_1"/>
+      <widget class="PageDps1" name="page_dps_1"/>
       <widget class="QWidget" name="page_dps_2"/>
       <widget class="QWidget" name="page_cash_1"/>
       <widget class="QWidget" name="page_cash_2"/>
@@ -126,6 +126,12 @@
    <class>PageCrayon2</class>
    <extends>QWidget</extends>
    <header>widgets/wrapper/page_crayon_2.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageDps1</class>
+   <extends>QWidget</extends>
+   <header>widgets/wrapper/page_dps_1.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
