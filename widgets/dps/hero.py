@@ -138,6 +138,9 @@ class Hero:
         amplify = max(0.25, 1 + self.amplify + enemy_amplify)
         return 0.8 * (self.atk * self.atk_coeff) * amplify * (damage/100) * additional_coeff
 
+    def get_name(self):
+        return self.name_kr
+
 
 class EnhancedAttackChecker:
     def __init__(self, hero):

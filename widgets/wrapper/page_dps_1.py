@@ -1,4 +1,5 @@
 from widgets.ui.page_dps_1 import Ui_page_dps_1
+from widgets.wrapper.dps_graph_window import DpsGraphWindow
 
 from PySide6.QtWidgets import QWidget
 from widgets.dps.party import Party
@@ -35,11 +36,15 @@ class PageDps1(Ui_page_dps_1, QWidget):
             hero_name_list = hero_list_for_each_pos[pos_idx]
             for idx in range(1, 4):
                 cell = getattr(self, f"HeroCell{position}{idx}")
+                cell.hero_select.blockSignals(True)
                 cell.hero_select.addItems(hero_name_list)
                 cell.hero_select.setCurrentIndex(-1)
                 cell.setStyleSheet(u"QGroupBox{border: 1.5px solid; border-radius: 10px;}")
+                cell.hero_select.blockSignals(False)
         
         self.calculate_btn.clicked.connect(self.calculate)
+
+        self.graph_window = DpsGraphWindow(self.window())
 
 
     def calculate(self):
@@ -64,7 +69,9 @@ class PageDps1(Ui_page_dps_1, QWidget):
                         "atk": 100.,
                     })
                     party.add_hero(hero, pos_idx*3 + idx)
-        party.run(240, 10)
+        hero_name_to_dmg = party.run(240, 10)
+        
+        self.graph_window.showGraph(hero_name_to_dmg)
 
         return
 

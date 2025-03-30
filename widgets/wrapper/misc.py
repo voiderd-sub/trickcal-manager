@@ -66,6 +66,7 @@ class ExtendedComboBox(QComboBox):
             event.ignore()
             return
         super(ExtendedComboBox, self).keyPressEvent(event)
+        return
     
 
     def setCompleterFont(self, font_size):

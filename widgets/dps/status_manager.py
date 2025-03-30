@@ -20,6 +20,8 @@ class AutoDeletingDefaultDict(defaultdict):
 class StatusManager:
     def __init__(self, party):
         self.party = party
+
+    def init_simulation(self):
         self.status_reservations = []
         self.active_status = [AutoDeletingDefaultDict() for _ in range(10)]    # Index 0 implies debuff
 

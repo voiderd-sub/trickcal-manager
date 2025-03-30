@@ -7,10 +7,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
+from tqdm import tqdm
+
 
 class Party:
     def __init__(self):
-        self.character_list = [None] * 9
+        self.character_list = [None] * 10                               # idx=0 is placeholder
         self.buff_manager = StatusManager(self)
 
     def init_simulation(self):
@@ -19,10 +21,11 @@ class Party:
         self.damage_records = []
         self.action_log = []
         self.next_update = self.next_update = np.full(10, np.inf)       # idx=0 for buff manager
-        for i in range(9):
+        for i in range(1, 10):
             if self.character_list[i] is not None:
                 self.character_list[i].init_simulation()
                 self.next_update[i] = 0
+        self.buff_manager.init_simulation()
 
     def add_hero(self, hero, idx):
         self.character_list[idx] = hero
@@ -49,8 +52,8 @@ class Party:
         return 1.
 
     def run(self, max_t, num_simulation):
-        hero_name_to_dmg = defaultdict(lambda: defaultdict(list))
-        for _ in range(num_simulation):
+        rows = []
+        for _ in tqdm(range(num_simulation)):
             self.init_simulation()
             while self.current_time < int(max_t * MS_IN_SEC):
                 all_min_indices = np.where(self.next_update == self.current_time)[0]
@@ -62,21 +65,32 @@ class Party:
                         new_t = hero.step(self.current_time)
                         self.next_update[idx] = new_t
                 self.current_time = int(self.next_update.min())
-            for idx in range(9):
+            for idx in range(1, 10):
                 character = self.character_list[idx]
                 if character != None:
+                    name = character.get_name() + "_" + str(idx)
                     character.calculate_cumulative_damage(max_t)
+                    total_dmg = 0
                     for dmg_type, value in character.damage_records.items():
-                        hero_name_to_dmg[character.name][dmg_type].append(value)
-                    # hero_name_to_dmg[character.name]["Total"].append(sum(character.damage_records.values()))
+                        rows.append({
+                            "name": name,
+                            "dmg_type": dmg_type,
+                            "dmg": value
+                        })
+                        total_dmg += value
+                    rows.append({
+                        "name": name,
+                        "dmg_type": "Total",
+                        "dmg": total_dmg
+                    })
+        df = pd.DataFrame(rows)
             
-        self.plot_chara_data(hero_name_to_dmg["Daya"])
+        return df
             
     def plot_chara_data(self, data):
         df = pd.DataFrame([
             {"Damage type": key, "value": value} 
-            for key, values in data.items() 
-            # for key, values in [("Total", data["Total"])]
+            for key, values in data.items()
             for value in values
         ])
 

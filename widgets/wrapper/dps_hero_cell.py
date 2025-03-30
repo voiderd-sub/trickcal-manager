@@ -11,6 +11,7 @@ class DpsHeroCell(Ui_DpsHeroCell, QWidget):
     def setInitialState(self):
         self.add_button.clicked.connect(self.addHero)
         self.delete_button.clicked.connect(self.deleteHero)
+        self.hero_select.currentIndexChanged.connect(self.addHero)
     
 
     def addHero(self):
