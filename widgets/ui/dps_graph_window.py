@@ -141,6 +141,95 @@ class Ui_DpsGraphWindow(object):
 
         self.verticalLayout_4.addWidget(self.groupBox)
 
+        self.verticalSpacer_5 = QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+
+        self.verticalLayout_4.addItem(self.verticalSpacer_5)
+
+        self.groupBox_2 = QGroupBox(self.summary_option_container)
+        self.groupBox_2.setObjectName(u"groupBox_2")
+        self.verticalLayout_5 = QVBoxLayout(self.groupBox_2)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.label_container_mean = QWidget(self.groupBox_2)
+        self.label_container_mean.setObjectName(u"label_container_mean")
+        self.horizontalLayout_9 = QHBoxLayout(self.label_container_mean)
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.mean_is = QLabel(self.label_container_mean)
+        self.mean_is.setObjectName(u"mean_is")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.mean_is.sizePolicy().hasHeightForWidth())
+        self.mean_is.setSizePolicy(sizePolicy2)
+
+        self.horizontalLayout_9.addWidget(self.mean_is)
+
+        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_9.addItem(self.horizontalSpacer_6)
+
+        self.mean_val = QLabel(self.label_container_mean)
+        self.mean_val.setObjectName(u"mean_val")
+        self.mean_val.setFont(font3)
+        self.mean_val.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_9.addWidget(self.mean_val)
+
+
+        self.verticalLayout_5.addWidget(self.label_container_mean)
+
+        self.label_container_p90 = QWidget(self.groupBox_2)
+        self.label_container_p90.setObjectName(u"label_container_p90")
+        self.horizontalLayout_7 = QHBoxLayout(self.label_container_p90)
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.p90_is = QLabel(self.label_container_p90)
+        self.p90_is.setObjectName(u"p90_is")
+        sizePolicy2.setHeightForWidth(self.p90_is.sizePolicy().hasHeightForWidth())
+        self.p90_is.setSizePolicy(sizePolicy2)
+
+        self.horizontalLayout_7.addWidget(self.p90_is)
+
+        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_7.addItem(self.horizontalSpacer_4)
+
+        self.p90_val = QLabel(self.label_container_p90)
+        self.p90_val.setObjectName(u"p90_val")
+        self.p90_val.setFont(font3)
+        self.p90_val.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_7.addWidget(self.p90_val)
+
+
+        self.verticalLayout_5.addWidget(self.label_container_p90)
+
+        self.label_container_p10 = QWidget(self.groupBox_2)
+        self.label_container_p10.setObjectName(u"label_container_p10")
+        self.horizontalLayout_8 = QHBoxLayout(self.label_container_p10)
+        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
+        self.p10_is = QLabel(self.label_container_p10)
+        self.p10_is.setObjectName(u"p10_is")
+        sizePolicy2.setHeightForWidth(self.p10_is.sizePolicy().hasHeightForWidth())
+        self.p10_is.setSizePolicy(sizePolicy2)
+
+        self.horizontalLayout_8.addWidget(self.p10_is)
+
+        self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_8.addItem(self.horizontalSpacer_5)
+
+        self.p10_val = QLabel(self.label_container_p10)
+        self.p10_val.setObjectName(u"p10_val")
+        self.p10_val.setFont(font3)
+        self.p10_val.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_8.addWidget(self.p10_val)
+
+
+        self.verticalLayout_5.addWidget(self.label_container_p10)
+
+
+        self.verticalLayout_4.addWidget(self.groupBox_2)
+
         self.verticalSpacer = QSpacerItem(20, 449, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_4.addItem(self.verticalSpacer)
@@ -215,6 +304,13 @@ class Ui_DpsGraphWindow(object):
         self.label_3.setText(QCoreApplication.translate("DpsGraphWindow", u"\u203b\uae30\uc5ec\ub3c4\ub780?", None))
         self.label.setText(QCoreApplication.translate("DpsGraphWindow", u"\ud574\ub2f9 \uc0ac\ub3c4\ub97c \ub371\uc5d0\uc11c \ube7c\uba74, \uc804\uccb4 \ub51c\ub7c9\uc774 \uba87%\ub098 \ub0b4\ub824\uac00\ub294\uc9c0 \ubcf4\uc5ec\uc8fc\ub294 \uc218\uce58", None))
         self.label_4.setText(QCoreApplication.translate("DpsGraphWindow", u"\uae30\uc5ec\ub3c4\uac00 \ub192\uc744\uc218\ub85d \uc911\uc694\ud55c \uc0ac\ub3c4!", None))
+        self.groupBox_2.setTitle(QCoreApplication.translate("DpsGraphWindow", u"\ucd1d \ub300\ubbf8\uc9c0", None))
+        self.mean_is.setText(QCoreApplication.translate("DpsGraphWindow", u"\ud3c9\uade0", None))
+        self.mean_val.setText(QCoreApplication.translate("DpsGraphWindow", u"100", None))
+        self.p90_is.setText(QCoreApplication.translate("DpsGraphWindow", u"\uc0c1\uc704 10%", None))
+        self.p90_val.setText(QCoreApplication.translate("DpsGraphWindow", u"100", None))
+        self.p10_is.setText(QCoreApplication.translate("DpsGraphWindow", u"\ud558\uc704 10%", None))
+        self.p10_val.setText(QCoreApplication.translate("DpsGraphWindow", u"100", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.summary), QCoreApplication.translate("DpsGraphWindow", u"\uc804\uccb4 \uc694\uc57d", None))
         self.hero_name_combobox.setPlaceholderText(QCoreApplication.translate("DpsGraphWindow", u"\uc0ac\ub3c4 \uc120\ud0dd", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.hero_analysis), QCoreApplication.translate("DpsGraphWindow", u"\uc0ac\ub3c4\ubcc4 \ubd84\uc11d", None))

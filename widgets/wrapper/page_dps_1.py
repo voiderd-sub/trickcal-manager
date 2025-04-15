@@ -68,8 +68,8 @@ class PageDps1(Ui_page_dps_1, QWidget):
                         "upperskill_level": 13,
                         "atk": 100.,
                     })
-                    party.add_hero(hero, pos_idx*3 + idx)
-        hero_name_to_dmg = party.run(240, 10)
+                    party.add_hero(hero, pos_idx*3 + idx - 1)
+        hero_name_to_dmg = party.run(240, 100)
         
         self.graph_window.showGraph(hero_name_to_dmg)
 

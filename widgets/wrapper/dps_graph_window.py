@@ -1,4 +1,5 @@
 from widgets.ui.dps_graph_window import Ui_DpsGraphWindow
+from widgets.dps.enums import DMG_TYPE_LABELS_KR
 
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout
 from PySide6.QtCore import Qt
@@ -84,6 +85,7 @@ class DpsGraphWindow(Ui_DpsGraphWindow, QMainWindow):
         df = self.df
 
         df_total = df[df["dmg_type"] == "Total"]
+
         summary = df_total.groupby("name")["dmg"].agg(
             mean="mean",
             p10=lambda x: np.percentile(x, 10),
@@ -112,6 +114,16 @@ class DpsGraphWindow(Ui_DpsGraphWindow, QMainWindow):
         ax.set_xticklabels(summary["name"])
 
         self.summary_canvas.draw()
+
+        df_total = df_total.reset_index(drop=True)
+        character_order = df_total["name"].unique()
+        num_characters = len(character_order)
+        df_total["run_id"] = df_total.index // num_characters
+        run_sums = df_total.groupby("run_id")["dmg"].sum()
+        self.mean_val.setText(f"{int(run_sums.mean()):,}")
+        self.p90_val.setText(f"{int(np.percentile(run_sums, 90)):,}")
+        self.p10_val.setText(f"{int(np.percentile(run_sums, 10)):,}")
+
     
 
     def drawAnalysis(self):
@@ -129,6 +141,8 @@ class DpsGraphWindow(Ui_DpsGraphWindow, QMainWindow):
         analysis["lower_err"] = np.maximum(analysis["mean"] - analysis["p10"], 0)
         analysis = analysis.sort_values("mean", ascending=False)
 
+        analysis["label"] = analysis["dmg_type"].map(DMG_TYPE_LABELS_KR).fillna(analysis["dmg_type"])
+
         self.analysis_figure.clear()
         ax = self.analysis_figure.add_subplot(111)
         yerr = np.array([
@@ -137,14 +151,14 @@ class DpsGraphWindow(Ui_DpsGraphWindow, QMainWindow):
         ])
 
         ax.bar(
-            analysis["dmg_type"],
+            analysis["label"],
             analysis["mean"],
             yerr=yerr,
             capsize=5
         )
         ax.set_title("캐릭터별 평균 Total 대미지 (상/하위 10%)")
         ax.set_ylabel("평균 대미지")
-        ax.set_xticks(range(len(analysis["dmg_type"])))
-        ax.set_xticklabels(analysis["dmg_type"])
+        ax.set_xticks(range(len(analysis["label"])))
+        ax.set_xticklabels(analysis["label"])
 
         self.analysis_canvas.draw()

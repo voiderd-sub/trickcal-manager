@@ -21,7 +21,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="deck_area">
+    <widget class="QTabWidget" name="setting_area">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>2</horstretch>
@@ -46,57 +46,77 @@
        <pointsize>18</pointsize>
       </font>
      </property>
-     <property name="title">
-      <string>덱</string>
+     <property name="currentIndex">
+      <number>0</number>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <property name="leftMargin">
-       <number>10</number>
-      </property>
-      <property name="topMargin">
-       <number>10</number>
-      </property>
-      <property name="rightMargin">
-       <number>10</number>
-      </property>
-      <property name="bottomMargin">
-       <number>10</number>
-      </property>
-      <property name="spacing">
-       <number>10</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="DpsHeroCell" name="HeroCellBack1" native="true"/>
-      </item>
-      <item row="0" column="1">
-       <widget class="DpsHeroCell" name="HeroCellMid1" native="true"/>
-      </item>
-      <item row="0" column="2">
-       <widget class="DpsHeroCell" name="HeroCellFront1" native="true"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="DpsHeroCell" name="HeroCellBack2" native="true"/>
-      </item>
-      <item row="1" column="1">
-       <widget class="DpsHeroCell" name="HeroCellMid2" native="true"/>
-      </item>
-      <item row="1" column="2">
-       <widget class="DpsHeroCell" name="HeroCellFront2" native="true"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="DpsHeroCell" name="HeroCellBack3" native="true"/>
-      </item>
-      <item row="2" column="1">
-       <widget class="DpsHeroCell" name="HeroCellMid3" native="true"/>
-      </item>
-      <item row="2" column="2">
-       <widget class="DpsHeroCell" name="HeroCellFront3" native="true"/>
-      </item>
-     </layout>
+     <widget class="QWidget" name="deck" native="true">
+      <attribute name="title">
+       <string>덱</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout">
+       <property name="leftMargin">
+        <number>10</number>
+       </property>
+       <property name="topMargin">
+        <number>10</number>
+       </property>
+       <property name="rightMargin">
+        <number>10</number>
+       </property>
+       <property name="bottomMargin">
+        <number>10</number>
+       </property>
+       <property name="spacing">
+        <number>10</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="DpsHeroCell" name="HeroCellBack1" native="true"/>
+       </item>
+       <item row="0" column="1">
+        <widget class="DpsHeroCell" name="HeroCellMid1" native="true"/>
+       </item>
+       <item row="0" column="2">
+        <widget class="DpsHeroCell" name="HeroCellFront1" native="true"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="DpsHeroCell" name="HeroCellBack2" native="true"/>
+       </item>
+       <item row="1" column="1">
+        <widget class="DpsHeroCell" name="HeroCellMid2" native="true"/>
+       </item>
+       <item row="1" column="2">
+        <widget class="DpsHeroCell" name="HeroCellFront2" native="true"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="DpsHeroCell" name="HeroCellBack3" native="true"/>
+       </item>
+       <item row="2" column="1">
+        <widget class="DpsHeroCell" name="HeroCellMid3" native="true"/>
+       </item>
+       <item row="2" column="2">
+        <widget class="DpsHeroCell" name="HeroCellFront3" native="true"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="card_level">
+      <attribute name="title">
+       <string>카드 레벨</string>
+      </attribute>
+     </widget>
+     <widget class="QWidget" name="spell_buying">
+      <attribute name="title">
+       <string>스펠 구매</string>
+      </attribute>
+     </widget>
+     <widget class="QWidget" name="calc_setting">
+      <attribute name="title">
+       <string>계산 설정</string>
+      </attribute>
+     </widget>
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="deck_area_2" native="true">
+    <widget class="QWidget" name="deck_area" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -104,38 +124,6 @@
       </sizepolicy>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QPushButton" name="rule_btn">
-          <property name="text">
-           <string>시즌 규칙</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="artifact_btn">
-          <property name="text">
-           <string>아티팩트</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="spell_btn">
-          <property name="text">
-           <string>스펠</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="calc_setting_btn">
-          <property name="text">
-           <string>계산 설정</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
       <item>
        <spacer name="verticalSpacer_2">
         <property name="orientation">

@@ -1,9 +1,9 @@
-from enum import Enum, auto
+from enum import Enum, auto, IntFlag
 
 VERY_BIG_NUMBER = 1e10
-MS_IN_SEC = 1000
+SEC_TO_MS = 1000
 DELTA_T = 0.1
-SP_INTERVAL = 1 * MS_IN_SEC
+SP_INTERVAL = 1 * SEC_TO_MS
 
 class StrEnum(str, Enum):
     def _generate_next_value_(name, start, count, last_values):
@@ -27,9 +27,9 @@ class ActionType(StrEnum):
     UpperSkill = auto()
     Wait = auto()
 
-class BuffType(StrEnum):
-    TriggerEnhanced = auto()
-    AttackSpeedAdd = auto()
+    @classmethod
+    def act_type_to_dmg_type(cls, action_type):
+        return getattr(DamageType, action_type.name)
 
 class TargetHero(StrEnum):
     Self = auto()
@@ -41,14 +41,35 @@ class TargetHero(StrEnum):
 
 class EffectType(StrEnum):
     Instant = auto()
-    Projectile = auto()
+    Delayed = auto()
     Debuff = auto()
     Buff = auto()
 
-class BuffType(StrEnum):
-    ATTACK_SPEED_ADD = auto()
-    DAMAGE_INCREASE = auto()
+# class for damage amplifier
+class DamageType(IntFlag):
+    NONE                = 0
+    LowerSkill          = auto()
+    UpperSkill          = auto()
+    AutoAttackBasic     = auto()
+    AutoAttackEnhanced  = auto()
+    Debuff              = auto()
+    Artifact            = auto()
 
+    Skill      = LowerSkill | UpperSkill
+    AutoAttack = AutoAttackBasic | AutoAttackEnhanced
+    ALL        = Skill | AutoAttack | Debuff | Artifact
+
+    @classmethod
+    def get_leaf_members(cls, damage_type):
+        return {dt for dt in cls.leaf_types() if (damage_type & dt) == dt}
+    
+    @classmethod
+    def leaf_types(cls):
+        return {
+            cls.LowerSkill, cls.UpperSkill,
+            cls.AutoAttackBasic, cls.AutoAttackEnhanced,
+            cls.Debuff, cls.Artifact
+        }
 
 class Personality(StrEnum):
     Naive = auto()
@@ -56,3 +77,12 @@ class Personality(StrEnum):
     Cool = auto()
     Jolly = auto()
     Gloomy = auto()
+
+DMG_TYPE_LABELS_KR = {
+    "AutoAttackBasic": "평타",
+    "AutoAttackEnhanced": "강평",
+    "LowerSkill": "저학년",
+    "UpperSkill": "고학년",
+    "Artifact": "아티팩트",
+    "Debuff": "디버프",
+}
