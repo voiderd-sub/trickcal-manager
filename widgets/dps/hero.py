@@ -1,7 +1,9 @@
 from widgets.dps.enums import *
+from widgets.dps.action import InstantAction, create_action_node_from_dict
 
 import numpy as np
 from collections import defaultdict
+import random
 
 
 def find_valid_skill_level(L, i):
@@ -38,8 +40,8 @@ class Hero:
         self.upper_skill_timer = int(self.upper_skill_cd * SEC_TO_MS * 0.5)
         self.aa_timer = 0
         self.last_updated = 0
-        self.last_action = ActionType.Wait
-        self.last_action_time = 0
+        self.last_movement = MovementType.Wait
+        self.last_movement_time = 0
         if not hasattr(self, "atk"):
             self.atk = 100
         self.amplify_dict = {dt: 0.0 for dt in DamageType.leaf_types()}
@@ -47,28 +49,53 @@ class Hero:
         self.attack_speed_coeff = 1.
         self.acceleration = 1.
 
-        self.action_log = []
-        self.action_timestamps = {ActionType.AutoAttackBasic: [],
-                                  ActionType.AutoAttackEnhanced: [],
-                                  ActionType.LowerSkill: [],
-                                  ActionType.UpperSkill: [],
+        self.movement_log = []
+        self.movement_timestamps = {MovementType.AutoAttackBasic: [],
+                                  MovementType.AutoAttackEnhanced: [],
+                                  MovementType.LowerSkill: [],
+                                  MovementType.UpperSkill: [],
                                   }
         self.damage_records = defaultdict(list)
+        
+        # Movement action tracking
+        self.current_movement_actions = []
+        self.current_action_index = 0
+        
+        # Initialize action templates
+        self.init_movements()
 
-    def choose_action(self):
+        self.last_motion_time = 0  # 단일 값으로 변경
+
+    def init_movements(self):
+        """Initialize movement actions that don't change during simulation"""
+        self.action_templates = {i: [] for i in MovementType}
+        
+        # Create action templates for all movement types
+        self.create_movement_templates()
+
+    def create_movement_templates(self):
+        """Create all movement action templates"""
+        raise NotImplementedError
+
+    def schedule_action_template(self, action, time, delay=0):
+        """Schedule an action with the given time and delay"""
+        # action에 시간 정보를 직접 넣지 않고, (time, delay, action) 튜플로 예약
+        self.reserv_action((time, delay, action))
+
+    def choose_movement(self):
         if self.sp == self.max_sp:
-            return ActionType.LowerSkill
+            return MovementType.LowerSkill
         elif self.upper_skill_timer == 0:
-            return ActionType.UpperSkill
+            return MovementType.UpperSkill
         elif self.aa_timer == 0:
-            if self.is_enhanced(): return ActionType.AutoAttackEnhanced
-            else:                  return ActionType.AutoAttackBasic
-        return ActionType.Wait
+            if self.is_enhanced(): return MovementType.AutoAttackEnhanced
+            else:                  return MovementType.AutoAttackBasic
+        return MovementType.Wait
 
     def update(self, t):
         # update sp
         dt = t - self.last_updated
-        if self.last_action not in (ActionType.LowerSkill, ActionType.UpperSkill):
+        if self.last_movement not in (MovementType.LowerSkill, MovementType.UpperSkill):
             self.sp_timer += dt
             if self.sp_timer >= SP_INTERVAL:
                 num_sp_recover, self.sp_timer = divmod(self.sp_timer, SP_INTERVAL)
@@ -83,29 +110,21 @@ class Hero:
 
     def step(self, t):
         self.update(t)
-        action = self.choose_action()
-
-        match action:
-            case ActionType.AutoAttackBasic | ActionType.AutoAttackEnhanced:
+        movement = self.choose_movement()
+        match movement:
+            case MovementType.AutoAttackBasic | MovementType.AutoAttackEnhanced:
                 self.aa_timer = self.aa_cd
-                if action == ActionType.AutoAttackBasic:
-                    dt = self.BasicAttack(t)
-                else:
-                    dt = self.EnhancedAttack(t)
-            case ActionType.LowerSkill:
+            case MovementType.LowerSkill:
                 self.sp = 0
-                dt = self.LowerSkill(t)
-            case ActionType.UpperSkill:
+            case MovementType.UpperSkill:
                 self.upper_skill_timer = int(self.upper_skill_cd * SEC_TO_MS)
-                dt = self.UpperSkill(t)
-            case ActionType.Wait:
+            case MovementType.Wait:
                 dt = min(SP_INTERVAL - self.sp_timer, self.aa_timer, self.upper_skill_timer)
-        
-        self.last_action = action
-        self.action_log.append((t / SEC_TO_MS, action))
-        if action != ActionType.Wait:
-            self.action_timestamps[action].append(t / SEC_TO_MS)
-
+        if movement != MovementType.Wait:
+            dt = self.do_movement(movement, t)
+            self.movement_timestamps[movement].append(int(t // SEC_TO_MS))
+        self.last_movement = movement
+        self.movement_log.append((int(t // SEC_TO_MS), movement))
         return t + dt
     
     def calculate_cumulative_damage(self, max_T):
@@ -115,17 +134,32 @@ class Hero:
                     self.damage_records[key] = record[i][1]
                     break
         
-    def BasicAttack(self, t):
-        pass
+    def do_movement(self, movement_type, t):
+        motion_time = self.get_motion_time(movement_type)
+        self.last_motion_time = motion_time
+        if self.last_movement != movement_type:
+            self.current_action_index = 0
+        all_actions = []
+        for template in self.action_templates[movement_type]:
+            actions = template.evaluate(self, t, motion_time)
+            all_actions.extend(actions)
+        self.current_movement_actions = all_actions
+        self.last_updated = t
+        if all_actions:
+            timing_ratio, delay, action = all_actions[0]
+            self.schedule_action_template(action, t + (motion_time or 0) * timing_ratio, delay)
+        return motion_time
 
-    def EnhancedAttack(self, t):
-        pass
-
-    def LowerSkill(self, t):
-        pass
-
-    def UpperSkill(self, t):
-        pass
+    def schedule_next_action(self):
+        if not self.current_movement_actions or self.last_movement is None:
+            return
+        self.current_action_index += 1
+        if self.current_action_index < len(self.current_movement_actions):
+            timing_ratio, delay, action = self.current_movement_actions[self.current_action_index]
+            motion_time = self.last_motion_time
+            # 다음 액션의 실행 시각을 정확히 계산
+            next_time = self.last_updated + (motion_time or 0) * timing_ratio
+            self.schedule_action_template(action, next_time, delay)
 
     def is_enhanced(self):
         return False
@@ -133,11 +167,9 @@ class Hero:
     def trigger_enhanced(self):
         pass
     
-    def reserv_status(self, status):
-        self.party.status_manager.add_status_reserv(status)
-
-    def reserv_effect(self, effect):
-        self.party.effect_manager.add_effect_reserv(effect)
+    def reserv_action(self, action_tuple):
+        # (time, delay, action) 튜플을 action_manager로 넘김
+        self.party.action_manager.add_action_reserv(action_tuple)
 
     def aa_post_fn(self):
         self.sp = min(self.max_sp, self.sp + self.sp * self.sp_per_aa)
@@ -145,15 +177,15 @@ class Hero:
     def get_aa_cd(self):
         return int(300 * SEC_TO_MS / (self.acceleration**2 * min(10., self.attack_speed_coeff) * self.attack_speed))
     
-    def get_action_time(self, action_type: ActionType):
-        match action_type:
-            case ActionType.AutoAttackBasic:
+    def get_motion_time(self, movement_type: MovementType):
+        match movement_type:
+            case MovementType.AutoAttackBasic:
                 return min(self.motion_time["Basic"], self.get_aa_cd())
-            case ActionType.AutoAttackEnhanced:
+            case MovementType.AutoAttackEnhanced:
                 return min(self.motion_time["Basic"], self.get_aa_cd())
-            case ActionType.LowerSkill:
+            case MovementType.LowerSkill:
                 return self.motion_time["LowerSkill"] / self.acceleration
-            case ActionType.UpperSkill:
+            case MovementType.UpperSkill:
                 return self.motion_time["UpperSkill"] / self.acceleration
 
         return
@@ -166,10 +198,10 @@ class Hero:
         for dt in DamageType.get_leaf_members(damage_type):
             self.amplify_dict[dt] += value
     
-    def get_damage(self, damage, action_type):
+    def get_damage(self, damage, movement_type):
         enemy_amplify = self.party.get_amplify(self)
         additional_coeff = self.party.get_additional_coeff(self)        # 성격시너지 등
-        amplify = max(0.25, 1 + self.get_amplify(action_type) + enemy_amplify)
+        amplify = max(0.25, 1 + self.get_amplify(movement_type) + enemy_amplify)
         return 0.8 * (self.atk * self.atk_coeff) * amplify * (damage/100) * additional_coeff
 
     def get_name(self):
@@ -200,6 +232,6 @@ class PeriodicEAC(EnhancedAttackChecker):
         self.cycle = cycle
 
     def is_enhanced(self):
-        timestamp = self.hero.action_timestamps
-        num_attack = len(timestamp[ActionType.AutoAttackBasic]) + len(timestamp[ActionType.AutoAttackEnhanced])
+        timestamps = self.hero.movement_timestamps
+        num_attack = len(timestamps[MovementType.AutoAttackBasic]) + len(timestamps[MovementType.AutoAttackEnhanced])
         return (num_attack+1) % self.cycle == 0

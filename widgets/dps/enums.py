@@ -20,16 +20,22 @@ class AttackType(StrEnum):
     Physic = auto()
     Magic = auto()
 
-class ActionType(StrEnum):
+class MovementType(StrEnum):
     AutoAttackBasic = auto()
     AutoAttackEnhanced = auto()
     LowerSkill = auto()
     UpperSkill = auto()
+    AsideSkill = auto()
     Wait = auto()
 
     @classmethod
-    def act_type_to_dmg_type(cls, action_type):
-        return getattr(DamageType, action_type.name)
+    def movement_type_to_dmg_type(cls, movement_type):
+        return getattr(DamageType, movement_type.name)
+
+class ActionType(StrEnum):
+    Instant = auto()      # Instant damage
+    Projectile = auto()   # Delayed damage
+    Status = auto()       # Status application (buff/debuff)
 
 class TargetHero(StrEnum):
     Self = auto()
@@ -50,12 +56,13 @@ class DamageType(IntFlag):
     NONE                = 0
     LowerSkill          = auto()
     UpperSkill          = auto()
+    AsideSkill          = auto()
     AutoAttackBasic     = auto()
     AutoAttackEnhanced  = auto()
     Debuff              = auto()
     Artifact            = auto()
 
-    Skill      = LowerSkill | UpperSkill
+    Skill      = LowerSkill | UpperSkill | AsideSkill
     AutoAttack = AutoAttackBasic | AutoAttackEnhanced
     ALL        = Skill | AutoAttack | Debuff | Artifact
 
@@ -83,6 +90,7 @@ DMG_TYPE_LABELS_KR = {
     "AutoAttackEnhanced": "강평",
     "LowerSkill": "저학년",
     "UpperSkill": "고학년",
+    "AsideSkill": "어사이드",
     "Artifact": "아티팩트",
     "Debuff": "디버프",
 }

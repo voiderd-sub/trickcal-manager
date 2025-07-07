@@ -1,6 +1,6 @@
 from widgets.dps.enums import *
 from widgets.dps.status_manager import StatusManager
-from widgets.dps.effect_manager import EffectManager
+from widgets.dps.action_manager import ActionManager
 from widgets.dps.event import *
 
 import numpy as np
@@ -12,17 +12,18 @@ from tqdm import tqdm
 
 class Party:
     def __init__(self):
-        self.character_list = [None] * 11    # idx=9 : effect manager, idx=10 : status manager
+        self.character_list = [None] * 11    # idx=9 : action manager, idx=10 : status manager
+        self.action_manager = ActionManager(self)
         self.status_manager = StatusManager(self)
-        self.effect_manager = EffectManager(self)
 
 
     def init_simulation(self):
         self.current_time = 0  # ms
         self.simulation_result = dict()
         self.damage_records = []
-        self.action_log = []
-        self.next_update = np.full(11, np.inf)       # idx=9 : effect manager, idx=10 : status manager
+        self.movement_log = []
+        self.active_indices = [i for i, c in enumerate(self.character_list) if c is not None]
+        self.next_update = np.full(11, np.inf)       # idx=9 : action manager, idx=10 : status manager
         for i in range(9):
             if self.character_list[i] is not None:
                 self.character_list[i].init_simulation()
@@ -30,8 +31,8 @@ class Party:
         self.upper_skill_cooldown = [np.inf] * 9
         self.upper_skill_lock_until = 0
         self.status_manager.init_simulation()
-        self.effect_manager.init_simulation()
-        self.active_indices = [i for i, c in enumerate(self.character_list) if c is not None]
+        self.action_manager.init_simulation()
+        
 
     def add_hero(self, hero, idx):
         self.character_list[idx] = hero
@@ -69,13 +70,13 @@ class Party:
                 
                 for idx in all_min_indices:
                     if idx < 9:
-                        # Add events into effect queue
+                        # Add actions into action queue
                         hero = self.character_list[idx]
                         new_t = hero.step(self.current_time)
                         self.next_update[idx] = new_t
                     elif idx == 9:
-                        # Resolve effects; this includes buff/debuff reservations.
-                        self.effect_manager.resolve_effect_reserv(self.current_time)
+                        # Resolve actions; this includes damage and buff/debuff reservations.
+                        self.action_manager.resolve_all_actions(self.current_time)
                     else:
                         self.status_manager.resolve_status_reserv(self.current_time)
                 
