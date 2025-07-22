@@ -5,9 +5,9 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from widgets.dps.party import Party
+from dps.party import Party
 from db.dps.hero.TestHero import TestHero
-from widgets.dps.enums import MovementType
+from dps.enums import MovementType
 import pandas as pd
 import numpy as np
 

@@ -1,11 +1,9 @@
-from widgets.dps.enums import *
-from widgets.dps.status_manager import StatusManager
-from widgets.dps.action_manager import ActionManager
-from widgets.dps.event import *
+from dps.enums import *
+from dps.status_manager import StatusManager
+from dps.action_manager import ActionManager
 
 import numpy as np
 import pandas as pd
-import heapq
 
 from tqdm import tqdm
 

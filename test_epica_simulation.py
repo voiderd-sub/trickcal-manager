@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from widgets.dps.party import Party
+from dps.party import Party
 from db.dps.hero.Epica import Epica
 import pandas as pd
 

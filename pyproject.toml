@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trickcal_dps"
+version = "2025.07.22.dev"
+description = "Trickcal: Chibi Go Battle Simulator"
+requires-python = ">=3.12"
+dependencies = [
+  "numpy",
+  "pandas",
+  "tqdm"
+]
+
+[project.urls]
+Website = "https://github.com/voiderd-sub/trickcal-manager"
+
+[tool.setuptools.packages.find]
+where   = ["src"]
+include = ["dps*"]

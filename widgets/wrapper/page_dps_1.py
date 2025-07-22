@@ -2,7 +2,7 @@ from widgets.ui.page_dps_1 import Ui_page_dps_1
 from widgets.wrapper.dps_graph_window import DpsGraphWindow
 
 from PySide6.QtWidgets import QWidget
-from widgets.dps.party import Party
+from dps.party import Party
 
 import importlib, os
 

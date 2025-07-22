@@ -1,5 +1,5 @@
 from widgets.ui.dps_graph_window import Ui_DpsGraphWindow
-from widgets.dps.enums import DMG_TYPE_LABELS_KR
+from dps.enums import DMG_TYPE_LABELS_KR
 
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout
 from PySide6.QtCore import Qt

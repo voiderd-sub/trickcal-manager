@@ -1,11 +1,11 @@
-from widgets.dps.enums import *
-from widgets.dps.action import *
+from dps.enums import *
+from dps.action import *
 
 import numpy as np
 from functools import partial
 from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
-    from widgets.dps.hero import Hero
+    from dps.hero import Hero
 
 
 class StatusTemplate:

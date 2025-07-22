@@ -1,4 +1,4 @@
-from widgets.dps.enums import *
+from dps.enums import *
 
 from collections import defaultdict
 from bisect import bisect_left, insort

@@ -1,12 +1,8 @@
-from widgets.dps.enums import *
+from dps.enums import *
 
 from bisect import insort
 import numpy as np
 from collections import defaultdict
-
-def get_real_action(action):
-    # 이제 모든 액션이 직접 Action 객체이므로 래퍼 제거 불필요
-    return action
 
 class ActionManager:
     def __init__(self, party):
@@ -41,11 +37,10 @@ class ActionManager:
         insort(self.action_queue, action_tuple)
         self.update_next_update()
         _, _, action = action_tuple
-        real_action = get_real_action(action)
-        self.actions_by_hero[real_action.hero.party_idx].append(action_tuple)
-        if real_action.source_movement:
-            self.actions_by_movement[real_action.source_movement].append(action_tuple)
-        self.actions_by_type[real_action.action_type].append(action_tuple)
+        self.actions_by_hero[action.hero.party_idx].append(action_tuple)
+        if action.source_movement:
+            self.actions_by_movement[action.source_movement].append(action_tuple)
+        self.actions_by_type[action.action_type].append(action_tuple)
 
     def add_pending_effect(self, effect_time, action, delay=0):
         insort(self.pending_effect_queue, (effect_time, delay, action))
@@ -55,14 +50,10 @@ class ActionManager:
         """
         action_queue와 pending_effect_queue를 모두 한 번에 처리한다.
         """
-        # 예약된 액션 실행
         while self.action_queue and self.action_queue[0][0] <= current_time:
             time, delay, action = self.action_queue.pop(0)
             self._remove_from_indices((time, delay, action))
             action.action_fn(time)
-            if hasattr(action, 'hero') and action.hero:
-                action.hero.schedule_next_action()
-        # pending effect(투사체 등) 실행
         while self.pending_effect_queue and self.pending_effect_queue[0][0] <= current_time:
             effect_time, delay, action = self.pending_effect_queue.pop(0)
             action.action_fn(effect_time)
@@ -70,11 +61,10 @@ class ActionManager:
     
     def _remove_from_indices(self, action_tuple):
         _, _, action = action_tuple
-        real_action = get_real_action(action)
-        self.actions_by_hero[real_action.hero.party_idx].remove(action_tuple)
-        if real_action.source_movement:
-            self.actions_by_movement[real_action.source_movement].remove(action_tuple)
-        self.actions_by_type[real_action.action_type].remove(action_tuple)
+        self.actions_by_hero[action.hero.party_idx].remove(action_tuple)
+        if action.source_movement:
+            self.actions_by_movement[action.source_movement].remove(action_tuple)
+        self.actions_by_type[action.action_type].remove(action_tuple)
     
     def get_actions_by_hero(self, hero_id):
         """Get all actions for a specific hero"""

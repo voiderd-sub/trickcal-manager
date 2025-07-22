@@ -1,5 +1,5 @@
-from widgets.dps.enums import *
-from widgets.dps.action import InstantAction, create_action_node_from_dict
+from dps.enums import *
+from dps.action import InstantAction
 
 import numpy as np
 from collections import defaultdict
@@ -57,29 +57,19 @@ class Hero:
                                   }
         self.damage_records = defaultdict(list)
         
-        # Movement action tracking
-        self.current_movement_actions = []
-        self.current_action_index = 0
+        # 제거: action_templates, current_movement_actions, current_action_index 관련 코드
+        # self.action_templates = {i: [] for i in MovementType}
+        # self.current_movement_actions = []
+        # self.current_action_index = 0
         
-        # Initialize action templates
-        self.init_movements()
+        # 제거: self.init_movements() 호출
 
         self.last_motion_time = 0  # 단일 값으로 변경
 
-    def init_movements(self):
-        """Initialize movement actions that don't change during simulation"""
-        self.action_templates = {i: [] for i in MovementType}
-        
-        # Create action templates for all movement types
-        self.create_movement_templates()
-
-    def create_movement_templates(self):
-        """Create all movement action templates"""
-        raise NotImplementedError
+    # 제거: init_movements() 메서드
 
     def schedule_action_template(self, action, time, delay=0):
         """Schedule an action with the given time and delay"""
-        # action에 시간 정보를 직접 넣지 않고, (time, delay, action) 튜플로 예약
         self.reserv_action((time, delay, action))
 
     def choose_movement(self):
@@ -137,29 +127,38 @@ class Hero:
     def do_movement(self, movement_type, t):
         motion_time = self.get_motion_time(movement_type)
         self.last_motion_time = motion_time
-        if self.last_movement != movement_type:
-            self.current_action_index = 0
-        all_actions = []
-        for template in self.action_templates[movement_type]:
-            actions = template.evaluate(self, t, motion_time)
-            all_actions.extend(actions)
-        self.current_movement_actions = all_actions
         self.last_updated = t
-        if all_actions:
-            timing_ratio, delay, action = all_actions[0]
-            self.schedule_action_template(action, t + (motion_time or 0) * timing_ratio, delay)
+        
+        # movement별 첫 번째 액션 예약
+        if movement_type == MovementType.AutoAttackBasic:
+            self.BasicAttack(t)
+        elif movement_type == MovementType.AutoAttackEnhanced:
+            self.EnhancedAttack(t)
+        elif movement_type == MovementType.LowerSkill:
+            self.LowerSkill(t)
+        elif movement_type == MovementType.UpperSkill:
+            self.UpperSkill(t)
+        
         return motion_time
 
-    def schedule_next_action(self):
-        if not self.current_movement_actions or self.last_movement is None:
-            return
-        self.current_action_index += 1
-        if self.current_action_index < len(self.current_movement_actions):
-            timing_ratio, delay, action = self.current_movement_actions[self.current_action_index]
-            motion_time = self.last_motion_time
-            # 다음 액션의 실행 시각을 정확히 계산
-            next_time = self.last_updated + (motion_time or 0) * timing_ratio
-            self.schedule_action_template(action, next_time, delay)
+    # 제거: schedule_next_action() 메서드
+
+    # Placeholder 메서드들 (하위 클래스에서 구현)
+    def BasicAttack(self, t):
+        """기본 공격 - 하위 클래스에서 구현"""
+        raise NotImplementedError
+
+    def EnhancedAttack(self, t):
+        """강화 공격 - 하위 클래스에서 구현"""
+        raise NotImplementedError
+
+    def LowerSkill(self, t):
+        """저학년 스킬 - 하위 클래스에서 구현"""
+        raise NotImplementedError
+
+    def UpperSkill(self, t):
+        """고학년 스킬 - 하위 클래스에서 구현"""
+        raise NotImplementedError
 
     def is_enhanced(self):
         return False
@@ -168,7 +167,6 @@ class Hero:
         pass
     
     def reserv_action(self, action_tuple):
-        # (time, delay, action) 튜플을 action_manager로 넘김
         self.party.action_manager.add_action_reserv(action_tuple)
 
     def aa_post_fn(self):
