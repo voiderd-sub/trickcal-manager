@@ -4,7 +4,7 @@ from dps.party import Party
 from dps.hero import Hero
 from dps.enums import MovementType, DamageType, SEC_TO_MS
 from dps.action import InstantAction, ProjectileAction, StatusAction
-from dps.status import BuffAttackSpeed, BuffAmplify
+from dps.status import BuffAttackSpeed, BuffAmplify, target_self
 
 
 class SimpleHero(Hero):
@@ -290,16 +290,21 @@ def test_attack_speed_buff():
             motion_time = self.get_motion_time(MovementType.LowerSkill)
             
             # 5초 지속, 공격속도 100% 증가 버프 생성
-            buff = BuffAttackSpeed(
+            buff_template = BuffAttackSpeed(
                 status_id="AttackSpeedBuff_Test",
                 caster=self,
-                target=[self.party_idx],
-                duration=5,     # 내부적으로 SEC_TO_MS 곱하므로, 여기선 곱하지 않아야 함
+                target_resolver_fn=target_self,
+                duration=5,
                 value=100
             )
             
             # Movement 90% 시점에 StatusAction 예약
-            action = StatusAction(self, buff, MovementType.LowerSkill, None)
+            action = StatusAction(
+                hero=self,
+                source_movement=MovementType.LowerSkill,
+                damage_type=DamageType.NONE,
+                status_template=buff_template
+            )
             self.reserv_action(action, t + 0.9 * motion_time)
             
             return motion_time
@@ -406,15 +411,20 @@ def test_amplify_buff(amplify_type, amplify_value):
         
         def LowerSkill(self, t):
             motion_time = self.get_motion_time(MovementType.LowerSkill)
-            buff = BuffAmplify(
+            buff_template = BuffAmplify(
                 status_id=f"AmplifyBuff_{str_amplify_type}",
                 caster=self,
-                target=[self.party_idx],
+                target_resolver_fn=target_self,
                 duration=BUFF_DURATION,
                 value=amplify_value,
                 applying_dmg_type=amplify_type
             )
-            action = StatusAction(self, buff, MovementType.LowerSkill, None)
+            action = StatusAction(
+                hero=self,
+                source_movement=MovementType.LowerSkill,
+                damage_type=DamageType.NONE,
+                status_template=buff_template
+            )
             self.reserv_action(action, t + 0.9 * motion_time)
             # LowerSkill itself does no damage in this test
             return motion_time
@@ -513,8 +523,79 @@ def test_amplify_buff(amplify_type, amplify_value):
     print(f"✅ AmplifyBuff Test Passed for amplify_type={str_amplify_type}")
 
 
+def test_global_upper_skill_lock():
+    """
+    Tests if the global 1-second lock and priority for upper skills work correctly.
+    - 9 heroes, all with 13s upper skill cooldown.
+    - Priority is determined by party_idx (lower index = higher priority).
+    """
+    GLOBAL_UPPER_SKILL_LOCK_MS = 1000
+    
+    party = Party()
+    heroes = []
+    for i in range(9):
+        hero = SimpleHero(f"Hero{i}")
+        hero.attack_speed = 1  # Very slow attack speed
+        hero.sp_per_aa = 0
+        hero.sp_recovery_rate = 0
+        hero.upper_skill_cd = 13  # 13-second cooldown
+        party.add_hero(hero, i)
+        heroes.append(hero)
+
+    party.run(max_t=30, num_simulation=1)
+
+    # --- Analysis ---
+    all_upper_skill_casts = []
+    for hero in heroes:
+        casts = [(round(t), hero.party_idx) for t, m in hero.movement_log if m == MovementType.UpperSkill]
+        all_upper_skill_casts.extend(casts)
+    
+    all_upper_skill_casts.sort() # Sort by time
+    
+    print("\n--- Global Upper Skill Lock and Priority Test ---")
+    print(f"All Upper Skill casts (time_ms, hero_id): {all_upper_skill_casts}")
+
+    # Expected casts:
+    # First hero (idx 0) uses skill at 13*0.5 = 6.5s
+    # Due to global lock and priority, next heroes use skills at +1s intervals
+    # Initial cast times: 6500 (id 0), 7500 (id 1), 8500 (id 2), ..., 14500 (id 8)
+    # Second wave starts at first hero's next cd: 6500 + 13000 = 19500
+    
+    expected_casts = []
+    first_wave_start_times = [round(6.5 * SEC_TO_MS + i * GLOBAL_UPPER_SKILL_LOCK_MS) for i in range(9)]
+    
+    for i in range(9):
+        expected_casts.append((first_wave_start_times[i], i))
+
+    second_wave_start_times = [t + 13 * SEC_TO_MS for t in first_wave_start_times]
+
+    for i in range(9):
+        cast_time = second_wave_start_times[i]
+        if cast_time < 30 * SEC_TO_MS:
+            expected_casts.append((cast_time, i))
+    
+    expected_casts.sort()
+
+    print(f"Expected casts (time_ms, hero_id): {expected_casts}")
+
+    assert len(all_upper_skill_casts) == len(expected_casts), \
+        f"Mismatch in number of upper skill casts. Expected: {len(expected_casts)}, Got: {len(all_upper_skill_casts)}"
+
+    for actual, expected in zip(all_upper_skill_casts, expected_casts):
+        actual_time, actual_id = actual
+        expected_time, expected_id = expected
+        
+        assert actual_id == expected_id, \
+            f"Hero priority mismatch. Expected hero {expected_id} to cast, but hero {actual_id} did. (Time: {actual_time}ms)"
+        assert abs(actual_time - expected_time) <= 1, \
+            f"Upper skill timing mismatch for hero {actual_id}. Expected: {expected_time}, Got: {actual_time}"
+
+    print("✅ Global Upper Skill Lock and Priority Test Passed!")
+
+
 if __name__ == "__main__":
     test_simple_hero_movement_timing(default_settings())
     test_projectile_action(default_settings())
     test_chained_actions()
     test_attack_speed_buff()
+    test_global_upper_skill_lock()

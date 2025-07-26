@@ -41,11 +41,6 @@ class Hero:
         self._setup_status_templates()
         self._setup_all_movement_actions()
 
-        print("STATUS TEMPLATES")
-        print(self.status_templates)
-        print("ACTION TEMPLATES")
-        print(self._action_templates)
-
         self.aa_cd = round(300 * SEC_TO_MS / self.attack_speed)
         self.sp = self.init_sp
         self.sp_timer = 0
@@ -54,6 +49,7 @@ class Hero:
         self.last_updated = 0
         self.last_movement = MovementType.Wait
         self.last_movement_time = 0
+        self.upper_skill_flag = False
         if not hasattr(self, "atk"):
             self.atk = 100
         self.amplify_dict = {dt: 1.0 for dt in DamageType.leaf_types()}
@@ -104,10 +100,10 @@ class Hero:
         pass
 
     def choose_movement(self):
+        if self.upper_skill_flag:
+            return MovementType.UpperSkill
         if self.sp == self.max_sp:
             return MovementType.LowerSkill
-        elif self.upper_skill_timer == 0:
-            return MovementType.UpperSkill
         elif self.aa_timer == 0:
             if self.is_enhanced(): return MovementType.AutoAttackEnhanced
             else:                  return MovementType.AutoAttackBasic
@@ -124,7 +120,12 @@ class Hero:
 
         # update cd
         self.aa_timer = max(0, self.aa_timer - dt)
+        
+        prev_upper_skill_timer = self.upper_skill_timer
         self.upper_skill_timer = max(0, self.upper_skill_timer - dt)
+        if prev_upper_skill_timer > 0 and self.upper_skill_timer == 0:
+            self.party.upper_skill_manager.add_request(self.party_idx)
+
         self.aa_cd = self.get_aa_cd()
 
         self.last_updated = t
@@ -139,6 +140,7 @@ class Hero:
                 self.sp = 0
             case MovementType.UpperSkill:
                 self.upper_skill_timer = round(self.upper_skill_cd * SEC_TO_MS)
+                self.upper_skill_flag = False
             case MovementType.Wait:
                 wait_time = min(SP_INTERVAL - self.sp_timer, self.aa_timer, self.upper_skill_timer)
                 dt = max(1, round(wait_time))

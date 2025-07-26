@@ -4,6 +4,7 @@ VERY_BIG_NUMBER = 1e10
 SEC_TO_MS = 1000
 DELTA_T = 0.1
 SP_INTERVAL = 1 * SEC_TO_MS
+GLOBAL_UPPER_SKILL_LOCK_MS = 1 * SEC_TO_MS
 
 class StrEnum(str, Enum):
     def _generate_next_value_(name, start, count, last_values):

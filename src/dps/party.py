@@ -1,6 +1,7 @@
 from dps.enums import *
 from dps.status_manager import StatusManager
 from dps.action_manager import ActionManager
+from dps.upper_skill_manager import UpperSkillManager
 
 import numpy as np
 import pandas as pd
@@ -10,9 +11,10 @@ from tqdm import tqdm
 
 class Party:
     def __init__(self):
-        self.character_list = [None] * 11    # idx=9 : action manager, idx=10 : status manager
+        self.character_list = [None] * 12    # idx=9 : action manager, idx=10 : status manager, idx=11 : upper skill manager
         self.action_manager = ActionManager(self)
         self.status_manager = StatusManager(self)
+        self.upper_skill_manager = UpperSkillManager(self)
 
 
     def init_simulation(self):
@@ -21,15 +23,14 @@ class Party:
         self.damage_records = []
         self.movement_log = []
         self.active_indices = [i for i, c in enumerate(self.character_list) if c is not None]
-        self.next_update = np.full(11, np.inf)       # idx=9 : action manager, idx=10 : status manager
+        self.next_update = np.full(12, np.inf)       # idx=9:action manager, 10:status manager, 11:upper skill manager
         for i in range(9):
             if self.character_list[i] is not None:
                 self.character_list[i].init_simulation()
                 self.next_update[i] = 0
-        self.upper_skill_cooldown = [np.inf] * 9
-        self.upper_skill_lock_until = 0
         self.status_manager.init_simulation()
         self.action_manager.init_simulation()
+        self.upper_skill_manager.init_simulation()
         
 
     def add_hero(self, hero, idx):
@@ -64,8 +65,10 @@ class Party:
                     elif idx == 9:
                         # Resolve actions; this includes damage and buff/debuff reservations.
                         self.action_manager.resolve_all_actions(self.current_time)
-                    else:
+                    elif idx == 10:
                         self.status_manager.resolve_status_reserv(self.current_time)
+                    else: # 11
+                        self.upper_skill_manager.resolve_request(self.current_time)
                 
                 # Go to next timestep
                 self.current_time = int(self.next_update.min())
