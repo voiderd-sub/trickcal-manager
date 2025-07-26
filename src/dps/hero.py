@@ -1,4 +1,5 @@
 from dps.enums import *
+from dps.skill_conditions import *
 
 import numpy as np
 from collections import defaultdict
@@ -50,6 +51,7 @@ class Hero:
         self.last_movement = MovementType.Wait
         self.last_movement_time = 0
         self.upper_skill_flag = False
+        self.upper_skill_rule = None
         if not hasattr(self, "atk"):
             self.atk = 100
         self.amplify_dict = {dt: 1.0 for dt in DamageType.leaf_types()}
@@ -124,7 +126,8 @@ class Hero:
         prev_upper_skill_timer = self.upper_skill_timer
         self.upper_skill_timer = max(0, self.upper_skill_timer - dt)
         if prev_upper_skill_timer > 0 and self.upper_skill_timer == 0:
-            self.party.upper_skill_manager.add_request(self.party_idx)
+            if self.upper_skill_rule and self.upper_skill_rule.should_request(self):
+                self.party.upper_skill_manager.add_request(self.party_idx)
 
         self.aa_cd = self.get_aa_cd()
 
@@ -273,6 +276,9 @@ class Hero:
 
     def get_unique_name(self):
         return f"{self.name}_{self.party_idx}"
+
+    def set_upper_skill_rule(self, rule):
+        self.upper_skill_rule = rule
 
     def has_buff(self, buff_id):
         return self.party.status_manager.has_buff(self.party_idx, buff_id)

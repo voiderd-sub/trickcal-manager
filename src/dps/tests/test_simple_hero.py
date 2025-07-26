@@ -5,6 +5,7 @@ from dps.hero import Hero
 from dps.enums import MovementType, DamageType, SEC_TO_MS
 from dps.action import InstantAction, ProjectileAction, StatusAction
 from dps.status import BuffAttackSpeed, BuffAmplify, target_self
+from dps.skill_conditions import CooldownReadyCondition, NeverCastCondition
 
 
 class SimpleHero(Hero):
@@ -593,9 +594,58 @@ def test_global_upper_skill_lock():
     print("✅ Global Upper Skill Lock and Priority Test Passed!")
 
 
+def test_dynamic_priority_and_rules():
+    """
+    Tests dynamic priority and rule assignment (NeverCast vs. CooldownReady).
+    - Hero0: Prio 2, NeverCast
+    - Hero1: Prio 0, CooldownReady
+    - Hero2: Prio 1, CooldownReady
+    Expected order of casting: Hero1, then Hero2. Hero0 should never cast.
+    """
+    party = Party()
+    heroes = []
+    for i in range(3):
+        hero = SimpleHero(f"Hero{i}")
+        hero.upper_skill_cd = 10
+        party.add_hero(hero, i)
+        heroes.append(hero)
+
+    priorities = [2, 0, 1] + [10] * 6  # Hero1 > Hero2 > Hero0
+    rules = [NeverCastCondition(), CooldownReadyCondition(), CooldownReadyCondition()] + [None] * 6
+    
+    party.run(max_t=25, num_simulation=1, priority=priorities, rules=rules)
+
+    # --- Analysis ---
+    hero0_casts = [t for t, m in heroes[0].movement_log if m == MovementType.UpperSkill]
+    hero1_casts = [round(t) for t, m in heroes[1].movement_log if m == MovementType.UpperSkill]
+    hero2_casts = [round(t) for t, m in heroes[2].movement_log if m == MovementType.UpperSkill]
+    
+    print("\n--- Dynamic Priority and Rules Test ---")
+    print(f"Hero0 ({rules[0].__class__.__name__}, Prio {priorities[0]}) Casts: {hero0_casts}")
+    print(f"Hero1 ({rules[1].__class__.__name__}, Prio {priorities[1]}) Casts: {hero1_casts}")
+    print(f"Hero2 ({rules[2].__class__.__name__}, Prio {priorities[2]}) Casts: {hero2_casts}")
+
+    # 1. Verify Hero0 (NeverCast) did not cast
+    assert len(hero0_casts) == 0, "Hero0 with NeverCastCondition should not have used their upper skill."
+
+    # 2. Verify Hero1 and Hero2 cast times
+    # Start time: 10 * 0.5 = 5s.
+    # Hero1 (Prio 0) casts at 5s.
+    # Hero2 (Prio 1) casts at 5s + 1s lock = 6s.
+    # Next wave: Hero1 at 5s+10s=15s, Hero2 at 6s+10s=16s
+    expected_hero1_casts = [5000, 15000]
+    expected_hero2_casts = [6000, 16000]
+
+    assert hero1_casts == expected_hero1_casts, f"Hero1 cast times mismatch. Expected {expected_hero1_casts}, Got {hero1_casts}"
+    assert hero2_casts == expected_hero2_casts, f"Hero2 cast times mismatch. Expected {expected_hero2_casts}, Got {hero2_casts}"
+
+    print("✅ Dynamic Priority and Rules Test Passed!")
+
+
 if __name__ == "__main__":
     test_simple_hero_movement_timing(default_settings())
     test_projectile_action(default_settings())
     test_chained_actions()
     test_attack_speed_buff()
     test_global_upper_skill_lock()
+    test_dynamic_priority_and_rules()

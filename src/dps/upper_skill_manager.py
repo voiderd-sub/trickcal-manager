@@ -21,7 +21,7 @@ class UpperSkillManager:
         if any(req[1] == hero_id for req in self.request_queue):
             return
 
-        priority = hero_id
+        priority = self.party.upper_skill_priorities[hero_id]
         request_tuple = (priority, hero_id)
         insort(self.request_queue, request_tuple)
 

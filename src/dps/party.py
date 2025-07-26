@@ -2,6 +2,7 @@ from dps.enums import *
 from dps.status_manager import StatusManager
 from dps.action_manager import ActionManager
 from dps.upper_skill_manager import UpperSkillManager
+from dps.skill_conditions import CooldownReadyCondition
 
 import numpy as np
 import pandas as pd
@@ -17,17 +18,32 @@ class Party:
         self.upper_skill_manager = UpperSkillManager(self)
 
 
-    def init_simulation(self):
+    def init_simulation(self, priority, rules):
         self.current_time = 0  # ms
         self.simulation_result = dict()
         self.damage_records = []
         self.movement_log = []
-        self.active_indices = [i for i, c in enumerate(self.character_list) if c is not None]
+
+        self.active_indices = [i for i, c in enumerate(self.character_list[:9]) if c is not None]
+        # Set priorities and rules
+        self.upper_skill_priorities = [10] * 9
+        if priority:
+            for i, p in enumerate(priority):
+                if self.character_list[i] is not None:
+                    self.upper_skill_priorities[i] = p
+        
+        self.upper_skill_rules = [None] * 9
+        if rules:
+            self.upper_skill_rules = rules
+        else:
+            self.upper_skill_rules = [CooldownReadyCondition() if c else None for c in self.character_list[:9]]
+
         self.next_update = np.full(12, np.inf)       # idx=9:action manager, 10:status manager, 11:upper skill manager
-        for i in range(9):
-            if self.character_list[i] is not None:
-                self.character_list[i].init_simulation()
-                self.next_update[i] = 0
+        for i in self.active_indices:
+            self.character_list[i].init_simulation()
+            self.character_list[i].set_upper_skill_rule(self.upper_skill_rules[i])
+            self.next_update[i] = 0
+            
         self.status_manager.init_simulation()
         self.action_manager.init_simulation()
         self.upper_skill_manager.init_simulation()
@@ -46,11 +62,11 @@ class Party:
         # TODO : NEED TO REVISE
         return 1.
 
-    def run(self, max_t, num_simulation):
+    def run(self, max_t, num_simulation, priority=None, rules=None):
         rows = []
         import time
         for _ in tqdm(range(num_simulation)):
-            self.init_simulation()
+            self.init_simulation(priority, rules)
             while self.current_time < int(max_t * SEC_TO_MS):
                 all_min_indices = np.where(self.next_update == self.current_time)[0]
 
