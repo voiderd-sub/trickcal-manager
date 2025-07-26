@@ -3,22 +3,33 @@ from dps.action import *
 
 import numpy as np
 from functools import partial
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Callable
+
 if TYPE_CHECKING:
     from dps.hero import Hero
 
+def target_self(hero: 'Hero') -> List[int]:
+    return [hero.party_idx]
+
+def target_all(hero: 'Hero') -> List[int]:
+    # Returns all hero indices (0-8), excluding the enemy (9).
+    return [i for i, char in enumerate(hero.party.character_list) if char is not None and i < 9]
+
+def target_all_wo_self(hero: 'Hero') -> List[int]:
+    # Returns all hero indices (0-8) except self, excluding the enemy (9).
+    return [i for i, char in enumerate(hero.party.character_list) if char is not None and i < 9 and i != hero.party_idx]
 
 class StatusTemplate:
     def __init__(self,
                  status_id: str,
                  caster: 'Hero',
-                 target: List[int],
+                 target_resolver_fn: Callable[['Hero'], List[int]],
                  max_stack: int,
                  refresh_interval: float = 0,
                  status_type: str = "buff"):
         self.status_id = status_id
         self.caster = caster
-        self.target = target
+        self.target_resolver_fn = target_resolver_fn
         self.status_type = status_type
         self.max_stack = max_stack
         self.refresh_interval = refresh_interval
@@ -38,12 +49,14 @@ class StatusTemplate:
         return target
 
 class StatusReservation:
-    def __init__(self, template: StatusTemplate, start_time, end_time):
+    def __init__(self, template: StatusTemplate, start_time):
         self.template = template
         self.start_time = start_time
-        self.end_time = end_time
+        self.duration = getattr(self.template, 'duration', 0)
+        self.end_time = round(start_time + self.duration * SEC_TO_MS)
         self.next_update = self.start_time
         self.next_step = "apply"
+        self.resolved_targets = self.template.target_resolver_fn(self.template.caster)
 
     def __lt__(self, other):
         return self.next_update < other.next_update
@@ -61,6 +74,9 @@ class StatusReservation:
         self.next_update = self.end_time
         self.next_step = "delete"
 
+    def get_targets(self):
+        return self.resolved_targets
+    
     def is_buff(self):
         return self.template.is_buff()
 
@@ -83,11 +99,11 @@ def DebuffDamageRefresh(status, current_time, damage):
 
 class DebuffSting(StatusTemplate):
     def __init__(self, status_id, caster, duration):
-        target = [9]  # Enemy at index 9
+        target_resolver_fn = lambda _: [9]  # Enemy at index 9
         max_stack = 0
         refresh_interval = SEC_TO_MS
-        super().__init__(status_id, caster, target, max_stack, refresh_interval, "debuff")
-        self.duration = duration  # duration은 고정값이므로 남김
+        super().__init__(status_id, caster, target_resolver_fn, max_stack, refresh_interval, "debuff")
+        self.duration = duration
     
     def apply_fn(self, reservation, target_id, current_time):
         pass
@@ -100,10 +116,10 @@ class DebuffSting(StatusTemplate):
 
 
 class BuffAttackSpeed(StatusTemplate):
-    def __init__(self, status_id, caster, target, duration, value):
+    def __init__(self, status_id, caster, target_resolver_fn, duration, value):
         super().__init__(status_id=status_id,
                          caster=caster,
-                         target=target,
+                         target_resolver_fn=target_resolver_fn,
                          max_stack=0,
                          refresh_interval=0,
                          status_type="buff")
@@ -120,10 +136,10 @@ class BuffAttackSpeed(StatusTemplate):
 
 
 class BuffAmplify(StatusTemplate):
-    def __init__(self, status_id, caster, target, duration, applying_dmg_type, value):
+    def __init__(self, status_id, caster, target_resolver_fn, duration, applying_dmg_type, value):
         super().__init__(status_id=status_id,
                          caster=caster,
-                         target=target,
+                         target_resolver_fn=target_resolver_fn,
                          max_stack=0,
                          refresh_interval=0,
                          status_type="buff")

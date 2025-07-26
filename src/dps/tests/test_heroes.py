@@ -8,14 +8,10 @@ def epica_party():
     Provides a Party instance with a single, configured Epica hero.
     """
     user_info = {
-        'party_idx': 4,
         'lowerskill_level': 13,
         'upperskill_level': 13,
         'aside_level': 3,
         'atk': 100,
-        'crit': 100,
-        'crit_dmg': 200,
-        'boss_dmg': 100,
     }
     
     epica_hero = Epica(user_info)

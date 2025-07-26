@@ -37,17 +37,6 @@ class Party:
         hero.party = self
         hero.party_idx = idx
 
-    def get_target_indices(self, target, idx):
-        match target:
-            case TargetHero.Self:
-                return [idx]
-            case TargetHero.AllWOSelf:
-                return [i for i in self.active_indices if i != idx]
-            case TargetHero.All:
-                return self.active_indices
-            case _:
-                raise ValueError("Unsupported target type")
-
     def get_amplify(self, hero):
         # TODO : NEED TO REVISE
         return 0.

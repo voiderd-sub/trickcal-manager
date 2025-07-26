@@ -43,7 +43,7 @@ class StatusManager:
         Add a reservation for activating and deactivating buffs/debuffs to status_heap.
         Also index the status for fast lookup.
         """
-        if len(status.template.target) > 0:
+        if status.get_targets():
             insort(self.status_queue, status)
             self.update_next_update()
             
@@ -99,7 +99,7 @@ class StatusManager:
 
 
     def _add_status(self, status, current_time):
-        for target_id in status.template.target:
+        for target_id in status.get_targets():
             status.apply_fn(target_id, current_time)
             
             # Determine if it's a buff or debuff and add to appropriate dictionary
@@ -112,14 +112,14 @@ class StatusManager:
         self.add_status_reserv(status)
 
     def _refresh_status(self, status, current_time):
-        for target_id in status.template.target:
+        for target_id in status.get_targets():
             status.refresh_fn(target_id, current_time)
         status.next_update = status.end_time
         status.update_next_step(current_time)
         self.add_status_reserv(status)
 
     def _delete_status(self, status, current_time):
-        for target_id in status.template.target:
+        for target_id in status.get_targets():
             status.delete_fn(target_id, current_time)
             
             # Remove from appropriate dictionary
@@ -146,7 +146,7 @@ class StatusManager:
     
     def get_applying_status_stack(self, status):
         """Get current stack count of a status type"""
-        any_target_id = status.template.target[0]
+        any_target_id = status.get_targets()[0]
         if status.is_buff():
             return self.active_buffs[any_target_id].get(status.template.status_id, 0)
         else:

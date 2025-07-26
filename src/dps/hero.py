@@ -16,6 +16,10 @@ class Hero:
     def __init__(self, user_provided_info):
         for key, value in user_provided_info.items():
             setattr(self, key, value)
+        
+        # Action templates for each movement type
+        self._action_templates = {}
+        self.status_templates = {}
     
     def __repr__(self):
         return self.name if hasattr(self, "name") else "HeroNameDefault"
@@ -34,6 +38,13 @@ class Hero:
                     print(f"Use data of level {valid_level} instead.")
 
         self._initialize_eac()
+        self._setup_status_templates()
+        self._setup_all_movement_actions()
+
+        print("STATUS TEMPLATES")
+        print(self.status_templates)
+        print("ACTION TEMPLATES")
+        print(self._action_templates)
 
         self.aa_cd = round(300 * SEC_TO_MS / self.attack_speed)
         self.sp = self.init_sp
@@ -60,6 +71,37 @@ class Hero:
 
         self.last_motion_time = 0
 
+    def _setup_all_movement_actions(self):
+        """Pre-generates and sorts action templates for all movement types."""
+        self._action_templates[MovementType.AutoAttackBasic] = self._setup_basic_attack_actions()
+        self._action_templates[MovementType.AutoAttackEnhanced] = self._setup_enhanced_attack_actions()
+        self._action_templates[MovementType.LowerSkill] = self._setup_lower_skill_actions()
+        self._action_templates[MovementType.UpperSkill] = self._setup_upper_skill_actions()
+
+        # Sort all templates by their t_ratio (the second element in the tuple)
+        for template in self._action_templates.values():
+            if template:
+                template.sort(key=lambda x: x[1])
+
+    def _setup_basic_attack_actions(self):
+        """Returns a list of (action, t_ratio) for basic attacks."""
+        return []
+
+    def _setup_enhanced_attack_actions(self):
+        """Returns a list of (action, t_ratio) for enhanced attacks."""
+        return []
+
+    def _setup_lower_skill_actions(self):
+        """Returns a list of (action, t_ratio) for lower skill."""
+        return []
+
+    def _setup_upper_skill_actions(self):
+        """Returns a list of (action, t_ratio) for upper skill."""
+        return []
+
+    def _setup_status_templates(self):
+        """Initializes status templates for the hero. Should be overridden by subclasses."""
+        pass
 
     def choose_movement(self):
         if self.sp == self.max_sp:
@@ -119,7 +161,7 @@ class Hero:
         self.last_motion_time = motion_time
         self.last_updated = t
         
-        # movement별 첫 번째 액션 예약
+        # Dispatch to specific movement methods
         if movement_type == MovementType.AutoAttackBasic:
             self.BasicAttack(t)
         elif movement_type == MovementType.AutoAttackEnhanced:
@@ -132,17 +174,30 @@ class Hero:
         
         return motion_time
 
+    def _reserv_actions_from_template(self, movement_type, t):
+        """Helper to create and reserve actions from a template."""
+        motion_time = self.get_motion_time(movement_type)
+        action_tuples = []
+        template = self._action_templates.get(movement_type, [])
+        for action, t_ratio in template:
+            action_tuples.append((action, t + motion_time * t_ratio))
+        
+        if not action_tuples:
+            return
+        
+        self.reserv_action_chain(action_tuples)
+
     def BasicAttack(self, t):
-        raise NotImplementedError
+        self._reserv_actions_from_template(MovementType.AutoAttackBasic, t)
 
     def EnhancedAttack(self, t):
-        raise NotImplementedError
+        self._reserv_actions_from_template(MovementType.AutoAttackEnhanced, t)
 
     def LowerSkill(self, t):
-        raise NotImplementedError
+        self._reserv_actions_from_template(MovementType.LowerSkill, t)
 
     def UpperSkill(self, t):
-        raise NotImplementedError
+        self._reserv_actions_from_template(MovementType.UpperSkill, t)
 
     def is_enhanced(self):
         return self.eac and self.eac.is_met()
@@ -182,7 +237,7 @@ class Hero:
         return round(300 * SEC_TO_MS / (self.acceleration**2 * min(10., self.attack_speed_coeff) * self.attack_speed), 0)
     
     def get_motion_time(self, movement_type: MovementType):
-        base_motion_time_sec = self.motion_time.get(movement_type.name)
+        base_motion_time_sec = self.motion_time.get(movement_type)
         if base_motion_time_sec is None:
             raise ValueError(f"Motion time for {movement_type} is not defined.")
         

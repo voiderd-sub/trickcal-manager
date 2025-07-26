@@ -70,17 +70,24 @@ class ProjectileAction(Action):
 
 
 class StatusAction(Action):
-    def __init__(self, hero, status, source_movement, damage_type, post_fn=None):
+    def __init__(self,
+                 hero: 'Hero',
+                 source_movement: MovementType,
+                 damage_type: DamageType,
+                 status_template,
+                 post_fn=None):
         super().__init__(hero, ActionType.Status, source_movement, damage_type, post_fn)
-        self.status = status  # StatusTemplate
+        self.status_template = status_template
 
     def action_fn(self, current_time):
-        start_time = current_time
-        duration = getattr(self.status, 'duration', 0)
-        end_time = math.ceil(start_time + duration * SEC_TO_MS)
-        reservation = StatusReservation(self.status, start_time, end_time)
-        self.hero.party.status_manager.add_status_reserv(reservation)
-        
+        """
+        Resolves the target dynamically and creates a status object and its reservation just-in-time.
+        """
+
+        reservation = StatusReservation(template=self.status_template, start_time=current_time)
+        if reservation.get_targets():
+            self.hero.party.status_manager.add_status_reserv(reservation)
+
         if self.post_fn:
             self.post_fn(self)
 

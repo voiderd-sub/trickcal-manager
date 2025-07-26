@@ -1,6 +1,7 @@
 from dps.action import *
 from dps.hero import Hero, ProbabilisticCondition, BuffCondition, OrCondition
-from dps.status import BuffAttackSpeed, BuffAmplify
+from dps.status import (BuffAttackSpeed, BuffAmplify, 
+                        target_self, target_all, target_all_wo_self)
 
 
 class Epica(Hero):
@@ -30,123 +31,94 @@ class Epica(Hero):
             MovementType.UpperSkill: 10.00,
         }
 
-    def setup_eac(self):
-        prob = 0.25 + (0.15 if self.aside_level >= 2 else 0)
-        prob_cond = ProbabilisticCondition(self, prob)
-        buff_cond = BuffCondition(self, f"{self.get_unique_name()}_저학년")
-        return OrCondition(self, prob_cond, buff_cond)
+    def _setup_status_templates(self):
+        self_as_buff_val, other_as_buff_val = self.lowerskill_value[self.lowerskill_level - 1]
+        name = self.get_unique_name()
+        
+        # Lower skill templates
+        self.status_templates[f"{name}_저학년"] = BuffAttackSpeed(
+            status_id=f"{name}_저학년",
+            caster=self, 
+            duration=10.0, 
+            value=self_as_buff_val,
+            target_resolver_fn=target_self
+        )
+        self.status_templates[f"{name}_저학년_전체"] = BuffAttackSpeed(
+            status_id=f"{name}_저학년_전체",
+            caster=self, 
+            duration=10.0, 
+            value=other_as_buff_val,
+            target_resolver_fn=target_all_wo_self
+        )
+        
+        # Upper skill template
+        self.status_templates[f"{name}_고학년"] = BuffAmplify(
+            status_id=f"{name}_고학년",
+            caster=self, 
+            duration=8.0, 
+            value=27,
+            applying_dmg_type=DamageType.ALL,
+            target_resolver_fn=target_all
+        )
 
-    def BasicAttack(self, t):
-        motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
-        hit_delay = 0.5
-
+    def _setup_basic_attack_actions(self):
         actions_info = [(0.65, 100)]
         if self.aside_level >= 2:
             actions_info.append((0.71, 100))
 
-        action_tuples = []
+        action_template = []
         for t_ratio, damage_coeff in actions_info:
             action = ProjectileAction(
                 hero=self,
                 damage_coeff=damage_coeff,
-                hit_delay=hit_delay,
+                hit_delay=0.5,
                 source_movement=MovementType.AutoAttackBasic,
                 damage_type=DamageType.AutoAttackBasic,
             )
-            action_tuples.append((action, t + motion_time * t_ratio))
-        
-        self.reserv_action_chain(action_tuples)
-        return motion_time
+            action_template.append((action, t_ratio))
+        return action_template
 
-    def EnhancedAttack(self, t):
-        motion_time = self.get_motion_time(MovementType.AutoAttackEnhanced)
-        hit_delay = 1.05
-
+    def _setup_enhanced_attack_actions(self):
         actions_info = [(0.95, 200)]
         if self.aside_level >= 2:
             actions_info.append((0.71, 200))
-
-        action_tuples = []
+        
+        action_template = []
         for t_ratio, damage_coeff in actions_info:
             action = ProjectileAction(
                 hero=self,
                 damage_coeff=damage_coeff,
-                hit_delay=hit_delay,
+                hit_delay=1.05,
                 source_movement=MovementType.AutoAttackEnhanced,
                 damage_type=DamageType.AutoAttackEnhanced,
             )
-            action_tuples.append((action, t + motion_time * t_ratio))
-            
-        self.reserv_action_chain(action_tuples)
-        return motion_time
-
-    def LowerSkill(self, t):
-        motion_time = self.get_motion_time(MovementType.LowerSkill)
-        buff_time = t + motion_time * 0.55
-        duration = 10.0
-        self_as_buff_val, other_as_buff_val = self.lowerskill_value[self.lowerskill_level - 1]
-
-        # Self buff
-        self_buff = BuffAttackSpeed(
-            status_id=f"{self.get_unique_name()}_저학년",
-            caster=self,
-            target=self.party.get_target_indices(TargetHero.Self, self.party_idx),
-            duration=duration,
-            value=self_as_buff_val,
+            action_template.append((action, t_ratio))
+        return action_template
+    
+    def _setup_lower_skill_actions(self):
+        # Self buff action
+        self_buff_action = StatusAction(
+            hero=self,
+            source_movement=MovementType.LowerSkill,
+            damage_type=DamageType.NONE,
+            status_template=self.status_templates[f"{self.get_unique_name()}_저학년"]
         )
         
-        # Other party members buff
-        other_buff = BuffAttackSpeed(
-            status_id=f"{self.get_unique_name()}_저학년_other",
-            caster=self,
-            target=self.party.get_target_indices(TargetHero.AllWOSelf, self.party_idx),
-            duration=duration,
-            value=other_as_buff_val,
+        # Other party members buff action
+        other_buff_action = StatusAction(
+            hero=self,
+            source_movement=MovementType.LowerSkill,
+            damage_type=DamageType.NONE,
+            status_template=self.status_templates[f"{self.get_unique_name()}_저학년_전체"]
         )
-
-        action_tuples = [
-            (StatusAction(hero=self,
-                          status=self_buff,
-                          source_movement=MovementType.LowerSkill,
-                          damage_type=DamageType.NONE),
-                          buff_time),
-            (StatusAction(hero=self,
-                          status=other_buff,
-                          source_movement=MovementType.LowerSkill,
-                          damage_type=DamageType.NONE),
-                          buff_time)
-        ]
         
-        self.reserv_action_chain(action_tuples)
-        return motion_time
+        return [(self_buff_action, 0.55), (other_buff_action, 0.55)]
 
-    def UpperSkill(self, t):
-        motion_time = self.get_motion_time(MovementType.UpperSkill)
-        action_tuples = []
-
-        # Buff Action
-        buff_time = t + motion_time * 0.09
-        duration = 8.0
-        buff_all = BuffAmplify(
-            status_id=f"{self.get_unique_name()}_고학년",
-            caster=self,
-            target=self.party.get_target_indices(TargetHero.All, self.party_idx),
-            duration=duration,
-            value=27,
-            applying_dmg_type=DamageType.ALL,
-        )
-        action_tuples.append(
-            (StatusAction(hero=self,
-                          status=buff_all,
-                          source_movement=MovementType.UpperSkill,
-                          damage_type=DamageType.NONE),
-                          buff_time)
-        )
-
-        # Damage Actions
+    def _setup_upper_skill_actions(self):
+        # Damage actions
+        damage_actions = []
         damage = self.upperskill_value[self.upperskill_level - 1]
         hit_delay = 0.35
-
         for j in range(3):
             for i in range(8):
                 t_ratio = 0.28 + 0.013 * i + 0.12 * j
@@ -157,6 +129,20 @@ class Epica(Hero):
                     source_movement=MovementType.UpperSkill,
                     damage_type=DamageType.AutoAttackBasic,
                 )
-                action_tuples.append((action, t + motion_time * t_ratio))
-        self.reserv_action_chain(action_tuples)
-        return motion_time
+                damage_actions.append((action, t_ratio))
+        
+        # Buff action
+        buff_action = StatusAction(
+            hero=self,
+            source_movement=MovementType.UpperSkill,
+            damage_type=DamageType.NONE,
+            status_template=self.status_templates[f"{self.get_unique_name()}_고학년"]
+        )
+        
+        return damage_actions + [(buff_action, 0.09)]
+
+    def setup_eac(self):
+        prob = 0.25 + (0.15 if self.aside_level >= 2 else 0)
+        buff_cond = BuffCondition(self, f"{self.get_unique_name()}_저학년")
+        prob_cond = ProbabilisticCondition(self, prob)
+        return OrCondition(self, buff_cond, prob_cond)

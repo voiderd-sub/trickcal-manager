@@ -37,14 +37,6 @@ class ActionType(StrEnum):
     Projectile = auto()   # Delayed damage
     Status = auto()       # Status application (buff/debuff)
 
-class TargetHero(StrEnum):
-    Self = auto()
-    All = auto()
-    AllWOSelf = auto()
-    FrontLine = auto()
-    MiddleLine = auto()
-    BackLine = auto()
-
 class EffectType(StrEnum):
     Instant = auto()
     Delayed = auto()
