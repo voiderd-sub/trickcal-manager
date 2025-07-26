@@ -21,7 +21,7 @@ class StatusTemplate:
         self.target = target
         self.status_type = status_type
         self.max_stack = max_stack
-        self.refresh_interval = int(refresh_interval)
+        self.refresh_interval = refresh_interval
 
     def is_buff(self):
         return self.status_type == "buff"
@@ -40,8 +40,8 @@ class StatusTemplate:
 class StatusReservation:
     def __init__(self, template: StatusTemplate, start_time, end_time):
         self.template = template
-        self.start_time = int(start_time)
-        self.end_time = int(end_time)
+        self.start_time = start_time
+        self.end_time = end_time
         self.next_update = self.start_time
         self.next_step = "apply"
 
@@ -53,9 +53,9 @@ class StatusReservation:
             self.next_update = self.start_time
             return
         elif self.template.refresh_interval > 0:
-            next_refresh = int(np.ceil(current_t - self.start_time) + self.start_time + SEC_TO_MS)
+            next_refresh = round(current_t + SEC_TO_MS)
             if next_refresh <= self.end_time:
-                self.next_update = int(next_refresh)
+                self.next_update = next_refresh
                 self.next_step = "refresh"
                 return
         self.next_update = self.end_time
@@ -119,7 +119,7 @@ class BuffAttackSpeed(StatusTemplate):
         target.attack_speed_coeff -= self.value
 
 
-class BuffDamageAmplify(StatusTemplate):
+class BuffAmplify(StatusTemplate):
     def __init__(self, status_id, caster, target, duration, applying_dmg_type, value):
         super().__init__(status_id=status_id,
                          caster=caster,

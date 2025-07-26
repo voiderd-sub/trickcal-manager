@@ -3,6 +3,7 @@ from dps.enums import *
 from collections import defaultdict
 from bisect import bisect_left, insort
 import numpy as np
+import math
 
 
 # Helper; defaultdict w/ deleting key when val = 0
@@ -33,8 +34,9 @@ class StatusManager:
         # Index for fast lookup of statuses by ID
         self.status_by_id = defaultdict(list)  # status_id -> list of Status objects
 
-    def update_next_update(self, time):
-        self.party.next_update[10] = time
+    def update_next_update(self):
+        next_time = self.status_queue[0].next_update if self.status_queue else float('inf')
+        self.party.next_update[10] = next_time if next_time == float('inf') else round(next_time)
 
     def add_status_reserv(self, status):
         """
@@ -43,7 +45,7 @@ class StatusManager:
         """
         if len(status.template.target) > 0:
             insort(self.status_queue, status)
-            self.update_next_update(self.status_queue[0].next_update)
+            self.update_next_update()
             
             # Index status for fast lookup
             self.status_by_id[status.template.status_id].append(status)
@@ -93,8 +95,7 @@ class StatusManager:
                     self._delete_status(status, current_time)
                 case _:
                     raise
-        self.update_next_update(self.status_queue[0].next_update
-                                    if len(self.status_queue) > 0 else np.inf)
+        self.update_next_update()
 
 
     def _add_status(self, status, current_time):

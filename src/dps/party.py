@@ -58,13 +58,13 @@ class Party:
 
     def run(self, max_t, num_simulation):
         rows = []
+        import time
         for _ in tqdm(range(num_simulation)):
             self.init_simulation()
             while self.current_time < int(max_t * SEC_TO_MS):
                 all_min_indices = np.where(self.next_update == self.current_time)[0]
 
                 # TODO : Use Upper skill
-
                 
                 for idx in all_min_indices:
                     if idx < 9:
@@ -80,26 +80,28 @@ class Party:
                 
                 # Go to next timestep
                 self.current_time = int(self.next_update.min())
+        return
+        #     # Simulation terminated; extract results
+        #     for idx in range(9):
+        #         character = self.character_list[idx]
+        #         if character != None:
+        #             name = character.get_unique_name()
+        #             print(name, character.damage_records)
+        #             character.calculate_cumulative_damage(max_t)
 
-            # Simulation terminated; extract results
-            for idx in range(9):
-                character = self.character_list[idx]
-                if character != None:
-                    name = character.get_name() + "_" + str(idx)
-                    character.calculate_cumulative_damage(max_t)
-                    total_dmg = 0
-                    for dmg_type, value in character.damage_records.items():
-                        rows.append({
-                            "name": name,
-                            "dmg_type": dmg_type,
-                            "dmg": value
-                        })
-                        total_dmg += value
-                    rows.append({
-                        "name": name,
-                        "dmg_type": "Total",
-                        "dmg": total_dmg
-                    })
-        df = pd.DataFrame(rows)
+        #             total_dmg = 0
+        #             for dmg_type, value in character.damage_records.items():
+        #                 rows.append({
+        #                     "name": name,
+        #                     "dmg_type": dmg_type,
+        #                     "dmg": value
+        #                 })
+        #                 total_dmg += value
+        #             rows.append({
+        #                 "name": name,
+        #                 "dmg_type": "Total",
+        #                 "dmg": total_dmg
+        #             })
+        # df = pd.DataFrame(rows)
             
-        return df
+        # return df

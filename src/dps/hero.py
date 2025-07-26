@@ -1,9 +1,8 @@
 from dps.enums import *
-from dps.action import InstantAction
 
 import numpy as np
 from collections import defaultdict
-import random
+from functools import partial
 
 
 def find_valid_skill_level(L, i):
@@ -34,17 +33,19 @@ class Hero:
                     print(f"Data for {skill_type} level {user_level} is not exists.")
                     print(f"Use data of level {valid_level} instead.")
 
-        self.aa_cd = int(300 * SEC_TO_MS / self.attack_speed)
+        self._initialize_eac()
+
+        self.aa_cd = round(300 * SEC_TO_MS / self.attack_speed)
         self.sp = self.init_sp
         self.sp_timer = 0
-        self.upper_skill_timer = int(self.upper_skill_cd * SEC_TO_MS * 0.5)
+        self.upper_skill_timer = round(self.upper_skill_cd * SEC_TO_MS * 0.5)
         self.aa_timer = 0
         self.last_updated = 0
         self.last_movement = MovementType.Wait
         self.last_movement_time = 0
         if not hasattr(self, "atk"):
             self.atk = 100
-        self.amplify_dict = {dt: 0.0 for dt in DamageType.leaf_types()}
+        self.amplify_dict = {dt: 1.0 for dt in DamageType.leaf_types()}
         self.atk_coeff = 1.
         self.attack_speed_coeff = 1.
         self.acceleration = 1.
@@ -56,21 +57,9 @@ class Hero:
                                   MovementType.UpperSkill: [],
                                   }
         self.damage_records = defaultdict(list)
-        
-        # 제거: action_templates, current_movement_actions, current_action_index 관련 코드
-        # self.action_templates = {i: [] for i in MovementType}
-        # self.current_movement_actions = []
-        # self.current_action_index = 0
-        
-        # 제거: self.init_movements() 호출
 
-        self.last_motion_time = 0  # 단일 값으로 변경
+        self.last_motion_time = 0
 
-    # 제거: init_movements() 메서드
-
-    def schedule_action_template(self, action, time, delay=0):
-        """Schedule an action with the given time and delay"""
-        self.reserv_action((time, delay, action))
 
     def choose_movement(self):
         if self.sp == self.max_sp:
@@ -107,14 +96,15 @@ class Hero:
             case MovementType.LowerSkill:
                 self.sp = 0
             case MovementType.UpperSkill:
-                self.upper_skill_timer = int(self.upper_skill_cd * SEC_TO_MS)
+                self.upper_skill_timer = round(self.upper_skill_cd * SEC_TO_MS)
             case MovementType.Wait:
-                dt = min(SP_INTERVAL - self.sp_timer, self.aa_timer, self.upper_skill_timer)
+                wait_time = min(SP_INTERVAL - self.sp_timer, self.aa_timer, self.upper_skill_timer)
+                dt = max(1, round(wait_time))
         if movement != MovementType.Wait:
-            dt = self.do_movement(movement, t)
-            self.movement_timestamps[movement].append(int(t // SEC_TO_MS))
+            dt = round(self.do_movement(movement, t))
+            self.movement_timestamps[movement].append(round(t) / SEC_TO_MS)
         self.last_movement = movement
-        self.movement_log.append((int(t // SEC_TO_MS), movement))
+        self.movement_log.append((t, movement))
         return t + dt
     
     def calculate_cumulative_damage(self, max_T):
@@ -134,6 +124,7 @@ class Hero:
             self.BasicAttack(t)
         elif movement_type == MovementType.AutoAttackEnhanced:
             self.EnhancedAttack(t)
+            self.eac.on_enhanced_attack(t)      # self.eac is not None here.
         elif movement_type == MovementType.LowerSkill:
             self.LowerSkill(t)
         elif movement_type == MovementType.UpperSkill:
@@ -141,52 +132,69 @@ class Hero:
         
         return motion_time
 
-    # 제거: schedule_next_action() 메서드
-
-    # Placeholder 메서드들 (하위 클래스에서 구현)
     def BasicAttack(self, t):
-        """기본 공격 - 하위 클래스에서 구현"""
         raise NotImplementedError
 
     def EnhancedAttack(self, t):
-        """강화 공격 - 하위 클래스에서 구현"""
         raise NotImplementedError
 
     def LowerSkill(self, t):
-        """저학년 스킬 - 하위 클래스에서 구현"""
         raise NotImplementedError
 
     def UpperSkill(self, t):
-        """고학년 스킬 - 하위 클래스에서 구현"""
         raise NotImplementedError
 
     def is_enhanced(self):
-        return False
+        return self.eac and self.eac.is_met()
 
-    def trigger_enhanced(self):
-        pass
-    
-    def reserv_action(self, action_tuple):
-        self.party.action_manager.add_action_reserv(action_tuple)
+    def reserv_action(self, action, t):
+        self.party.action_manager.add_action_reserv(t, action)
+
+    def reserv_action_chain(self, action_tuples):
+        """
+        Reserves a chain of actions. The next action is reserved in the post_fn of the previous action.
+        Assumes that the actions in the chain (except possibly the last one) do not have a pre-existing post_fn.
+        :param action_tuples: A list of (action, execution_time) tuples.
+        """
+        if not action_tuples:
+            return
+        # Iterate backwards from the second to last action to chain them up.
+        for i in range(len(action_tuples) - 2, -1, -1):
+            # Get the current action which needs its post_fn set.
+            current_action, _ = action_tuples[i]
+            
+            # Get the next action that should be scheduled by the current one.
+            next_action, next_time = action_tuples[i+1]
+            
+            # Set the post_fn of the current action to reserve the next action.
+            # We use functools.partial to capture the correct action and time.
+            partial_fn = partial(self.reserv_action, next_action, next_time)
+            current_action.post_fn = lambda _,p=partial_fn: p()
+        
+        # Schedule the first action in the chain.
+        first_action, first_time = action_tuples[0]
+        self.reserv_action(first_action, first_time)
 
     def aa_post_fn(self):
-        self.sp = min(self.max_sp, self.sp + self.sp * self.sp_per_aa)
+        self.sp = min(self.max_sp, self.sp + self.sp_per_aa)
 
     def get_aa_cd(self):
-        return int(300 * SEC_TO_MS / (self.acceleration**2 * min(10., self.attack_speed_coeff) * self.attack_speed))
+        return round(300 * SEC_TO_MS / (self.acceleration**2 * min(10., self.attack_speed_coeff) * self.attack_speed), 0)
     
     def get_motion_time(self, movement_type: MovementType):
-        match movement_type:
-            case MovementType.AutoAttackBasic:
-                return min(self.motion_time["Basic"], self.get_aa_cd())
-            case MovementType.AutoAttackEnhanced:
-                return min(self.motion_time["Basic"], self.get_aa_cd())
-            case MovementType.LowerSkill:
-                return self.motion_time["LowerSkill"] / self.acceleration
-            case MovementType.UpperSkill:
-                return self.motion_time["UpperSkill"] / self.acceleration
+        base_motion_time_sec = self.motion_time.get(movement_type.name)
+        if base_motion_time_sec is None:
+            raise ValueError(f"Motion time for {movement_type} is not defined.")
+        
+        motion_time_ms = base_motion_time_sec * SEC_TO_MS
 
-        return
+        match movement_type:
+            case MovementType.AutoAttackBasic | MovementType.AutoAttackEnhanced:
+                return min(motion_time_ms, self.get_aa_cd())
+            case MovementType.LowerSkill | MovementType.UpperSkill:
+                return motion_time_ms / self.acceleration
+        
+        raise ValueError(f"Invalid movement type: {movement_type}")
     
 
     def get_amplify(self, damage_type):
@@ -198,38 +206,124 @@ class Hero:
     
     def get_damage(self, damage, movement_type):
         enemy_amplify = self.party.get_amplify(self)
-        additional_coeff = self.party.get_additional_coeff(self)        # 성격시너지 등
-        amplify = max(0.25, 1 + self.get_amplify(movement_type) + enemy_amplify)
-        return 0.8 * (self.atk * self.atk_coeff) * amplify * (damage/100) * additional_coeff
+        additional_coeff = self.party.get_additional_coeff(self)  # include type_effectiveness, hidden damage decrease, etc.
+        applying_amplify = max(0.25, self.get_amplify(movement_type) + enemy_amplify)
+        applying_atk_coeff = max(0.2, self.atk_coeff)
+        return 0.8 * (self.atk * applying_atk_coeff) * applying_amplify * (damage/100) * additional_coeff
 
     def get_name(self):
         return self.name_kr
 
+    def get_unique_name(self):
+        return f"{self.name}_{self.party_idx}"
+
     def has_buff(self, buff_id):
         return self.party.status_manager.has_buff(self.party_idx, buff_id)
 
-class EnhancedAttackChecker:
+    def setup_eac(self):
+        """Sets up the Enhanced Attack Condition for the hero. Should be overridden by subclasses."""
+        return None
+
+    def _initialize_eac(self):
+        """Initializes/resets the EAC for a new simulation run."""
+        self.eac = self.setup_eac()
+        if self.eac:
+            self.eac.init_simulation()
+
+class EnhancedAttackCondition:
+    """Base class for enhanced attack conditions."""
     def __init__(self, hero):
         self.hero = hero
-    
-    def is_enhanced(self):
+
+    def is_met(self):
         raise NotImplementedError
+    
+    def on_enhanced_attack(self, t):
+        """A hook to update state after an enhanced attack. t is current time."""
+        pass
 
+    def init_simulation(self):
+        """Reset state for a new simulation."""
+        pass
 
-class ProbabilisticEAC(EnhancedAttackChecker):
-    def __init__(self, hero, p):
+class ProbabilisticCondition(EnhancedAttackCondition):
+    """Triggers based on probability."""
+    def __init__(self, hero, probability):
         super().__init__(hero)
-        self.p = p
+        self.probability = probability
 
-    def is_enhanced(self):
-        return np.random.rand() < self.p
+    def is_met(self):
+        return np.random.rand() < self.probability
 
-class PeriodicEAC(EnhancedAttackChecker):
+class PeriodicCondition(EnhancedAttackCondition):
+    """Triggers every N attacks."""
     def __init__(self, hero, cycle):
         super().__init__(hero)
+        if cycle <= 0:
+            raise ValueError("Cycle must be positive.")
         self.cycle = cycle
 
-    def is_enhanced(self):
+    def is_met(self):
         timestamps = self.hero.movement_timestamps
-        num_attack = len(timestamps[MovementType.AutoAttackBasic]) + len(timestamps[MovementType.AutoAttackEnhanced])
-        return (num_attack+1) % self.cycle == 0
+        num_attacks = len(timestamps[MovementType.AutoAttackBasic]) + len(timestamps[MovementType.AutoAttackEnhanced])
+        return (num_attacks + 1) % self.cycle == 0
+
+class BuffCondition(EnhancedAttackCondition):
+    """Triggers if the hero has a specific buff."""
+    def __init__(self, hero, buff_id):
+        super().__init__(hero)
+        self.buff_id = buff_id
+
+    def is_met(self):
+        return self.hero.has_buff(self.buff_id)
+
+class CooldownCondition(EnhancedAttackCondition):
+    """Triggers when a cooldown is over."""
+    def __init__(self, hero, cooldown_sec):
+        super().__init__(hero)
+        self.cooldown = cooldown_sec * SEC_TO_MS
+        self.last_triggered_time = -self.cooldown # Allow first attack to be enhanced
+
+    def init_simulation(self):
+        self.last_triggered_time = -self.cooldown
+
+    def is_met(self):
+        return self.hero.last_updated >= self.last_triggered_time + self.cooldown
+
+    def on_enhanced_attack(self, t):
+        self.last_triggered_time = t
+
+class AndCondition(EnhancedAttackCondition):
+    """Composite condition that triggers if ALL sub-conditions are met."""
+    def __init__(self, hero, *conditions):
+        super().__init__(hero)
+        self.conditions = conditions
+
+    def is_met(self):
+        return all(cond.is_met() for cond in self.conditions)
+
+    def on_enhanced_attack(self, t):
+        for cond in self.conditions:
+            cond.on_enhanced_attack(t)
+    
+    def init_simulation(self):
+        for cond in self.conditions:
+            cond.init_simulation()
+
+class OrCondition(EnhancedAttackCondition):
+    """Composite condition that triggers if ANY sub-condition is met."""
+    def __init__(self, hero, *conditions):
+        super().__init__(hero)
+        self.conditions = conditions
+
+    def is_met(self):
+        return any(cond.is_met() for cond in self.conditions)
+
+    def on_enhanced_attack(self, t):
+        for cond in self.conditions:
+            if cond.is_met():
+                cond.on_enhanced_attack(t)
+
+    def init_simulation(self):
+        for cond in self.conditions:
+            cond.init_simulation()

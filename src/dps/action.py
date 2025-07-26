@@ -1,22 +1,26 @@
 from dps.enums import *
-import random
 from dps.status import StatusReservation
+from typing import TYPE_CHECKING
+import math
+
+if TYPE_CHECKING:
+    from dps.hero import Hero
+
 
 # Base action class with time information
 class Action:
     def __init__(self,
-                 hero,   # Hero
+                 hero: 'Hero',
                  action_type: ActionType,
                  source_movement: MovementType,
                  damage_type: DamageType,
-                 post_fn=None):  # 추가: post_fn 인자
+                 post_fn=None):
         self.hero = hero
         self.source_movement = source_movement
         self.damage_type = damage_type if damage_type else MovementType.movement_type_to_dmg_type(source_movement)
         self.action_type = action_type  # Instant, Projectile, Status
-        self.post_fn = post_fn  # 추가: post_fn 저장
+        self.post_fn = post_fn
         
-        # Time information (set by schedule_action_template)
         self.execution_time = 0
         self.delay = 0
 
@@ -29,12 +33,11 @@ class Action:
 
 
 def apply_instant_damage(hero, damage_type, time, damage_coeff, movement_type=None):
-    time = int(time)
     movement_type = movement_type if movement_type else damage_type.name
     damage_records = hero.damage_records[movement_type]
     damage = hero.get_damage(damage_coeff, damage_type)
     last_cumulative_damage = damage_records[-1][-1] if len(damage_records) >=1 else 0
-    damage_records.append((int(time // SEC_TO_MS), last_cumulative_damage + damage))
+    damage_records.append((round(time)/SEC_TO_MS, last_cumulative_damage + damage))
 
 
 class InstantAction(Action):
@@ -48,32 +51,22 @@ class InstantAction(Action):
                              time=current_time,
                              damage_coeff=self.damage_coeff,
                              movement_type=self.source_movement)
-        self._handle_post_action_effects()
         
-        # post_fn 실행 (추가)
         if self.post_fn:
-            self.post_fn()
-
-    def _handle_post_action_effects(self):
-        """Handle post-action effects like SP recovery"""
-        if self.source_movement in [MovementType.AutoAttackBasic, MovementType.AutoAttackEnhanced]:
-            self.hero.aa_post_fn()
+            sp_recovery_on_auto_attack(self.post_fn)(self)
 
 
 class ProjectileAction(Action):
-    def __init__(self, hero, damage_coeff, hit_delay, source_movement, damage_type, post_fn=None):
-        super().__init__(hero, ActionType.Projectile, source_movement, damage_type, post_fn)
+    def __init__(self, hero, damage_coeff, hit_delay, source_movement, damage_type, post_fn_for_instant_action=None):
+        super().__init__(hero, ActionType.Projectile, source_movement, damage_type)
         self.damage_coeff = damage_coeff
         self.hit_delay = hit_delay
-        self.instant_action = InstantAction(hero, damage_coeff, source_movement, damage_type)
+        self.instant_action = InstantAction(hero, damage_coeff, source_movement, damage_type, post_fn_for_instant_action)
 
     def action_fn(self, current_time):
-        effect_time = current_time + int(self.hit_delay)
-        self.hero.party.action_manager.add_pending_effect(effect_time, self.instant_action, 0)
-        
-        # post_fn 실행 (추가)
+        self.hero.party.action_manager.add_pending_effect(current_time, self.instant_action, self.hit_delay)
         if self.post_fn:
-            self.post_fn()
+            self.post_fn(self)
 
 
 class StatusAction(Action):
@@ -82,13 +75,22 @@ class StatusAction(Action):
         self.status = status  # StatusTemplate
 
     def action_fn(self, current_time):
-        # StatusReservation을 생성해서 넘긴다
         start_time = current_time
         duration = getattr(self.status, 'duration', 0)
-        end_time = start_time + int(duration * SEC_TO_MS)
+        end_time = math.ceil(start_time + duration * SEC_TO_MS)
         reservation = StatusReservation(self.status, start_time, end_time)
         self.hero.party.status_manager.add_status_reserv(reservation)
         
-        # post_fn 실행 (추가)
         if self.post_fn:
-            self.post_fn()
+            self.post_fn(self)
+
+def sp_recovery_on_auto_attack(post_fn):
+    """
+    Decorator for post_fn to handle SP recovery on auto attacks.
+    """
+    def wrapper(action):
+        if action.source_movement in [MovementType.AutoAttackBasic, MovementType.AutoAttackEnhanced]:
+            action.hero.aa_post_fn()
+        if post_fn:
+            post_fn(action)
+    return wrapper

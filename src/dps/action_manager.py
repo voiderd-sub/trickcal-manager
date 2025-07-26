@@ -3,47 +3,51 @@ from dps.enums import *
 from bisect import insort
 import numpy as np
 from collections import defaultdict
+import math
 
 class ActionManager:
     def __init__(self, party):
         self.party = party
-        # self.effect_id_counter = 0  # 고유 effect id (삭제)
 
     def init_simulation(self):
         # Priority queue for actions (sorted by time)
         self.action_queue = []
         
         # Pending effect queue for delayed effects (sorted by time)
-        self.pending_effect_queue = []  # (effect_time, action)
+        self.pending_effect_queue = []  # (execution_time, action)
         
         # Index for fast lookup of actions by various criteria
         self.actions_by_hero = defaultdict(list)  # hero_id -> list of actions
         self.actions_by_movement = defaultdict(list)  # movement_type -> list of actions
         self.actions_by_type = defaultdict(list)  # action_type -> list of actions
-        # self.effect_id_counter = 0 (삭제)
 
-    def update_next_update(self, time=None):
+    def update_next_update(self):
         next_action_time = self.action_queue[0][0] if self.action_queue else float('inf')
         next_effect_time = self.pending_effect_queue[0][0] if self.pending_effect_queue else float('inf')
         next_time = min(next_action_time, next_effect_time)
-        self.party.next_update[9] = next_time
+        self.party.next_update[9] = next_time if next_time == float('inf') else round(next_time)
 
-    def add_action_reserv(self, action_tuple):
+    def add_action_reserv(self, time, action):
         """
         Add a reservation for the action.
         Also index the action for fast lookup.
         """
-        # action_tuple: (time, delay, action)
+        action_tuple = (round(time), action)
         insort(self.action_queue, action_tuple)
         self.update_next_update()
-        _, _, action = action_tuple
+        
         self.actions_by_hero[action.hero.party_idx].append(action_tuple)
         if action.source_movement:
             self.actions_by_movement[action.source_movement].append(action_tuple)
         self.actions_by_type[action.action_type].append(action_tuple)
 
-    def add_pending_effect(self, effect_time, action, delay=0):
-        insort(self.pending_effect_queue, (effect_time, delay, action))
+    def add_pending_effect(self, base_time, action, delay=0):
+        """
+        Add a pending effect to the queue.
+        The effect will be executed at base_time + delay.
+        """
+        execution_time = round(base_time + delay * SEC_TO_MS)
+        insort(self.pending_effect_queue, (execution_time, action))
         self.update_next_update()
 
     def resolve_all_actions(self, current_time):
@@ -51,16 +55,16 @@ class ActionManager:
         action_queue와 pending_effect_queue를 모두 한 번에 처리한다.
         """
         while self.action_queue and self.action_queue[0][0] <= current_time:
-            time, delay, action = self.action_queue.pop(0)
-            self._remove_from_indices((time, delay, action))
+            time, action = self.action_queue.pop(0)
+            self._remove_from_indices((time, action))
             action.action_fn(time)
         while self.pending_effect_queue and self.pending_effect_queue[0][0] <= current_time:
-            effect_time, delay, action = self.pending_effect_queue.pop(0)
-            action.action_fn(effect_time)
+            execution_time, action = self.pending_effect_queue.pop(0)
+            action.action_fn(execution_time)
         self.update_next_update()
     
     def _remove_from_indices(self, action_tuple):
-        _, _, action = action_tuple
+        _, action = action_tuple
         self.actions_by_hero[action.hero.party_idx].remove(action_tuple)
         if action.source_movement:
             self.actions_by_movement[action.source_movement].remove(action_tuple)

@@ -61,7 +61,7 @@ class PageDps1(Ui_page_dps_1, QWidget):
                     hero_name = cell.hero_select.currentText()
                     hero_id = hero_name_to_id[hero_name]
                     hero_name_en = hero_id_to_meta[hero_id]["name_en"]
-                    hero_cls = self.dynamic_import(f"db/dps/hero/{hero_name_en}.py")
+                    hero_cls = self.dynamic_import(f"src/dps/heroes/{hero_name_en}.py")
                     hero = hero_cls({
                         "aside_level": 0,
                         "lowerskill_level": 13,
@@ -69,7 +69,7 @@ class PageDps1(Ui_page_dps_1, QWidget):
                         "atk": 100.,
                     })
                     party.add_hero(hero, pos_idx*3 + idx - 1)
-        hero_name_to_dmg = party.run(240, 100)
+        hero_name_to_dmg = party.run(240, 1)
         
         self.graph_window.showGraph(hero_name_to_dmg)
 

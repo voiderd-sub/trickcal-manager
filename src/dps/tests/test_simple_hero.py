@@ -1,0 +1,520 @@
+import pytest
+import pandas as pd
+from dps.party import Party
+from dps.hero import Hero
+from dps.enums import MovementType, DamageType, SEC_TO_MS
+from dps.action import InstantAction, ProjectileAction, StatusAction
+from dps.status import BuffAttackSpeed, BuffAmplify
+
+
+class SimpleHero(Hero):
+    BASIC_DMG = 1
+    lowerskill_value = [1000] * 13
+    upperskill_value = [1000000] * 13
+
+    def __init__(self, name="SimpleHero"):
+        info = {
+            "name": name,
+            "name_kr": name,
+            "atk": 100,
+            "init_sp": 0,
+            "max_sp": 100,
+            "sp_per_aa": 0,
+            "sp_recovery_rate": 10,
+            "attack_speed": 300,
+            "lowerskill_level": 1,
+            "upperskill_level": 1,
+            "aside_level": 0,
+            "upper_skill_cd": 30,
+        }
+        super().__init__(info)
+        self.motion_time = {
+            MovementType.AutoAttackBasic: 1,
+            MovementType.AutoAttackEnhanced: 1,
+            MovementType.LowerSkill: 2,
+            MovementType.UpperSkill: 3,
+        }
+
+    def BasicAttack(self, t):
+        action = InstantAction(self, SimpleHero.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
+        motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
+        self.reserv_action(action, t + 0.5 * motion_time)
+        return motion_time
+
+    def LowerSkill(self, t):
+        action = ProjectileAction(self, SimpleHero.lowerskill_value[self.lowerskill_level], 1.5, MovementType.LowerSkill, DamageType.LowerSkill)
+        motion_time = self.get_motion_time(MovementType.LowerSkill)
+        self.reserv_action(action, t + 0.5 * motion_time)
+        return motion_time
+
+    def UpperSkill(self, t):
+        action = InstantAction(self, SimpleHero.upperskill_value[self.upperskill_level], MovementType.UpperSkill, DamageType.UpperSkill)
+        motion_time = self.get_motion_time(MovementType.UpperSkill)
+        self.reserv_action(action, t + 0.5 * motion_time)
+        return motion_time
+
+
+@pytest.fixture
+def default_settings():
+    party = Party()
+    hero = SimpleHero("TestHero")
+    party.add_hero(hero, 0)
+    return party
+
+
+def test_simple_hero_movement_timing(default_settings):
+    """
+    Basic test for SimpleHero's movement timing.
+    It checks if the movement timing and count are consistent with the theoretical values.
+    """
+    party = default_settings
+    hero = party.character_list[0]
+    
+    party.run(max_t=60, num_simulation=1)
+
+    movement_times = [(round(time/SEC_TO_MS), movement) for time, movement in hero.movement_log]
+
+    expected_basic_times = [0,1,2,3,4,5,6,7,8,9, 12,13,14, 16,17,18,19,20,21, 24,25,26,27,28,29, 32,33,34,35,36,37,38,39,40,41, 44,45, 47,48,49, 52,53,54,55,56,57]
+    expected_lower_times = [10, 25, 37, 52]
+    expected_upper_times = [15, 45]
+
+    actual_basic_times = [time for time, movement in movement_times if movement == MovementType.AutoAttackBasic]
+    actual_lower_times = [time for time, movement in movement_times if movement == MovementType.LowerSkill]
+    actual_upper_times = [time for time, movement in movement_times if movement == MovementType.UpperSkill]
+    
+    print(f"기본공격 시점:")
+    print(f"  예상: {expected_basic_times[:10]}... (총 {len(expected_basic_times)}개)")
+    print(f"  실제: {actual_basic_times[:10]}... (총 {len(actual_basic_times)}개)")
+    
+    print(f"저학년 스킬 시점:")
+    print(f"  예상: {expected_lower_times}")
+    print(f"  실제: {actual_lower_times}")
+    
+    print(f"고학년 스킬 시점:")
+    print(f"  예상: {expected_upper_times}")
+    print(f"  실제: {actual_upper_times}")
+    
+    assert abs(len(actual_basic_times) - len(expected_basic_times)) <= 2, \
+        f"기본공격 횟수 불일치: 예상 {len(expected_basic_times)}, 실제 {len(actual_basic_times)}"
+    
+    assert len(actual_lower_times) == len(expected_lower_times), \
+        f"저학년 스킬 횟수 불일치: 예상 {len(expected_lower_times)}, 실제 {len(actual_lower_times)}"
+    
+    assert len(actual_upper_times) == len(expected_upper_times), \
+        f"고학년 스킬 횟수 불일치: 예상 {len(expected_upper_times)}, 실제 {len(actual_upper_times)}"
+    
+    for expected, actual in zip(expected_lower_times, actual_lower_times):
+        assert abs(actual - expected) <= 0.1, \
+            f"저학년 스킬 시점 불일치: 예상 {expected}초, 실제 {actual}초"
+    
+    for expected, actual in zip(expected_upper_times, actual_upper_times):
+        assert abs(actual - expected) <= 0.1, \
+            f"고학년 스킬 시점 불일치: 예상 {expected}초, 실제 {actual}초"
+
+
+def test_simple_hero_with_sp_per_aa():
+    """
+    Test SimpleHero with sp_per_aa = 10.
+    Basic attacks should give 10 SP each, making lower skill usage more frequent.
+    """
+    # Create party with SimpleHero that has sp_per_aa = 10
+    party = Party()
+    hero = SimpleHero("TestHeroSP")
+    hero.sp_per_aa = 10  # Override sp_per_aa to 10
+    hero.motion_time[MovementType.AutoAttackBasic] = 1
+    party.add_hero(hero, 0)
+    
+    # Run 60 second simulation
+    party.run(max_t=60, num_simulation=1)
+    
+    movement_times = [(round(time/SEC_TO_MS), movement) for time, movement in hero.movement_log]
+    
+    # Calculate expected times with sp_per_aa = 10
+    # SP recovery: 10 per second (time) + 10 per basic attack = 20 per second total
+    # Lower skill every 5 seconds (100 SP / 20 per second)
+    # But need to account for skill usage time and upper skill interference
+    
+    # Expected pattern:
+    # Basic attacks: 0,1,2,3,4, 7,8,9,10,11, 14, 18,19,20, 23,24,25,26,27, 30,31,32,33,34, 37,38,39,40,41, 44,45,46,47,48, 51,52,53,54,55, 58,59,60
+    # Lower skills: 5, 12, 21, 30, 39, 48, 57 (every ~5 seconds)
+    # Upper skills: 15, 45 (first at 15s, then every 30s)
+    
+    expected_basic_times = [0,1,2,3,4, 7,8,9,10,11, 14,18,19,20,21, 24,25,26,27,28, 31,32,33,34,35, 38,39,40,41,42, 48,49,50,51,52,55,56,57,58,59]
+    expected_lower_times = [5, 12, 22, 29, 36, 43, 53]
+    expected_upper_times = [15, 45]
+    
+    actual_basic_times = [time for time, movement in movement_times if movement == MovementType.AutoAttackBasic]
+    actual_lower_times = [time for time, movement in movement_times if movement == MovementType.LowerSkill]
+    actual_upper_times = [time for time, movement in movement_times if movement == MovementType.UpperSkill]
+    
+    print(f"SP per AA = 10 테스트 결과:")
+    print(f"기본공격 시점: {actual_basic_times[:10]}... (총 {len(actual_basic_times)}개)")
+    print(f"저학년 스킬 시점: {actual_lower_times}")
+    print(f"고학년 스킬 시점: {actual_upper_times}")
+    
+    # Verify counts
+    assert abs(len(actual_basic_times) - len(expected_basic_times)) <= 2, \
+        f"기본공격 횟수 불일치: 예상 {len(expected_basic_times)}, 실제 {len(actual_basic_times)}"
+    
+    assert len(actual_lower_times) == len(expected_lower_times), \
+        f"저학년 스킬 횟수 불일치: 예상 {len(expected_lower_times)}, 실제 {len(actual_lower_times)}"
+    
+    assert len(actual_upper_times) == len(expected_upper_times), \
+        f"고학년 스킬 횟수 불일치: 예상 {len(expected_upper_times)}, 실제 {len(actual_upper_times)}"
+    
+    # Verify timing
+    for expected, actual in zip(expected_lower_times, actual_lower_times):
+        assert abs(actual - expected) <= 0.1, \
+            f"저학년 스킬 시점 불일치: 예상 {expected}초, 실제 {actual}초"
+    
+    for expected, actual in zip(expected_upper_times, actual_upper_times):
+        assert abs(actual - expected) <= 0.1, \
+            f"고학년 스킬 시점 불일치: 예상 {expected}초, 실제 {actual}초"
+    
+    print("✅ SP per AA = 10 테스트 통과!")
+
+
+def test_projectile_action(default_settings):
+    """
+    Test ProjectileAction.
+    LowerSkill uses ProjectileAction with 1.5s delay.
+    Simulate for 13s, check if the projectile hits at the correct time.
+    """
+    party = default_settings
+    hero = party.character_list[0]
+    
+    # LowerSkill motion time is 2s.
+    # It will be used at t=10s.
+    # The action is reserved at t=10 + 0.5 * 2 = 11s.
+    # The projectile has a 1.5s delay, so it should hit at 11s + 1.5s = 12.5s.
+    
+    party.run(max_t=13, num_simulation=1)
+    
+    records = []
+    print(hero.damage_records)
+    for damage_type, damage_list in hero.damage_records.items():
+        print(damage_type)
+        for time, damage in damage_list:
+            records.append({"Time": time, "Damage": damage, "DamageType": damage_type})
+    
+    print(records)
+    damage_log = pd.DataFrame(records)
+
+    lower_skill_damage = damage_log[damage_log["DamageType"] == "LowerSkill"]
+
+    print("LowerSkill Damage: ", lower_skill_damage)
+    
+    print("\nProjectile Action Test:")
+    print(damage_log)
+
+    assert len(lower_skill_damage) == 1, "저학년 스킬 데미지가 한 번만 기록되어야 합니다."
+    
+    hit_time = lower_skill_damage["Time"].iloc[0]
+    expected_hit_time = 12.5
+    
+    print(f"예상 적중 시간: {expected_hit_time}s, 실제 적중 시간: {hit_time}s")
+    
+    assert abs(hit_time - expected_hit_time) <= 0.1, \
+        f"투사체 적중 시간 불일치: 예상 {expected_hit_time}ms, 실제 {hit_time}ms"
+    
+    print("✅ Projectile Action 테스트 통과!")
+
+
+def test_chained_actions():
+    """
+    하나의 movement에 여러 action이 포함된 경우, 모두 정상적으로 실행되는지 테스트한다.
+    기본 공격에 instant action과 projectile action을 모두 포함시킨다.
+    """
+    class ChainedAttackHero(SimpleHero):
+        def BasicAttack(self, t):            
+            motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
+            action1 = InstantAction(self, SimpleHero.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
+            action2 = ProjectileAction(self, SimpleHero.BASIC_DMG * 0.5, 0.5, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
+
+            action_chain = [
+                (action1, t + 0.3 * motion_time),
+                (action2, t + 0.7 * motion_time)
+            ]
+            self.reserv_action_chain(action_chain)
+            
+            return motion_time
+
+    party = Party()
+    hero = ChainedAttackHero("ChainedHero")
+    party.add_hero(hero, 0)
+    
+    party.run(max_t=5, num_simulation=1)
+
+    records = []
+    for damage_type, damage_list in hero.damage_records.items():
+        for time, damage in damage_list:
+            records.append({"Time": time, "Damage": damage, "DamageType": damage_type})
+    
+    damage_log = pd.DataFrame(records).sort_values(by="Time").reset_index(drop=True)
+    
+    # 예상 결과 계산
+    # BasicAttack 모션 시간 = 1초
+    # BasicAttack 시작 시간: 0, 1, 2, 3, 4초
+    # InstantAction 실행 시간 = 시작 시간 + 0.3초
+    # ProjectileAction 실행 시간 = 시작 시간 + 0.7초 + 0.5초
+    expected_times = []
+    for i in range(5):
+        t_base = i
+        expected_times.append(t_base + 0.3)  # Instant
+        expected_times.append(t_base + 0.7 + 0.5)  # Projectile
+    
+    expected_times.sort()
+
+    # remove if t>=5000
+    expected_times = [t for t in expected_times if t < 5]
+    
+    print("\nChained Action Test:")
+    print(damage_log)
+    
+    assert len(damage_log) == len(expected_times), f"기록된 데미지 개수 불일치: 예상 {len(expected_times)}, 실제 {len(damage_log)}"
+    
+    for i, expected_time in enumerate(expected_times):
+        actual_time = damage_log["Time"].iloc[i]
+        assert abs(actual_time - expected_time) <= 1, f"데미지 발생 시간 불일치 (인덱스 {i}): 예상 {expected_time}, 실제 {actual_time}"
+
+    print("✅ Chained Action 테스트 통과!")
+   
+
+
+def test_attack_speed_buff():
+    """
+    LowerSkill 사용 시 5초간 공격속도 100% 증가 버프가 적용되는지 테스트한다.
+    """
+    class BuffHero(SimpleHero):
+        def LowerSkill(self, t):
+            motion_time = self.get_motion_time(MovementType.LowerSkill)
+            
+            # 5초 지속, 공격속도 100% 증가 버프 생성
+            buff = BuffAttackSpeed(
+                status_id="AttackSpeedBuff_Test",
+                caster=self,
+                target=[self.party_idx],
+                duration=5,     # 내부적으로 SEC_TO_MS 곱하므로, 여기선 곱하지 않아야 함
+                value=100
+            )
+            
+            # Movement 90% 시점에 StatusAction 예약
+            action = StatusAction(self, buff, MovementType.LowerSkill, None)
+            self.reserv_action(action, t + 0.9 * motion_time)
+            
+            return motion_time
+
+    party = Party()
+    hero = BuffHero("BuffHero")
+    hero.upper_skill_cd = 1000000   # Do not consider upper skill
+    party.add_hero(hero, 0)
+
+    # 22초간 시뮬레이션 실행
+    party.run(max_t=22, num_simulation=1)
+
+    # 결과 분석
+    print(hero.movement_log)
+    movement_log = hero.movement_log
+    basic_attacks = [t/SEC_TO_MS for t, m in movement_log if m == MovementType.AutoAttackBasic]
+    lower_skill_time = [t/SEC_TO_MS for t, m in movement_log if m == MovementType.LowerSkill][0]
+
+    # LowerSkill 모션 시간(2초), 액션 예약 시점(90%)을 고려한 버프 시작/종료 시간
+    buff_start_time = lower_skill_time + (hero.get_motion_time(MovementType.LowerSkill) * 0.9) / SEC_TO_MS
+    buff_end_time = buff_start_time + 5
+
+    # 버프 적용 전/중/후 기본공격 횟수 카운트
+    attacks_before_buff = [t for t in basic_attacks if t < buff_start_time]
+    attacks_during_buff = [t for t in basic_attacks if buff_start_time <= t < buff_end_time]
+    attacks_after_buff = [t for t in basic_attacks if t >= buff_end_time]
+
+    # 예상 공격 주기
+    # 기본 공격 주기: 1초 (aa_cd = 300*1000 / 300 = 1000ms)
+    # 버프 중 공격 주기: 0.5초 (aa_cd = 300*1000 / (1 * 2 * 300) = 500ms) - 가속 미적용
+
+    print("\nAttack Speed Buff Test:")
+    print(f"저학년 스킬 사용 시간: {lower_skill_time}초")
+    print(f"예상 버프 시작 시간: {buff_start_time:.2f}초, 종료 시간: {buff_end_time:.2f}초")
+    print(f"버프 전 기본공격 횟수: {len(attacks_before_buff)} (구간: 0~{buff_start_time:.2f}초)")
+    print(f"버프 중 기본공격 횟수: {len(attacks_during_buff)} (구간: {buff_start_time:.2f}~{buff_end_time:.2f}초)")
+    print(f"버프 후 기본공격 횟수: {len(attacks_after_buff)} (구간: {buff_end_time:.2f}~22초)")
+
+    # 검증: 버프 구간의 공격 빈도가 다른 구간보다 확연히 높아야 함
+    density_before = (attacks_before_buff[-1] - attacks_before_buff[0]) / (len(attacks_before_buff)-1) if len(attacks_before_buff) > 1 else float('inf')
+    density_during = (attacks_during_buff[-1] - attacks_during_buff[0]) / (len(attacks_during_buff)-1) if len(attacks_during_buff) > 1 else float('inf')
+    density_after = (attacks_after_buff[-1] - attacks_after_buff[0]) / (len(attacks_after_buff)-1) if len(attacks_after_buff) > 1 else float('inf')
+    
+    print(f"버프 전 공격 간격: {density_before:.2f}초/회")
+    print(f"버프 중 공격 간격: {density_during:.2f}초/회")
+    print(f"버프 후 공격 간격: {density_after:.2f}초/회")
+
+    assert density_during < density_before, "버프 중 공격 빈도가 버프 전보다 높아야 합니다."
+    assert density_during < density_after, "버프 중 공격 빈도가 버프 후보다 높아야 합니다."
+    assert abs(density_during - 0.5) < 0.1, "버프 중 공격 주기가 예상과 다릅니다."
+    assert abs(density_after - 1.0) < 0.1, "버프 종료 후 공격 주기가 원래대로 돌아와야 합니다."
+
+
+@pytest.mark.parametrize(
+    "amplify_type, amplify_value",
+    [
+        (DamageType.UpperSkill, 50),
+        (DamageType.AutoAttackBasic, 30),
+        (DamageType.Skill, 40),
+        (DamageType.ALL, 20),
+    ]
+)
+def test_amplify_buff(amplify_type, amplify_value):
+    """
+    LowerSkill 사용 시 적용되는 BuffAmplify가 다양한 DamageType에 대해
+    정확한 증폭률로, 정확한 시간동안 적용되는지 테스트한다.
+    - Test Scenarios:
+      - 특정 스킬(UpperSkill) 증폭
+      - 특정 공격(AutoAttackBasic) 증폭
+      - 상위 카테고리(Skill) 증폭
+      - 전체(ALL) 증폭
+    """
+    BUFF_DURATION = 5  # seconds
+    SIMULATION_TIME = 30 # seconds
+
+    # IntFlag(DamageType)의 값을 사람이 읽을 수 있는 문자열로 변환 (조합형도 지원)
+    if hasattr(amplify_type, 'name') and amplify_type.name is not None:
+        str_amplify_type = amplify_type.name
+    else:
+        # 여러 플래그가 조합된 경우, leaf type만 추출해서 이름을 합침
+        str_amplify_type = "|".join([dt.name for dt in DamageType.get_leaf_members(amplify_type)])
+
+    class AmplifyHero(SimpleHero):
+        BASIC_DMG = 100
+        UPPER_SKILL_DMG = 1000
+        
+        def __init__(self, name="AmplifyHero"):
+            super().__init__(name)
+            self.upper_skill_cd = 20
+            self.sp_per_aa = 0
+            self.sp_recovery_rate = 10
+
+        def BasicAttack(self, t):
+            action = InstantAction(self, self.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
+            motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
+            self.reserv_action(action, t + 0.5 * motion_time)
+            return motion_time
+
+        def UpperSkill(self, t):
+            action = InstantAction(self, self.UPPER_SKILL_DMG, MovementType.UpperSkill, DamageType.UpperSkill)
+            motion_time = self.get_motion_time(MovementType.UpperSkill)
+            self.reserv_action(action, t + 0.5 * motion_time)
+            return motion_time
+        
+        def LowerSkill(self, t):
+            motion_time = self.get_motion_time(MovementType.LowerSkill)
+            buff = BuffAmplify(
+                status_id=f"AmplifyBuff_{str_amplify_type}",
+                caster=self,
+                target=[self.party_idx],
+                duration=BUFF_DURATION,
+                value=amplify_value,
+                applying_dmg_type=amplify_type
+            )
+            action = StatusAction(self, buff, MovementType.LowerSkill, None)
+            self.reserv_action(action, t + 0.9 * motion_time)
+            # LowerSkill itself does no damage in this test
+            return motion_time
+
+    # --- Simulation Setup ---
+    party = Party()
+    hero = AmplifyHero()
+    # Put UpperSkill on cooldown at the start to ensure LowerSkill is used first
+    party.add_hero(hero, 0)
+    
+    party.run(max_t=SIMULATION_TIME, num_simulation=1)
+
+    print(hero.movement_log)
+
+    # --- Result Analysis ---
+    try:
+        lower_skill_time = [round(t)/SEC_TO_MS for t, m in hero.movement_log if m == MovementType.LowerSkill]
+    except IndexError:
+        assert False, "LowerSkill was not used during the simulation."
+
+    buff_start_time = [i + hero.get_motion_time(MovementType.LowerSkill) * 0.9 / SEC_TO_MS for i in lower_skill_time]
+    buff_end_time = [i + BUFF_DURATION for i in buff_start_time]
+
+    records = []
+    for damage_src, damage_list in hero.damage_records.items():
+        try:
+            damage_type_enum = DamageType[damage_src]
+        except KeyError:
+            continue # Skip if damage_src is not in DamageType enum
+        for time, damage in damage_list:
+            records.append({"Time": time, "Damage": damage, "DamageType": damage_type_enum})
+    
+    if not records:
+        assert False, "No damage was recorded during the simulation."
+
+    damage_log = pd.DataFrame(records).sort_values(by="Time").reset_index(drop=True)
+
+    def is_buffed(time):
+        for start, end in zip(buff_start_time, buff_end_time):
+            if start <= time < end:
+                return True
+        return False
+
+    damage_log["Buffed"] = damage_log["Time"].apply(is_buffed)
+
+    print(f"\n--- Testing AmplifyBuff: amplify_type={str_amplify_type}, value={amplify_value}% ---")
+    for start, end in zip(buff_start_time, buff_end_time):
+        print(f"Buff active from {start:.3f}s to {end:.3f}s")
+    print(damage_log)
+
+    # --- Verification ---
+    assert not damage_log.empty, "Damage log should not be empty."
+    prev_damage = dict()
+    for _, row in damage_log.iterrows():
+        damage_type_enum = row["DamageType"]
+        if damage_type_enum not in prev_damage:
+            prev_damage[damage_type_enum] = 0
+
+        base_damage = prev_damage[damage_type_enum]
+
+        if damage_type_enum == DamageType.AutoAttackBasic:
+            base_damage = AmplifyHero.BASIC_DMG * 0.8
+        elif damage_type_enum == DamageType.UpperSkill:
+            base_damage = AmplifyHero.UPPER_SKILL_DMG * 0.8
+        else:
+            continue
+
+        is_amplified = False
+        if row["Buffed"]:
+            if amplify_type == DamageType.ALL:
+                is_amplified = True
+            elif amplify_type == DamageType.Skill and damage_type_enum in (DamageType.LowerSkill, DamageType.UpperSkill, DamageType.AsideSkill):
+                is_amplified = True
+            elif amplify_type == damage_type_enum:
+                is_amplified = True
+            
+        expected_damage = base_damage
+        if is_amplified:
+            expected_damage *= (1 + amplify_value / 100)
+
+        actual_damage = row["Damage"]
+        prev_damage_this_time = prev_damage[damage_type_enum]
+        prev_damage[damage_type_enum] = actual_damage
+        actual_damage -= prev_damage_this_time
+        if hasattr(damage_type_enum, 'name') and damage_type_enum.name is not None:
+            str_damage_type = damage_type_enum.name
+        else:
+            str_damage_type = "|".join([dt.name for dt in DamageType.get_leaf_members(damage_type_enum)])
+        print(f"damage_type: {str_damage_type}, prev_damage_this_time: {prev_damage_this_time}, actual_damage: {actual_damage}")
+        
+        assert actual_damage == pytest.approx(expected_damage), (
+            f"Damage mismatch at t={row['Time']:.3f}s for {str_damage_type}. "
+            f"Expected: {expected_damage}, Got: {actual_damage}. Buff active: {row['Buffed']}"
+        )
+    
+    print(f"✅ AmplifyBuff Test Passed for amplify_type={str_amplify_type}")
+
+
+if __name__ == "__main__":
+    test_simple_hero_movement_timing(default_settings())
+    test_projectile_action(default_settings())
+    test_chained_actions()
+    test_attack_speed_buff()
