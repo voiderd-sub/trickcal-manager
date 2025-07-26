@@ -70,6 +70,8 @@ class Party:
             while self.current_time < int(max_t * SEC_TO_MS):
                 all_min_indices = np.where(self.next_update == self.current_time)[0]
 
+                print("party.current_time", self.current_time, all_min_indices)
+    
                 # TODO : Use Upper skill
                 
                 for idx in all_min_indices:

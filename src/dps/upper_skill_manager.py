@@ -36,15 +36,28 @@ class UpperSkillManager:
         
         # Pop the highest priority hero
         _, hero_id = self.request_queue.pop(0)
-
-        # Activate hero's upper skill
         hero = self.party.character_list[hero_id]
+        rule = hero.upper_skill_rule
+
+        # Cancel current action if the rule says so
+        if rule.cancel_current_movement:
+            self.party.action_manager.cancel_actions_by_hero(hero_id)
+
+        # Activate hero's upper skill flag
         hero.upper_skill_flag = True
-        self.party.next_update[hero_id] = current_time # Wake up hero to cast skill immediately
+        
+        # Decide when the hero should act next
+        is_busy = hero.last_movement != MovementType.Wait
+        
+        if not is_busy or rule.cancel_current_movement:
+            # Wake up hero to cast skill immediately if they are not busy,
+            # or if their action was just cancelled.
+            self.party.next_update[hero_id] = current_time
+        # Otherwise, if the hero is busy and the rule is to wait,
+        # do nothing and let the hero finish their current action.
 
-        # Set global lock
-        self.party.next_update[11] = current_time + GLOBAL_UPPER_SKILL_LOCK_MS
-
-        # If queue is empty, sleep until new request
-        if not self.request_queue:
+        # Set global lock for the next request
+        if self.request_queue:
+            self.party.next_update[11] = current_time + GLOBAL_UPPER_SKILL_LOCK_MS
+        else:
             self.party.next_update[11] = np.inf 

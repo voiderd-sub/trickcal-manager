@@ -52,6 +52,7 @@ class Hero:
         self.last_movement_time = 0
         self.upper_skill_flag = False
         self.upper_skill_rule = None
+        self.next_t_without_interrupt = 0
         if not hasattr(self, "atk"):
             self.atk = 100
         self.amplify_dict = {dt: 1.0 for dt in DamageType.leaf_types()}
@@ -104,6 +105,13 @@ class Hero:
     def choose_movement(self):
         if self.upper_skill_flag:
             return MovementType.UpperSkill
+        
+        # Rare case: dt = upper_skill_cd in the previous step
+        # Use the if statement below to use UpperSkill first
+        can_cast_upper = self.upper_skill_rule and self.upper_skill_rule.should_request(self)
+        if self.upper_skill_timer == 0 and can_cast_upper:
+            return MovementType.Wait
+
         if self.sp == self.max_sp:
             return MovementType.LowerSkill
         elif self.aa_timer == 0:
@@ -134,22 +142,37 @@ class Hero:
         self.last_updated = t
 
     def step(self, t):
+        if self.next_t_without_interrupt:
+            return_value = self.next_t_without_interrupt
+            self.next_t_without_interrupt = 0
+            self.update(t)
+            return return_value
+
         self.update(t)
         movement = self.choose_movement()
-        match movement:
-            case MovementType.AutoAttackBasic | MovementType.AutoAttackEnhanced:
-                self.aa_timer = self.aa_cd
-            case MovementType.LowerSkill:
-                self.sp = 0
-            case MovementType.UpperSkill:
-                self.upper_skill_timer = round(self.upper_skill_cd * SEC_TO_MS)
-                self.upper_skill_flag = False
-            case MovementType.Wait:
-                wait_time = min(SP_INTERVAL - self.sp_timer, self.aa_timer, self.upper_skill_timer)
-                dt = max(1, round(wait_time))
-        if movement != MovementType.Wait:
+        
+        if movement == MovementType.Wait:
+            wait_time = min(SP_INTERVAL - self.sp_timer, self.aa_timer, self.upper_skill_timer)
+            dt = max(1, round(wait_time))
+        else:
+            # Start the movement and get its full duration
+            match movement:
+                case MovementType.AutoAttackBasic | MovementType.AutoAttackEnhanced:
+                    self.aa_timer = self.aa_cd
+                case MovementType.LowerSkill:
+                    self.sp = 0
+                case MovementType.UpperSkill:
+                    self.upper_skill_timer = round(self.upper_skill_cd * SEC_TO_MS)
+                    self.upper_skill_flag = False
+            
             dt = round(self.do_movement(movement, t))
             self.movement_timestamps[movement].append(round(t) / SEC_TO_MS)
+            
+            # Decide the actual time step
+            if self.upper_skill_timer < dt:
+                self.next_t_without_interrupt = t + dt
+                dt = self.upper_skill_timer
+
         self.last_movement = movement
         self.movement_log.append((t, movement))
         return t + dt

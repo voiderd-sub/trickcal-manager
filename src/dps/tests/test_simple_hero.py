@@ -26,7 +26,7 @@ class SimpleHero(Hero):
             "lowerskill_level": 1,
             "upperskill_level": 1,
             "aside_level": 0,
-            "upper_skill_cd": 30,
+            "upper_skill_cd": 29.998,
         }
         super().__init__(info)
         self.motion_time = {
@@ -84,8 +84,8 @@ def test_simple_hero_movement_timing(default_settings):
     actual_upper_times = [time for time, movement in movement_times if movement == MovementType.UpperSkill]
     
     print(f"기본공격 시점:")
-    print(f"  예상: {expected_basic_times[:10]}... (총 {len(expected_basic_times)}개)")
-    print(f"  실제: {actual_basic_times[:10]}... (총 {len(actual_basic_times)}개)")
+    print(f"  예상: {expected_basic_times}... (총 {len(expected_basic_times)}개)")
+    print(f"  실제: {actual_basic_times}... (총 {len(actual_basic_times)}개)")
     
     print(f"저학년 스킬 시점:")
     print(f"  예상: {expected_lower_times}")
@@ -619,6 +619,9 @@ def test_dynamic_priority_and_rules():
     hero0_casts = [t for t, m in heroes[0].movement_log if m == MovementType.UpperSkill]
     hero1_casts = [round(t) for t, m in heroes[1].movement_log if m == MovementType.UpperSkill]
     hero2_casts = [round(t) for t, m in heroes[2].movement_log if m == MovementType.UpperSkill]
+
+    print(heroes[1].movement_log)
+    print(heroes[2].movement_log)
     
     print("\n--- Dynamic Priority and Rules Test ---")
     print(f"Hero0 ({rules[0].__class__.__name__}, Prio {priorities[0]}) Casts: {hero0_casts}")
@@ -642,6 +645,91 @@ def test_dynamic_priority_and_rules():
     print("✅ Dynamic Priority and Rules Test Passed!")
 
 
+def test_upper_skill_interrupt():
+    """
+    Tests if the upper skill correctly interrupts (cancels) ongoing movements.
+    - BasicAttack and LowerSkill have a very long motion time (5s, 1000s).
+    - UpperSkill has a short cooldown (5s) and is set to cancel current movements.
+    - Expected: Basic/Lower skills start but are immediately cancelled by the UpperSkill.
+      No damage from Basic/Lower should be recorded.
+    """
+    class LongMotionHero(SimpleHero):
+        def __init__(self, name="LongMotionHero"):
+            super().__init__(name)
+            self.upper_skill_cd = 5
+            self.sp_recovery_rate = 20 # Faster SP recovery to trigger LowerSkill
+            self.motion_time[MovementType.AutoAttackBasic] = 5
+            self.motion_time[MovementType.LowerSkill] = 1000
+            self.attack_speed = round(300/5)
+        
+        # change basic attack hit time 0.5 to 0.6;
+        # If this value is set to 50%, it becomes complicated
+        # because basic attack action time = upper skill cooldown time.
+        def BasicAttack(self, t):
+            action = InstantAction(self, self.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
+            motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
+            self.reserv_action(action, t + 0.6 * motion_time)
+            return motion_time
+
+    party = Party()
+    hero = LongMotionHero()
+    rules = [CooldownReadyCondition(cancel_current_movement=True)] + [None] * 8
+    party.add_hero(hero, 0)
+
+    party.run(max_t=18, num_simulation=1, rules=rules)
+
+
+    # --- Analysis ---
+    movement_log = hero.movement_log
+    
+    print("\n--- Upper Skill Interrupt Test ---")
+    print("Movement Log:", movement_log)
+
+    # 1. Check movement pattern: UpperSkill should follow Basic/Lower
+    # First upper skill at 2.5s (5s * 0.5)
+    # At t=0, BasicAttack starts. At t=2.5s, it's interrupted by UpperSkill. SP timer has elapsed 2.5s.
+    # After UpperSkill (3s duration), t=5.5s.
+    # At t=5.5s, BasicAttack cooltime becomes 0. So BasicAttack starts.
+    # At t=7.5s, UpperSkill CD is ready. So UpperSkill starts. BasicAttack is interrupted.
+    # SP timer has elapsed 2.5s + 2s = 4.5s.
+    # At t=10.5s, UpperSkill ends, and BasicAttack cooltime becomes 0. So BasicAttack starts.
+    # And at t=11s, SP is full. Now LowerSkill is ready.
+    # At t=12.5s, UpperSkill CD is ready. So UpperSkill starts. BasicAttack is interrupted.
+    # At t=15.5s, UpperSkill ends, and LowerSkill starts.
+    # At t=17.5s, UpperSkill is interrupting LowerSkill.
+
+    # So in 18s simulation, expected movements are:
+    expected_movements = [
+        (round(0 * SEC_TO_MS), MovementType.AutoAttackBasic),
+        (round(2.5 * SEC_TO_MS), MovementType.UpperSkill),
+        (round(5.5 * SEC_TO_MS), MovementType.AutoAttackBasic),
+        (round(7.5 * SEC_TO_MS), MovementType.UpperSkill),
+        (round(10.5 * SEC_TO_MS), MovementType.AutoAttackBasic),
+        (round(12.5 * SEC_TO_MS), MovementType.UpperSkill),
+        (round(15.5 * SEC_TO_MS), MovementType.LowerSkill),
+        (round(17.5 * SEC_TO_MS), MovementType.UpperSkill),
+    ]
+    actual_movements = [(t, m) for t, m in movement_log if m != MovementType.Wait]
+
+    print(expected_movements)
+    print(actual_movements)
+    
+    assert actual_movements == expected_movements, \
+        f"Movement pattern mismatch. Expected: {expected_movements}, Got: {actual_movements}"
+
+    # 2. Check damage records: Only UpperSkill damage should exist
+    records = []
+    for damage_src, damage_list in hero.damage_records.items():
+        if damage_list: # Only consider sources with recorded damage
+            records.append(damage_src)
+        
+    print("Recorded Damage Sources:", records)
+    assert len(records) == 1 and records[0] == "UpperSkill", \
+        "Only UpperSkill should have recorded damage. Other movements should be cancelled."
+
+    print("✅ Upper Skill Interrupt Test Passed!")
+
+
 if __name__ == "__main__":
     test_simple_hero_movement_timing(default_settings())
     test_projectile_action(default_settings())
@@ -649,3 +737,4 @@ if __name__ == "__main__":
     test_attack_speed_buff()
     test_global_upper_skill_lock()
     test_dynamic_priority_and_rules()
+    test_upper_skill_interrupt()
