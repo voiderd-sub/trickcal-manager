@@ -2,7 +2,7 @@ from dps.enums import *
 from dps.status_manager import StatusManager
 from dps.action_manager import ActionManager
 from dps.upper_skill_manager import UpperSkillManager
-from dps.skill_conditions import CooldownReadyCondition
+from dps.skill_conditions import CooldownReadyCondition, MovementTriggerCondition
 
 import numpy as np
 import pandas as pd
@@ -23,8 +23,15 @@ class Party:
         self.simulation_result = dict()
         self.damage_records = []
         self.movement_log = []
+        self.next_update = np.full(12, np.inf)       # idx=9:action manager, 10:status manager, 11:upper skill manager
 
         self.active_indices = [i for i, c in enumerate(self.character_list[:9]) if c is not None]
+
+        # Initialize all heroes first, and set their next update time
+        for i in self.active_indices:
+            self.character_list[i].init_simulation()
+            self.next_update[i] = 0
+
         # Set priorities and rules
         self.upper_skill_priorities = [10] * 9
         if priority:
@@ -38,11 +45,24 @@ class Party:
         else:
             self.upper_skill_rules = [CooldownReadyCondition() if c else None for c in self.character_list[:9]]
 
-        self.next_update = np.full(12, np.inf)       # idx=9:action manager, 10:status manager, 11:upper skill manager
-        for i in self.active_indices:
-            self.character_list[i].init_simulation()
-            self.character_list[i].set_upper_skill_rule(self.upper_skill_rules[i])
-            self.next_update[i] = 0
+        # Connect movement triggers
+        hero_map = {h.get_unique_name(): h for h in self.character_list if h is not None}
+        for i, rule in enumerate(self.upper_skill_rules):
+            if isinstance(rule, MovementTriggerCondition):
+                target_hero = self.character_list[i]
+                target_hero.set_upper_skill_rule(rule) # Set rule for the target hero
+
+                trigger_hero_name = rule.trigger_hero_unique_name
+                if trigger_hero_name in hero_map:
+                    trigger_hero = hero_map[trigger_hero_name]
+                    trigger_hero.add_movement_trigger(
+                        rule.trigger_movement,
+                        i, # target_hero_id
+                        rule.delay_min_seconds,
+                        rule.delay_max_seconds
+                    )
+            elif self.character_list[i]: # Set rules for non-trigger heroes
+                self.character_list[i].set_upper_skill_rule(rule)
             
         self.status_manager.init_simulation()
         self.action_manager.init_simulation()
@@ -68,25 +88,36 @@ class Party:
         for _ in tqdm(range(num_simulation)):
             self.init_simulation(priority, rules)
             while self.current_time < int(max_t * SEC_TO_MS):
+
+                # print("party.current_time", self.current_time, self.next_update)
+
                 all_min_indices = np.where(self.next_update == self.current_time)[0]
 
-                print("party.current_time", self.current_time, all_min_indices)
-    
-                # TODO : Use Upper skill
-                
+                # --- Step A: Update timers and request skills for all active heroes ---
                 for idx in all_min_indices:
                     if idx < 9:
-                        # Add actions into action queue
                         hero = self.character_list[idx]
-                        new_t = hero.step(self.current_time)
+                        hero.update_timers_and_request_skill(self.current_time)
+
+                all_min_indices = np.where(self.next_update == self.current_time)[0]
+
+                # --- Step B: Managers resolve requests and set flags ---
+                # Run UpperSkillManager first as it can influence other heroes' actions
+                if 11 in all_min_indices:
+                    self.upper_skill_manager.resolve_request(self.current_time)
+                if 9 in all_min_indices:
+                    self.action_manager.resolve_all_actions(self.current_time)
+                if 10 in all_min_indices:
+                    self.status_manager.resolve_status_reserv(self.current_time)
+
+                all_min_indices = np.where(self.next_update == self.current_time)[0]
+
+                # --- Step C: All active heroes choose and execute their movement ---
+                for idx in all_min_indices:
+                    if idx < 9:
+                        hero = self.character_list[idx]
+                        new_t = hero.choose_and_execute_movement(self.current_time)
                         self.next_update[idx] = new_t
-                    elif idx == 9:
-                        # Resolve actions; this includes damage and buff/debuff reservations.
-                        self.action_manager.resolve_all_actions(self.current_time)
-                    elif idx == 10:
-                        self.status_manager.resolve_status_reserv(self.current_time)
-                    else: # 11
-                        self.upper_skill_manager.resolve_request(self.current_time)
                 
                 # Go to next timestep
                 self.current_time = int(self.next_update.min())

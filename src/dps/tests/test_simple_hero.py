@@ -5,7 +5,7 @@ from dps.hero import Hero
 from dps.enums import MovementType, DamageType, SEC_TO_MS
 from dps.action import InstantAction, ProjectileAction, StatusAction
 from dps.status import BuffAttackSpeed, BuffAmplify, target_self
-from dps.skill_conditions import CooldownReadyCondition, NeverCastCondition
+from dps.skill_conditions import CooldownReadyCondition, NeverCastCondition, MovementTriggerCondition
 
 
 class SimpleHero(Hero):
@@ -26,7 +26,7 @@ class SimpleHero(Hero):
             "lowerskill_level": 1,
             "upperskill_level": 1,
             "aside_level": 0,
-            "upper_skill_cd": 29.998,
+            "upper_skill_cd": 30,
         }
         super().__init__(info)
         self.motion_time = {
@@ -730,6 +730,210 @@ def test_upper_skill_interrupt():
     print("✅ Upper Skill Interrupt Test Passed!")
 
 
+def test_movement_trigger_condition():
+    """
+    Tests if MovementTriggerCondition works correctly with global lock.
+    - Hero0 uses LowerSkill, which triggers Hero1 and Hero2's UpperSkill.
+    - Hero1 has higher priority than Hero2.
+    - Expected: Hero1 casts 5s after trigger, Hero2 casts 6s after trigger.
+    """
+    party = Party()
+    heroes = []
+    # Hero0: Trigger
+    hero0 = SimpleHero("Hero0")
+    party.add_hero(hero0, 0)
+    heroes.append(hero0)
+
+    # Hero1, Hero2: Targets
+    for i in range(1, 3):
+        hero = SimpleHero(f"Hero{i}")
+        hero.upper_skill_cd = 5 # Cooldown should be ready before trigger
+        party.add_hero(hero, i)
+        heroes.append(hero)
+
+    priorities = [2, 0, 1] + [10] * 6  # Hero1 > Hero2 > Hero0
+    rules = [
+        CooldownReadyCondition(),
+        MovementTriggerCondition(
+            trigger_hero_unique_name="Hero0_0", 
+            trigger_movement=MovementType.LowerSkill,
+            delay_min_seconds=5,
+            delay_max_seconds=10
+        ),
+        MovementTriggerCondition(
+            trigger_hero_unique_name="Hero0_0",
+            trigger_movement=MovementType.LowerSkill,
+            delay_min_seconds=5,
+            delay_max_seconds=10
+        )
+    ] + [None] * 6
+    
+    party.run(max_t=20, num_simulation=1, priority=priorities, rules=rules)
+
+    # --- Analysis ---
+    hero0_lower_skill_time = [round(t) for t,m in heroes[0].movement_log if m == MovementType.LowerSkill][0]
+    hero1_upper_skill_time = [round(t) for t,m in heroes[1].movement_log if m == MovementType.UpperSkill][0]
+    hero2_upper_skill_time = [round(t) for t,m in heroes[2].movement_log if m == MovementType.UpperSkill][0]
+
+    print("\n--- Movement Trigger Condition Test ---")
+    print(f"Hero0 LowerSkill at: {hero0_lower_skill_time}ms")
+    print(f"Hero1 UpperSkill at: {hero1_upper_skill_time}ms")
+    print(f"Hero2 UpperSkill at: {hero2_upper_skill_time}ms")
+
+    # Hero0 uses LowerSkill at t=10s (10000ms)
+    # Hero1 (prio 0) should cast at 10000 + 5000 = 15000ms
+    # Hero2 (prio 1) should cast at 15000 + 1000ms (global lock) = 16000ms
+    expected_hero1_time = hero0_lower_skill_time + 5 * SEC_TO_MS
+    expected_hero2_time = expected_hero1_time + 1 * SEC_TO_MS
+
+    assert abs(hero1_upper_skill_time - expected_hero1_time) <= 1
+    assert abs(hero2_upper_skill_time - expected_hero2_time) <= 1
+
+    print("✅ Movement Trigger Condition Test Passed!")
+
+
+def test_concurrent_upper_skill_interrupt():
+    """
+    Tests if upper skill correctly interrupts ongoing movements for multiple heroes,
+    respecting global lock and priority.
+    - Two heroes start a very long LowerSkill at t=0.
+    - Both have UpperSkill ready at the same time, with Hero0 having higher priority.
+    - Expected: Hero0 casts UpperSkill, interrupting its LowerSkill.
+      1 second later, Hero1 casts UpperSkill, interrupting its LowerSkill.
+    """
+    class LongMotionInterruptHero(SimpleHero):
+        def __init__(self, name="LongMotionInterruptHero"):
+            super().__init__(name)
+            self.upper_skill_cd = 5
+            self.init_sp = self.max_sp  # Start with full SP
+            self.sp_recovery_rate = 0 # No passive SP gain
+            self.motion_time[MovementType.LowerSkill] = 1000  # Very long motion
+
+    party = Party()
+    hero0 = LongMotionInterruptHero("Hero0")
+    hero1 = LongMotionInterruptHero("Hero1")
+    party.add_hero(hero0, 0)
+    party.add_hero(hero1, 1)
+
+    priorities = [0, 1] + [10] * 7
+    rules = [
+        CooldownReadyCondition(cancel_current_movement=True),
+        CooldownReadyCondition(cancel_current_movement=True)
+    ] + [None] * 7
+
+    party.run(max_t=10, num_simulation=1, priority=priorities, rules=rules)
+
+    # --- Analysis ---
+    hero0_movements = [(round(t), m) for t, m in hero0.movement_log]
+    hero1_movements = [(round(t), m) for t, m in hero1.movement_log]
+
+    print("\n--- Concurrent Upper Skill Interrupt Test ---")
+    print("Hero0 Movements:", hero0_movements)
+    print("Hero1 Movements:", hero1_movements)
+
+    # Find UpperSkill cast times
+    hero0_upper_skill_time = [t for t, m in hero0_movements if m == MovementType.UpperSkill][0]
+    hero1_upper_skill_time = [t for t, m in hero1_movements if m == MovementType.UpperSkill][0]
+    
+    # Expected behavior:
+    # t=0: Both heroes start LowerSkill.
+    # t=2.5s (5s CD * 0.5): Both UpperSkills are ready.
+    # t=2.5s: Hero0 (prio 0) casts UpperSkill, interrupting LowerSkill.
+    # t=3.5s: Hero1 (prio 1) casts UpperSkill (after 1s global lock), interrupting LowerSkill.
+    
+    expected_hero0_time = round(2.5 * SEC_TO_MS)
+    expected_hero1_time = round(3.5 * SEC_TO_MS)
+
+    assert abs(hero0_upper_skill_time - expected_hero0_time) <= 1, \
+        f"Hero0 UpperSkill time mismatch. Expected: {expected_hero0_time}, Got: {hero0_upper_skill_time}"
+    assert abs(hero1_upper_skill_time - expected_hero1_time) <= 1, \
+        f"Hero1 UpperSkill time mismatch. Expected: {expected_hero1_time}, Got: {hero1_upper_skill_time}"
+
+    # Verify that LowerSkill was started and then interrupted
+    assert hero0_movements[0] == (0, MovementType.LowerSkill), "Hero0 should start with LowerSkill"
+    assert hero1_movements[0] == (0, MovementType.LowerSkill), "Hero1 should start with LowerSkill"
+    
+    print("✅ Concurrent Upper Skill Interrupt Test Passed!")
+
+
+def test_movement_trigger_with_interrupt():
+    """
+    Tests if MovementTriggerCondition with `cancel_current_movement` correctly
+    interrupts the target hero's ongoing action.
+    - Hero1 has a very long basic attack motion (10s).
+    - Hero0's LowerSkill at t=10s triggers Hero1's UpperSkill.
+    - The trigger is set to fire 2s after the event, with cancellation enabled.
+    - Expected: Hero1 starts a basic attack at t=10s, which gets interrupted
+      by the triggered UpperSkill at t=12s. No damage from the second basic attack
+      should be recorded.
+    """
+    class InterruptTriggerTargetHero(SimpleHero):
+        def __init__(self, name="InterruptTarget"):
+            super().__init__(name)
+            self.motion_time[MovementType.AutoAttackBasic] = 10  # Very long motion
+            self.attack_speed = 30
+            self.upper_skill_cd = 1 # Upper skill is always ready
+            
+        def BasicAttack(self, t):
+            # Damage action is at the end of the long motion
+            action = InstantAction(self, self.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
+            motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
+            self.reserv_action(action, t + 0.9 * motion_time)
+            return motion_time
+
+    party = Party()
+    # Hero0 is the trigger
+    hero0 = SimpleHero("TriggerHero")
+    # Hero1 is the target whose movement will be interrupted
+    hero1 = InterruptTriggerTargetHero("TargetHero")
+    
+    party.add_hero(hero0, 0)
+    party.add_hero(hero1, 1)
+
+    rules = [
+        NeverCastCondition(), # Hero0 doesn't use its own UpperSkill
+        MovementTriggerCondition(
+            trigger_hero_unique_name="TriggerHero_0",
+            trigger_movement=MovementType.LowerSkill,
+            delay_min_seconds=1,
+            delay_max_seconds=5,
+            cancel_current_movement=True
+        )
+    ] + [None] * 7
+
+    party.run(max_t=15, num_simulation=1, rules=rules)
+
+    # --- Analysis ---
+    hero0_lower_skill_time = [round(t) for t,m in hero0.movement_log if m == MovementType.LowerSkill][0]
+    hero1_upper_skill_time = [round(t) for t,m in hero1.movement_log if m == MovementType.UpperSkill][0]
+    
+    print("\n--- Movement Trigger with Interrupt Test ---")
+    print("Hero0 LowerSkill Time:", hero0_lower_skill_time)
+    print("Hero1 UpperSkill Time:", hero1_upper_skill_time)
+    print("Hero0 Movements:", hero0.movement_log)
+    print("Hero1 Movements:", hero1.movement_log)
+    
+    # Expected: Hero0 uses LowerSkill at t=10s.
+    # Trigger activates Hero1's UpperSkill at t=10s + 1s = 11s.
+    expected_upper_skill_time = hero0_lower_skill_time + 1 * SEC_TO_MS
+    assert abs(hero1_upper_skill_time - expected_upper_skill_time) <= 1
+
+    # Verify damage records: Only the first BasicAttack (t=0 to t=10) and
+    # the UpperSkill should have dealt damage. The second BasicAttack (started at t=10)
+    # should have been cancelled before its damage action.
+    damage_sources = hero1.damage_records.keys()
+    print("Hero1 Damage Sources:", damage_sources)
+    assert "AutoAttackBasic" in damage_sources, "Expected damage from the first basic attack"
+    assert "UpperSkill" in damage_sources, "Expected damage from the upper skill"
+    
+    # Check that only ONE basic attack damage was recorded.
+    basic_attack_damage_count = len(hero1.damage_records.get("AutoAttackBasic", []))
+    assert basic_attack_damage_count == 1, \
+        f"Expected 1 basic attack damage record, but found {basic_attack_damage_count}. The second should be cancelled."
+
+    print("✅ Movement Trigger with Interrupt Test Passed!")
+
+
 if __name__ == "__main__":
     test_simple_hero_movement_timing(default_settings())
     test_projectile_action(default_settings())
@@ -738,3 +942,6 @@ if __name__ == "__main__":
     test_global_upper_skill_lock()
     test_dynamic_priority_and_rules()
     test_upper_skill_interrupt()
+    test_movement_trigger_condition()
+    test_concurrent_upper_skill_interrupt()
+    test_movement_trigger_with_interrupt()

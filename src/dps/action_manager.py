@@ -95,7 +95,6 @@ class ActionManager:
     
     def cancel_actions_by_hero(self, hero_id):
         """Cancel all pending actions for a specific hero"""
-        print(f"Cancelling actions for hero {hero_id}! current time: {self.party.current_time}")
         hero_actions = self.actions_by_hero[hero_id]
         for action_tuple in hero_actions[:]:
             if action_tuple in self.action_queue:

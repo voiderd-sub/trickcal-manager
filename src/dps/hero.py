@@ -53,6 +53,7 @@ class Hero:
         self.upper_skill_flag = False
         self.upper_skill_rule = None
         self.next_t_without_interrupt = 0
+        self.movement_triggers = defaultdict(list)
         if not hasattr(self, "atk"):
             self.atk = 100
         self.amplify_dict = {dt: 1.0 for dt in DamageType.leaf_types()}
@@ -106,12 +107,6 @@ class Hero:
         if self.upper_skill_flag:
             return MovementType.UpperSkill
         
-        # Rare case: dt = upper_skill_cd in the previous step
-        # Use the if statement below to use UpperSkill first
-        can_cast_upper = self.upper_skill_rule and self.upper_skill_rule.should_request(self)
-        if self.upper_skill_timer == 0 and can_cast_upper:
-            return MovementType.Wait
-
         if self.sp == self.max_sp:
             return MovementType.LowerSkill
         elif self.aa_timer == 0:
@@ -119,7 +114,7 @@ class Hero:
             else:                  return MovementType.AutoAttackBasic
         return MovementType.Wait
 
-    def update(self, t):
+    def update_timers_and_request_skill(self, t):
         # update sp
         dt = t - self.last_updated
         if self.last_movement not in (MovementType.LowerSkill, MovementType.UpperSkill):
@@ -138,17 +133,15 @@ class Hero:
                 self.party.upper_skill_manager.add_request(self.party_idx)
 
         self.aa_cd = self.get_aa_cd()
-
         self.last_updated = t
 
-    def step(self, t):
+    def choose_and_execute_movement(self, t):
         if self.next_t_without_interrupt:
             return_value = self.next_t_without_interrupt
             self.next_t_without_interrupt = 0
-            self.update(t)
-            return return_value
-
-        self.update(t)
+            if not self.upper_skill_flag:
+                return return_value
+        
         movement = self.choose_movement()
         
         if movement == MovementType.Wait:
@@ -165,11 +158,16 @@ class Hero:
                     self.upper_skill_timer = round(self.upper_skill_cd * SEC_TO_MS)
                     self.upper_skill_flag = False
             
+            # Trigger other heroes' skills if this movement is a trigger
+            if movement in self.movement_triggers:
+                for target_hero_id, delay_min, delay_max in self.movement_triggers[movement]:
+                    self.party.upper_skill_manager.add_delayed_request(target_hero_id, delay_min, delay_max)
+
             dt = round(self.do_movement(movement, t))
             self.movement_timestamps[movement].append(round(t) / SEC_TO_MS)
             
             # Decide the actual time step
-            if self.upper_skill_timer < dt:
+            if self.upper_skill_timer > 0 and self.upper_skill_timer < dt:
                 self.next_t_without_interrupt = t + dt
                 dt = self.upper_skill_timer
 
@@ -299,6 +297,9 @@ class Hero:
 
     def get_unique_name(self):
         return f"{self.name}_{self.party_idx}"
+
+    def add_movement_trigger(self, movement_type, target_hero_id, delay_min_sec, delay_max_sec):
+        self.movement_triggers[movement_type].append((target_hero_id, delay_min_sec, delay_max_sec))
 
     def set_upper_skill_rule(self, rule):
         self.upper_skill_rule = rule
