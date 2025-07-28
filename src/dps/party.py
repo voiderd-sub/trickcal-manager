@@ -74,6 +74,13 @@ class Party:
         hero.party = self
         hero.party_idx = idx
 
+    def set_global_upper_skill_lock(self, current_time):
+        self.upper_skill_manager.locked_until = current_time + GLOBAL_UPPER_SKILL_LOCK_MS
+        self.next_update[11] = self.upper_skill_manager.locked_until
+
+    def is_global_upper_skill_ready(self, current_time):
+        return current_time >= self.upper_skill_manager.locked_until
+
     def get_amplify(self, hero):
         # TODO : NEED TO REVISE
         return 0.
@@ -87,9 +94,10 @@ class Party:
         import time
         for _ in tqdm(range(num_simulation)):
             self.init_simulation(priority, rules)
+            prev_time = 0
             while self.current_time < int(max_t * SEC_TO_MS):
-
-                # print("party.current_time", self.current_time, self.next_update)
+                assert self.current_time >= prev_time, "time paradox!"
+                prev_time = self.current_time
 
                 all_min_indices = np.where(self.next_update == self.current_time)[0]
 

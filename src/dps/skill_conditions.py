@@ -2,8 +2,8 @@ from dps.enums import *
 
 class UpperSkillCastCondition:
     """Base class for upper skill casting conditions."""
-    def __init__(self, cancel_current_movement: bool = False):
-        self.cancel_current_movement = cancel_current_movement
+    def __init__(self, cancelable_movements: list[MovementType] | None = None):
+        self.cancelable_movements = cancelable_movements if cancelable_movements is not None else []
 
     def should_request(self, hero) -> bool:
         """Determines if the hero should request to use their upper skill."""
@@ -11,16 +11,16 @@ class UpperSkillCastCondition:
 
 class CooldownReadyCondition(UpperSkillCastCondition):
     """Casts the upper skill as soon as the cooldown is over."""
-    def __init__(self, cancel_current_movement: bool = False):
-        super().__init__(cancel_current_movement)
+    def __init__(self, cancelable_movements: list[MovementType] | None = None):
+        super().__init__(cancelable_movements)
         
     def should_request(self, hero) -> bool:
         return True
 
 class NeverCastCondition(UpperSkillCastCondition):
     """Never casts the upper skill."""
-    def __init__(self, cancel_current_movement: bool = False):
-        super().__init__(False)     # never cast, never cancel current movement
+    def __init__(self, cancelable_movements: list[MovementType] | None = None):
+        super().__init__(None)     # never cast, never cancel current movement
 
     def should_request(self, hero) -> bool:
         return False
@@ -32,8 +32,8 @@ class MovementTriggerCondition(UpperSkillCastCondition):
     """
     def __init__(self, trigger_hero_unique_name: str, trigger_movement: MovementType, 
                  delay_min_seconds: float, delay_max_seconds: float, 
-                 cancel_current_movement: bool = False):
-        super().__init__(cancel_current_movement)
+                 cancelable_movements: list[MovementType] | None = None):
+        super().__init__(cancelable_movements)
         self.trigger_hero_unique_name = trigger_hero_unique_name
         self.trigger_movement = trigger_movement
         self.delay_min_seconds = delay_min_seconds

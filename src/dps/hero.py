@@ -52,7 +52,7 @@ class Hero:
         self.last_movement_time = 0
         self.upper_skill_flag = False
         self.upper_skill_rule = None
-        self.next_t_without_interrupt = 0
+        self.next_t_without_interrupt = -1
         self.movement_triggers = defaultdict(list)
         if not hasattr(self, "atk"):
             self.atk = 100
@@ -136,9 +136,9 @@ class Hero:
         self.last_updated = t
 
     def choose_and_execute_movement(self, t):
-        if self.next_t_without_interrupt:
+        if self.next_t_without_interrupt >= 0:
             return_value = self.next_t_without_interrupt
-            self.next_t_without_interrupt = 0
+            self.next_t_without_interrupt = -1
             if not self.upper_skill_flag:
                 return return_value
         
@@ -155,6 +155,7 @@ class Hero:
                 case MovementType.LowerSkill:
                     self.sp = 0
                 case MovementType.UpperSkill:
+                    self.party.set_global_upper_skill_lock(t)
                     self.upper_skill_timer = round(self.upper_skill_cd * SEC_TO_MS)
                     self.upper_skill_flag = False
             
@@ -170,7 +171,6 @@ class Hero:
             if self.upper_skill_timer > 0 and self.upper_skill_timer < dt:
                 self.next_t_without_interrupt = t + dt
                 dt = self.upper_skill_timer
-
         self.last_movement = movement
         self.movement_log.append((t, movement))
         return t + dt

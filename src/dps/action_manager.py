@@ -52,7 +52,7 @@ class ActionManager:
 
     def resolve_all_actions(self, current_time):
         """
-        action_queue와 pending_effect_queue를 모두 한 번에 처리한다.
+        Resolve all actions in the action queue and pending effect queue.
         """
         while self.action_queue and self.action_queue[0][0] <= current_time:
             time, action = self.action_queue.pop(0)

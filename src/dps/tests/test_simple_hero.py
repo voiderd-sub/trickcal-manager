@@ -673,7 +673,7 @@ def test_upper_skill_interrupt():
 
     party = Party()
     hero = LongMotionHero()
-    rules = [CooldownReadyCondition(cancel_current_movement=True)] + [None] * 8
+    rules = [CooldownReadyCondition(cancelable_movements=[MovementType.AutoAttackBasic, MovementType.LowerSkill])] + [None] * 8
     party.add_hero(hero, 0)
 
     party.run(max_t=18, num_simulation=1, rules=rules)
@@ -817,8 +817,8 @@ def test_concurrent_upper_skill_interrupt():
 
     priorities = [0, 1] + [10] * 7
     rules = [
-        CooldownReadyCondition(cancel_current_movement=True),
-        CooldownReadyCondition(cancel_current_movement=True)
+        CooldownReadyCondition(cancelable_movements=[MovementType.LowerSkill]),
+        CooldownReadyCondition(cancelable_movements=[MovementType.LowerSkill])
     ] + [None] * 7
 
     party.run(max_t=10, num_simulation=1, priority=priorities, rules=rules)
@@ -864,7 +864,7 @@ def test_movement_trigger_with_interrupt():
     - Hero0's LowerSkill at t=10s triggers Hero1's UpperSkill.
     - The trigger is set to fire 2s after the event, with cancellation enabled.
     - Expected: Hero1 starts a basic attack at t=10s, which gets interrupted
-      by the triggered UpperSkill at t=12s. No damage from the second basic attack
+      by the triggered UpperSkill at t=11s. No damage from the second basic attack
       should be recorded.
     """
     class InterruptTriggerTargetHero(SimpleHero):
@@ -897,7 +897,7 @@ def test_movement_trigger_with_interrupt():
             trigger_movement=MovementType.LowerSkill,
             delay_min_seconds=1,
             delay_max_seconds=5,
-            cancel_current_movement=True
+            cancelable_movements=[MovementType.AutoAttackBasic, MovementType.LowerSkill]
         )
     ] + [None] * 7
 
@@ -934,6 +934,181 @@ def test_movement_trigger_with_interrupt():
     print("✅ Movement Trigger with Interrupt Test Passed!")
 
 
+def test_selective_cancel():
+    """
+    Tests that the `cancelable_movements` list is respected, and movements
+    not in the list are NOT cancelled.
+    - Hero0 starts a long BasicAttack (5s).
+    - UpperSkill is ready at t=2.5s, but its rule is to only cancel LowerSkill.
+    - Expected: The BasicAttack is NOT interrupted. It completes at t=5s.
+      The UpperSkill is then cast immediately after at t=5s.
+    """
+    class SelectiveCancelHero(SimpleHero):
+        def __init__(self, name="SelectiveCancelHero"):
+            super().__init__(name)
+            self.upper_skill_cd = 5
+            self.motion_time[MovementType.AutoAttackBasic] = 5
+            self.attack_speed = 300 / 5 # ensures basic attack motion time = basic attack cd
+
+        def BasicAttack(self, t):
+            action = InstantAction(self, self.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
+            motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
+            self.reserv_action(action, t + 0.9 * motion_time)
+            return motion_time
+
+    party = Party()
+    hero = SelectiveCancelHero()
+    # Rule: Only cancel LowerSkill, not BasicAttack
+    rules = [CooldownReadyCondition(cancelable_movements=[MovementType.LowerSkill])] + [None] * 8
+    party.add_hero(hero, 0)
+    
+    party.run(max_t=10, num_simulation=1, rules=rules)
+    
+    # --- Analysis ---
+    movements = [(round(t), m) for t, m in hero.movement_log if m != MovementType.Wait]
+    upper_skill_time = [t for t, m in movements if m == MovementType.UpperSkill][0]
+
+    print("\n--- Selective Cancel Test ---")
+    print("Movements:", movements)
+
+    # Expected movement order: BasicAttack -> UpperSkill
+    assert movements[0][1] == MovementType.AutoAttackBasic, "Should start with BasicAttack"
+    assert movements[1][1] == MovementType.UpperSkill, "UpperSkill should follow BasicAttack"
+    
+    # Expected timing:
+    # t=0: BasicAttack starts (duration 5s)
+    # t=2.5: UpperSkill is ready, but cannot interrupt BasicAttack. Request is queued.
+    # t=5: BasicAttack finishes.
+    # t=5: UpperSkill is cast immediately as the hero is now free.
+    expected_upper_skill_time = round(5 * SEC_TO_MS)
+    assert abs(upper_skill_time - expected_upper_skill_time) <= 1, \
+        f"UpperSkill should cast after BasicAttack finishes. Expected ~{expected_upper_skill_time}ms, Got {upper_skill_time}ms"
+
+    print("✅ Selective Cancel Test Passed!")
+
+
+def test_priority_respected_when_busy():
+    """
+    Tests if the manager correctly grants the skill to a lower-priority hero
+    if they can cast immediately (idle), while a higher-priority hero is
+    busy with a non-cancelable action.
+    - Hero0 (prio 0) is busy with a long, non-cancelable action.
+    - Hero1 (prio 1) is idle.
+    - Both request UpperSkill at the same time.
+    - Expected: Hero1 (lower priority, but idle) casts immediately.
+      Hero0 (higher priority, but busy) casts only after its action finishes.
+    """
+    class BusyHero(SimpleHero):
+        def __init__(self, name):
+            super().__init__(name)
+            self.motion_time[MovementType.LowerSkill] = 5 # 5s motion time
+            self.init_sp = self.max_sp # Start with full SP
+            self.upper_skill_cd = 1 # Upper skill is always ready
+    
+    party = Party()
+    hero0 = BusyHero("Hero0_Busy")
+    hero1 = BusyHero("Hero1_Idle")
+    party.add_hero(hero0, 0)
+    party.add_hero(hero1, 1)
+
+    # Hero0 is prio 0, Hero1 is prio 1
+    priorities = [0, 1] + [10] * 7 
+    # Hero0's UpperSkill cannot cancel its LowerSkill
+    # Hero1 will be idle, so it doesn't matter.
+    rules = [
+        CooldownReadyCondition(cancelable_movements=[]), 
+        CooldownReadyCondition(cancelable_movements=[])
+    ] + [None] * 7
+    
+    # Manually make Hero1 idle by having it do a short action first
+    hero1.motion_time[MovementType.LowerSkill] = 1
+
+    party.run(max_t=10, num_simulation=1, priority=priorities, rules=rules)
+    
+    # --- Analysis ---
+    hero0_movements = hero0.movement_log
+    hero1_movements = hero1.movement_log
+    
+    hero0_upper_cast_time = [t for t, m in hero0_movements if m == MovementType.UpperSkill][0]
+    hero1_upper_cast_time = [t for t, m in hero1_movements if m == MovementType.UpperSkill][0]
+    
+    print("\n--- Priority Respected When Busy Test ---")
+    print("Hero0 Movements:", hero0_movements)
+    print("Hero1 Movements:", hero1_movements)
+    print(f"Hero0 Cast Time: {hero0_upper_cast_time}, Hero1 Cast Time: {hero1_upper_cast_time}")
+
+    # Expected:
+    # t=0: Hero0 starts 5s LowerSkill. Hero1 starts 1s LowerSkill.
+    # t=1: Hero1 finishes and becomes idle. Both request UpperSkill.
+    #      USM finds Hero1 can cast immediately. Grants skill to Hero1. Global lock starts.
+    # t=2: Global lock ends.
+    # t=5: Hero0 finishes LowerSkill, becomes idle. USM now grants skill to Hero0.
+    
+    assert hero1_upper_cast_time < hero0_upper_cast_time, "Hero1 should cast first as it is idle, despite lower priority."
+    
+    expected_hero1_cast_time = round(1 * SEC_TO_MS)
+    assert abs(hero1_upper_cast_time - expected_hero1_cast_time) <= 1, \
+        f"Hero1 should cast around {expected_hero1_cast_time}ms."
+        
+    expected_hero0_cast_time = round(5 * SEC_TO_MS)
+    assert abs(hero0_upper_cast_time - expected_hero0_cast_time) <= 1, \
+        f"Hero0 should cast around {expected_hero0_cast_time}ms, after its LowerSkill."
+
+    print("✅ Priority Respected When Busy Test Passed!")
+
+
+def test_upper_skill_on_seamless_action_chain():
+    """
+    Tests if an UpperSkill can be cast by a hero who is in a seamless
+    chain of actions (never in a Wait state), as soon as their
+    current action finishes.
+    - Hero has a BasicAttack with a 2s motion time.
+    - Attack speed is set so that the next attack is ready exactly when
+      the previous one finishes (2s cooldown).
+    - UpperSkill cooldown is 5s, and it cannot cancel the BasicAttack.
+    - Expected: The hero performs BasicAttacks at t=0, t=2, t=4.
+      At t=5, UpperSkill is ready. The hero is in the middle of a BasicAttack.
+      The hero should finish the BasicAttack at t=6, and immediately cast
+      the UpperSkill at t=6.
+    """
+    class SeamlessAttacker(SimpleHero):
+        def __init__(self, name="SeamlessAttacker"):
+            super().__init__(name)
+            self.motion_time[MovementType.AutoAttackBasic] = 2
+            # Cooldown of 2s to match motion time
+            self.attack_speed = 300 / 2
+            self.upper_skill_cd = 10 # then, initial cooldown is 5s (half of 10s)
+            self.sp_recovery_rate = 0 # No LowerSkill interference
+
+    party = Party()
+    hero = SeamlessAttacker()
+    rules = [CooldownReadyCondition(cancelable_movements=[])] + [None] * 8
+    party.add_hero(hero, 0)
+
+    party.run(max_t=10, num_simulation=1, rules=rules)
+
+    # --- Analysis ---
+    movements = [(round(t), m) for t, m in hero.movement_log if m != MovementType.Wait]
+    print("\n--- Seamless Action Chain Test ---")
+    print("Movements:", movements)
+    
+    upper_skill_casts = [t for t, m in movements if m == MovementType.UpperSkill]
+    
+    assert len(upper_skill_casts) > 0, "UpperSkill should have been cast."
+    
+    # First UpperSkill should be at t=6s
+    # t=0: BA1 starts
+    # t=2: BA1 ends, BA2 starts
+    # t=4: BA2 ends, BA3 starts
+    # t=5: US ready, but hero is busy. USM should schedule wakeup for t=6.
+    # t=6: BA3 ends. Hero is now free. USM grants skill. US is cast.
+    expected_cast_time = round(6 * SEC_TO_MS)
+    assert abs(upper_skill_casts[0] - expected_cast_time) <= 1, \
+        f"Expected first UpperSkill cast at ~{expected_cast_time}ms, but was at {upper_skill_casts[0]}ms"
+
+    print("✅ Upper Skill on Seamless Action Chain Test Passed!")
+
+
 if __name__ == "__main__":
     test_simple_hero_movement_timing(default_settings())
     test_projectile_action(default_settings())
@@ -945,3 +1120,6 @@ if __name__ == "__main__":
     test_movement_trigger_condition()
     test_concurrent_upper_skill_interrupt()
     test_movement_trigger_with_interrupt()
+    test_selective_cancel()
+    test_priority_respected_when_busy()
+    test_upper_skill_on_seamless_action_chain()

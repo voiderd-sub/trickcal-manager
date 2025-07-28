@@ -33,30 +33,6 @@ class UpperSkillManager:
         self.delayed_requests = []
         self.locked_until = 0
     
-    def update_next_update(self):
-        current_time = self.party.current_time
-        if current_time < self.locked_until:
-            self.party.next_update[11] = self.locked_until
-            return
-        
-        if self.locked_until > 0 and current_time >= self.locked_until:
-            self.locked_until = 0
-
-        if self.request_queue:
-            self.party.next_update[11] = current_time
-            return
-
-        next_delayed_time = float('inf')
-        for earliest, _, _, _ in self.delayed_requests:
-            if current_time < earliest:
-                next_delayed_time = min(next_delayed_time, earliest)
-            else:
-                next_delayed_time = min(next_delayed_time, current_time)
-                break
-        
-        self.party.next_update[11] = next_delayed_time
-        
-
     def add_request(self, hero_id):
         if any(req.hero_id == hero_id for req in self.request_queue):
             return
@@ -67,7 +43,8 @@ class UpperSkillManager:
         priority = self.party.upper_skill_priorities[hero_id]
         request = SkillRequest(hero_id, priority)
         insort(self.request_queue, request)
-        self.update_next_update()
+        # A new request might be immediately processable. Wake up now.
+        self.party.next_update[11] = self.party.current_time
 
     def add_delayed_request(self, hero_id, delay_min_sec, delay_max_sec):
         current_time = self.party.current_time
@@ -77,7 +54,8 @@ class UpperSkillManager:
         
         request_tuple = (earliest_time, latest_time, hero_id, priority)
         insort(self.delayed_requests, request_tuple)
-        self.update_next_update()
+        # Schedule to wake up at the new event time if it's earlier than the current plan.
+        self.party.next_update[11] = min(self.party.next_update[11], earliest_time)
 
     def check_and_update_requests(self):
         """Called by external events like cooldown reduction."""
@@ -86,6 +64,7 @@ class UpperSkillManager:
     def resolve_delayed_requests(self, current_time):
         still_delayed = []
         processed_count = 0
+        request_moved = False
 
         # self.delayed_requests is sorted by earliest_time.
         # So, we only need to check requests that can be processed at the current time.
@@ -103,6 +82,7 @@ class UpperSkillManager:
                 # The hero's skill is ready, so add it to the main request queue.
                 request = SkillRequest(hero_id, priority, latest)
                 insort(self.request_queue, request)
+                request_moved = True
             else:
                 # The hero is not ready yet, but the request is still valid.
                 # Keep it in the list to check again later.
@@ -111,41 +91,82 @@ class UpperSkillManager:
         # Reconstruct the list, excluding the processed requests.
         # [Requests that are still valid but the hero isn't ready] + [Requests whose time has not yet come]
         self.delayed_requests = still_delayed + self.delayed_requests[processed_count:]
-        self.update_next_update()
+        
+        if request_moved:
+            # A delayed request became a current request. Wake up now to process it.
+            self.party.next_update[11] = current_time
 
     def resolve_request(self, current_time):
         # First, process any delayed requests that might be ready
         self.resolve_delayed_requests(current_time)
-        
+
+        # Abort if globally locked or no requests are pending.
+        if not self.party.is_global_upper_skill_ready(current_time):
+            self.party.next_update[11] = self.locked_until
+            return
         if not self.request_queue:
-            self.update_next_update() # Recalculate next update time
+            # If no requests, find next delayed request time. If none, sleep infinitely.
+            next_delayed_time = float('inf')
+            if self.delayed_requests:
+                for earliest, _, _, _ in self.delayed_requests:
+                    if earliest > current_time:
+                        next_delayed_time = earliest
+                        break
+            self.party.next_update[11] = next_delayed_time
             return
 
-        # Process one request per call to respect global lock
-        request = self.request_queue[0]
+        # Find all heroes who can cast *now* (are idle or can cancel)
+        for i, request in enumerate(self.request_queue):
+            hero = self.party.character_list[request.hero_id]
+            rule = hero.upper_skill_rule
 
-        # Final check for validity
-        if current_time > request.latest_activation_time:
-            self.request_queue.pop(0) # Discard expired request
-            self.update_next_update() # Check next in queue
-            return
+            if current_time > request.latest_activation_time:
+                continue
 
-        # If we are here, the request is valid and will be executed
-        self.request_queue.pop(0)
-        hero = self.party.character_list[request.hero_id]
-        rule = hero.upper_skill_rule
-
-        if rule.cancel_current_movement:
-            self.party.action_manager.cancel_actions_by_hero(request.hero_id)
-
-        hero.upper_skill_flag = True
-        
-        is_busy = hero.last_movement != MovementType.Wait
-        if not is_busy or rule.cancel_current_movement:
-            self.party.next_update[request.hero_id] = current_time
+            # A hero is considered busy if their current action is not yet finished.
+            # This can happen in 3 scenarios:
+            # 1. The hero's last movement is not wait.
+            is_last_movement_not_wait = hero.last_movement != MovementType.Wait
+            # 2. The action's scheduled end time (`next_update`) is in the future.
+            is_mid_action = self.party.next_update[hero.party_idx] > current_time
+            # 3. A long action was paused for an UpperSkill cooldown. In this special
+            #    case, `next_t_without_interrupt` is set, meaning the hero is still
+            #    technically in the middle of that action.
+            is_paused_long_action = hero.next_t_without_interrupt != -1
             
-        # Set global lock and sleep. The return is crucial to prevent
-        # update_next_update from overwriting the lock.
-        self.locked_until = current_time + GLOBAL_UPPER_SKILL_LOCK_MS
-        self.party.next_update[11] = self.locked_until
-        return 
+            is_busy = is_last_movement_not_wait and (is_mid_action or is_paused_long_action)
+            can_cancel = is_busy and rule.cancelable_movements and hero.last_movement in rule.cancelable_movements
+
+            if not is_busy or can_cancel:
+                print("TEST: SHOULD be here")
+                print(rule.cancelable_movements)
+                print(hero.last_movement)
+                print(hero.last_movement in rule.cancelable_movements)
+                print(is_busy, rule.cancelable_movements, hero.last_movement in rule.cancelable_movements)
+                print(can_cancel)
+                hero.upper_skill_flag = True
+                if can_cancel:
+                    self.party.action_manager.cancel_actions_by_hero(hero.party_idx)
+                self.party.next_update[hero.party_idx] = current_time
+                self.request_queue.pop(i)
+                return
+
+            # The hero will set the global lock upon skill execution, which schedules the next update.
+            # So, we don't need to do anything else here.
+            
+        # No immediate candidates, but queue is not empty. All are busy.
+        # Schedule wakeup for when the first hero becomes free or a delayed request fires.
+        next_event_time = float('inf')
+        
+        # Find when the first waiting hero will be free.
+        for request in self.request_queue:
+            next_event_time = min(next_event_time, self.party.next_update[request.hero_id])
+
+        # Also consider the next delayed request.
+        if self.delayed_requests:
+            for earliest, _, _, _ in self.delayed_requests:
+                if earliest > current_time:
+                    next_event_time = min(next_event_time, earliest)
+                    break
+        
+        self.party.next_update[11] = next_event_time 
