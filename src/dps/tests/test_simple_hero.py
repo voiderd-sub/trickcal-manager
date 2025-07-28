@@ -2,57 +2,12 @@ import pytest
 import pandas as pd
 from dps.party import Party
 from dps.hero import Hero
-from dps.enums import MovementType, DamageType, SEC_TO_MS
+from dps.enums import *
 from dps.action import InstantAction, ProjectileAction, StatusAction
 from dps.status import BuffAttackSpeed, BuffAmplify, target_self
 from dps.skill_conditions import CooldownReadyCondition, NeverCastCondition, MovementTriggerCondition
-
-
-class SimpleHero(Hero):
-    BASIC_DMG = 1
-    lowerskill_value = [1000] * 13
-    upperskill_value = [1000000] * 13
-
-    def __init__(self, name="SimpleHero"):
-        info = {
-            "name": name,
-            "name_kr": name,
-            "atk": 100,
-            "init_sp": 0,
-            "max_sp": 100,
-            "sp_per_aa": 0,
-            "sp_recovery_rate": 10,
-            "attack_speed": 300,
-            "lowerskill_level": 1,
-            "upperskill_level": 1,
-            "aside_level": 0,
-            "upper_skill_cd": 30,
-        }
-        super().__init__(info)
-        self.motion_time = {
-            MovementType.AutoAttackBasic: 1,
-            MovementType.AutoAttackEnhanced: 1,
-            MovementType.LowerSkill: 2,
-            MovementType.UpperSkill: 3,
-        }
-
-    def BasicAttack(self, t):
-        action = InstantAction(self, SimpleHero.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
-        motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
-        self.reserv_action(action, t + 0.5 * motion_time)
-        return motion_time
-
-    def LowerSkill(self, t):
-        action = ProjectileAction(self, SimpleHero.lowerskill_value[self.lowerskill_level], 1.5, MovementType.LowerSkill, DamageType.LowerSkill)
-        motion_time = self.get_motion_time(MovementType.LowerSkill)
-        self.reserv_action(action, t + 0.5 * motion_time)
-        return motion_time
-
-    def UpperSkill(self, t):
-        action = InstantAction(self, SimpleHero.upperskill_value[self.upperskill_level], MovementType.UpperSkill, DamageType.UpperSkill)
-        motion_time = self.get_motion_time(MovementType.UpperSkill)
-        self.reserv_action(action, t + 0.5 * motion_time)
-        return motion_time
+from dps.artifact import Artifact
+from dps.tests.simple_hero import SimpleHero
 
 
 @pytest.fixture
@@ -730,6 +685,65 @@ def test_upper_skill_interrupt():
     print("✅ Upper Skill Interrupt Test Passed!")
 
 
+def test_artifact_stat_bonus():
+    """
+    Tests if Artifacts with stat bonuses correctly apply their stats to the hero.
+    - Creates artifacts that boost attack_coeff by 10%.
+    - Simulates with 0, 1, 2, and 3 artifacts.
+    - Checks if the damage from a basic attack scales correctly.
+    """
+    class ArtifactTestHero(SimpleHero):
+        def __init__(self, name="ArtifactTestHero"):
+            super().__init__(name)
+            # Disable all other complexities
+            self.upper_skill_cd = 1000000 # no upper skill
+            self.sp_recovery_rate = 0       # no lower skill
+
+    results = {}
+
+    for num_artifacts in range(4):
+        party = Party()
+        hero = ArtifactTestHero()
+
+        # Add artifacts
+        for i in range(num_artifacts):
+            artifact = Artifact(name=f"AttackBonusArtifact{i}", stat_bonuses={StatType.AttackPhysic: 10})
+            hero.add_artifact(artifact)
+
+        party.add_hero(hero, 0)
+        party.run(max_t=2, num_simulation=1) # Run long enough for one attack
+
+        # Extract damage from the first basic attack
+        try:
+            damage_records = hero.damage_records[MovementType.AutoAttackBasic]
+            first_attack_damage = damage_records[0][1]
+            results[num_artifacts] = first_attack_damage
+        except (KeyError, IndexError):
+            results[num_artifacts] = 0
+
+    print("\n--- Artifact Stat Bonus Test ---")
+    print("Damage results by number of artifacts:", results)
+
+    # Verification
+    # Base damage = 0.8 * attack * attack_coeff * (damage/100) * ...
+    # Base damage = 0.8 * 100 * 1.0 * (100/100) = 80
+    base_damage = 0.8 * 100 * 1.0 * (SimpleHero.BASIC_DMG/100)
+    
+    # With 0 artifacts, attack_coeff = 1.0
+    assert results[0] == pytest.approx(base_damage * 1.0), "Damage with 0 artifacts is incorrect."
+
+    # With 1 artifact, attack_coeff = 1.1
+    assert results[1] == pytest.approx(base_damage * 1.1), "Damage with 1 artifact is incorrect."
+
+    # With 2 artifacts, attack_coeff = 1.2
+    assert results[2] == pytest.approx(base_damage * 1.2), "Damage with 2 artifacts is incorrect."
+
+    # With 3 artifacts, attack_coeff = 1.3
+    assert results[3] == pytest.approx(base_damage * 1.3), "Damage with 3 artifacts is incorrect."
+
+    print("✅ Artifact Stat Bonus Test Passed!")
+
+
 def test_movement_trigger_condition():
     """
     Tests if MovementTriggerCondition works correctly with global lock.
@@ -1117,6 +1131,7 @@ if __name__ == "__main__":
     test_global_upper_skill_lock()
     test_dynamic_priority_and_rules()
     test_upper_skill_interrupt()
+    test_artifact_stat_bonus()
     test_movement_trigger_condition()
     test_concurrent_upper_skill_interrupt()
     test_movement_trigger_with_interrupt()

@@ -73,6 +73,13 @@ class Party:
         self.character_list[idx] = hero
         hero.party = self
         hero.party_idx = idx
+        hero._setup_status_templates()
+        hero._setup_all_movement_actions()
+
+    def add_artifact(self, artifact, hero_idx):
+        hero = self.character_list[hero_idx]
+        if hero:
+            hero.add_artifact(artifact)
 
     def set_global_upper_skill_lock(self, current_time):
         self.upper_skill_manager.locked_until = current_time + GLOBAL_UPPER_SKILL_LOCK_MS

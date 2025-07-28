@@ -18,8 +18,8 @@ class StrEnum(str, Enum):
 
 
 class AttackType(StrEnum):
-    Physic = auto()
-    Magic = auto()
+    Physic = "physic"
+    Magic = "magic"
 
 class MovementType(StrEnum):
     AutoAttackBasic = auto()
@@ -28,6 +28,9 @@ class MovementType(StrEnum):
     UpperSkill = auto()
     AsideSkill = auto()
     Wait = auto()
+
+    # Not a regular movement, but included for damage recording.
+    Artifact = auto()
 
     @classmethod
     def movement_type_to_dmg_type(cls, movement_type):
@@ -77,6 +80,25 @@ class Personality(StrEnum):
     Cool = auto()
     Jolly = auto()
     Gloomy = auto()
+
+
+class StatType(StrEnum):
+    AttackMagic = "attack_magic"
+    AttackPhysic = "attack_physic"
+    AttackSpeed = "attack_speed"
+    CriticalMult = "critical_mult"
+    CriticalMultResist = "critical_mult_resist"
+    CriticalRate = "critical_rate"
+    CriticalResist = "critical_resist"
+    DefenseMagic = "defense_magic"
+    DefensePhysic = "defense_physic"
+    Hp = "max_hp"
+    
+    def to_hero_attr(self, is_coeff=True):
+        if is_coeff:
+            return f"{self.value}_coeff"
+        return self.value
+
 
 DMG_TYPE_LABELS_KR = {
     "AutoAttackBasic": "평타",

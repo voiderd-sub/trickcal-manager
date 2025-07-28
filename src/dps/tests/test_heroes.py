@@ -11,7 +11,7 @@ def epica_party():
         'lowerskill_level': 13,
         'upperskill_level': 13,
         'aside_level': 3,
-        'atk': 100,
+        'attack': 100,
     }
     
     epica_hero = Epica(user_info)

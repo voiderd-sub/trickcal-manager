@@ -1,5 +1,6 @@
 from dps.enums import *
 from dps.skill_conditions import *
+from dps.artifact import Artifact
 
 import numpy as np
 from collections import defaultdict
@@ -18,12 +19,26 @@ class Hero:
         for key, value in user_provided_info.items():
             setattr(self, key, value)
         
+        self.artifacts = []
         # Action templates for each movement type
         self._action_templates = {}
         self.status_templates = {}
+        self.applied_effects = set()
+        self.artifact_counters = dict()   # Counters for artifact effects
+
     
     def __repr__(self):
         return self.name if hasattr(self, "name") else "HeroNameDefault"
+
+    def add_artifact(self, artifact: Artifact):
+        self.artifacts.append(artifact)
+        # Handle unique effect stacking
+        if artifact.unique_effect_fn:
+            effect_key = artifact.unique_effect_fn.__name__
+            if not artifact.stackable and effect_key in self.applied_effects:
+                return  # Skip non-stackable effects that are already applied
+            self.applied_effects.add(effect_key)
+            artifact.apply_unique_effect(self)
 
     def init_simulation(self):
         # Check skill level data is exists.
@@ -39,8 +54,6 @@ class Hero:
                     print(f"Use data of level {valid_level} instead.")
 
         self._initialize_eac()
-        self._setup_status_templates()
-        self._setup_all_movement_actions()
 
         self.aa_cd = round(300 * SEC_TO_MS / self.attack_speed)
         self.sp = self.init_sp
@@ -54,12 +67,19 @@ class Hero:
         self.upper_skill_rule = None
         self.next_t_without_interrupt = -1
         self.movement_triggers = defaultdict(list)
-        if not hasattr(self, "atk"):
-            self.atk = 100
+        if not hasattr(self, "attack"):
+            self.attack = 100
         self.amplify_dict = {dt: 1.0 for dt in DamageType.leaf_types()}
-        self.atk_coeff = 1.
-        self.attack_speed_coeff = 1.
+        for stat_type in StatType:
+            setattr(self, stat_type.value+"_coeff", 1.0)
         self.acceleration = 1.
+
+        for artifact in self.artifacts:
+            artifact.apply_stats(self)
+
+        # Initialize unique effect tracking
+        for k, v in self.artifact_counters.items():
+            self.artifact_counters[k] = 0
 
         self.movement_log = []
         self.movement_timestamps = {MovementType.AutoAttackBasic: [],
@@ -73,8 +93,16 @@ class Hero:
 
     def _setup_all_movement_actions(self):
         """Pre-generates and sorts action templates for all movement types."""
-        self._action_templates[MovementType.AutoAttackBasic] = self._setup_basic_attack_actions()
-        self._action_templates[MovementType.AutoAttackEnhanced] = self._setup_enhanced_attack_actions()
+        auto_attack_basic_actions = self._setup_basic_attack_actions()
+        for (action, t_ratio) in auto_attack_basic_actions:
+            action.post_fn = lambda action: self.aa_post_fn()
+        self._action_templates[MovementType.AutoAttackBasic] = auto_attack_basic_actions
+
+        auto_attack_enhanced_actions = self._setup_enhanced_attack_actions()
+        for (action, t_ratio) in auto_attack_enhanced_actions:
+            action.post_fn = lambda action: self.aa_post_fn()
+        self._action_templates[MovementType.AutoAttackEnhanced] = auto_attack_enhanced_actions
+
         self._action_templates[MovementType.LowerSkill] = self._setup_lower_skill_actions()
         self._action_templates[MovementType.UpperSkill] = self._setup_upper_skill_actions()
 
@@ -288,9 +316,9 @@ class Hero:
     def get_damage(self, damage, movement_type):
         enemy_amplify = self.party.get_amplify(self)
         additional_coeff = self.party.get_additional_coeff(self)  # include type_effectiveness, hidden damage decrease, etc.
-        applying_amplify = max(0.25, self.get_amplify(movement_type) + enemy_amplify)
-        applying_atk_coeff = max(0.2, self.atk_coeff)
-        return 0.8 * (self.atk * applying_atk_coeff) * applying_amplify * (damage/100) * additional_coeff
+        applying_amplify = max(0.25, self.get_amplify(movement_type) + enemy_amplify)       
+        applying_attack_coeff = max(0.2, getattr(self, f"attack_{self.attack_type.value}_coeff"))
+        return 0.8 * (self.attack * applying_attack_coeff) * applying_amplify * (damage/100) * additional_coeff
 
     def get_name(self):
         return self.name_kr

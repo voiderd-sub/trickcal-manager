@@ -66,7 +66,7 @@ class PageDps1(Ui_page_dps_1, QWidget):
                         "aside_level": 0,
                         "lowerskill_level": 13,
                         "upperskill_level": 13,
-                        "atk": 100.,
+                        "attack": 100.,
                     })
                     party.add_hero(hero, pos_idx*3 + idx - 1)
         hero_name_to_dmg = party.run(240, 1)

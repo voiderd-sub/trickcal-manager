@@ -10,7 +10,6 @@ class Epica(Hero):
 
     def __init__(self, user_provided_info):
         super().__init__(user_provided_info)
-
         self.hero_id = 17
         self.name = "Epica"
         self.name_kr = "에피카"

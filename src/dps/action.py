@@ -52,9 +52,8 @@ class InstantAction(Action):
                              damage_coeff=self.damage_coeff,
                              movement_type=self.source_movement)
         
-        # Even if there is no post_fn, "sp_recovery_on_auto_attack" must be executed
-        # (only for instant action)
-        sp_recovery_on_auto_attack(self.post_fn)(self)
+        if self.post_fn:
+            self.post_fn(self)
 
 
 class ProjectileAction(Action):
