@@ -44,7 +44,7 @@ def setup_weather_is_clear_card(hero: 'Hero'):
     # Replace the aa_post_fn with our enhanced version
     hero.aa_post_fn = enhanced_aa_post_fn
 
-def init_weather_is_clear_card(hero: 'Hero'):
+def init_weather_is_clear_card(hero: 'Hero', artifact: 'Artifact'):
     """
     Initialization effect for Clear Weather Card:
     - Resets the basic attack counter for the lightning strike effect.
@@ -64,5 +64,4 @@ class WeatherIsClearCard(Artifact):
             setup_effect_fn=setup_weather_is_clear_card,
             init_effect_fn=init_weather_is_clear_card,
             stackable=False,  # This effect does not stack
-            column_wide=False  # This effect only applies to the wearer
         ) 

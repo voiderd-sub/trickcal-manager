@@ -1,7 +1,7 @@
 import pytest
 from dps.party import Party
 from dps.tests.simple_hero import SimpleHero
-from dps.spells.simple_spell import create_test_spell
+from dps.tests.simple_spell import create_test_spell
 
 def get_total_damage(party):
     """Helper function to calculate total damage for the party."""
@@ -56,4 +56,44 @@ def test_spell_effects():
     assert damage_with_spell == pytest.approx(expected_damage), \
         f"Damage with spell is incorrect. Expected: {expected_damage}, Got: {damage_with_spell}"
 
-    print("✅ Spell Effect Test Passed!") 
+    print("✅ Spell Effect Test Passed!")
+
+def test_simulation_idempotency():
+    """
+    Tests if running the simulation multiple times with the same settings yields the exact same result,
+    ensuring that the simulation state is properly reset by init_simulation().
+    """
+    def create_and_setup_party():
+        party = Party()
+        hero = SimpleHero("IdempotentHero")
+        hero.upper_skill_cd = 10 # Use a skill to ensure more complex state changes
+        party.add_hero(hero, 0)
+        spell = create_test_spell()
+        party.add_spell(spell)
+        return party
+    
+    T=60
+
+    # --- Run 1 ---
+    party1 = create_and_setup_party()
+    party1.run(max_t=T, num_simulation=1)
+    damage1 = get_total_damage(party1)
+    log1 = [(round(t), m) for t, m in party1.character_list[0].movement_log]
+
+    # --- Run 2 ---: return 2nd simulation result
+    party2 = create_and_setup_party()
+    party2.run(max_t=T, num_simulation=2)
+    damage2 = get_total_damage(party2)
+    log2 = [(round(t), m) for t, m in party2.character_list[0].movement_log]
+
+    print("\n--- Simulation Idempotency Test ---")
+    print(f"Run 1 Damage: {damage1}")
+    print(f"Run 2 Damage: {damage2}")
+    print(f"Run 1 Log: {log1}")
+    print(f"Run 2 Log: {log2}")
+
+    # Verification
+    assert damage1 == damage2, "Total damage should be identical between two identical runs."
+    assert log1 == log2, "Movement logs should be identical between two identical runs."
+
+    print("✅ Simulation Idempotency Test Passed!") 

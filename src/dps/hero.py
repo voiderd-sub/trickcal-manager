@@ -73,6 +73,7 @@ class Hero:
         """
         self._initialize_eac()
 
+        self.amplify_modifiers = {}
         self.aa_cd = round(300 * SEC_TO_MS / self.attack_speed)
         self.sp = self.init_sp
         self.sp_timer = 0
@@ -314,7 +315,8 @@ class Hero:
         self.sp = min(self.max_sp, self.sp + self.sp_per_aa)
 
     def get_aa_cd(self):
-        return round(300 * SEC_TO_MS / (self.acceleration**2 * min(10., self.attack_speed_coeff) * self.attack_speed), 0)
+        attack_speed_coeff = self.get_coeff(StatType.AttackSpeed)
+        return round(300 * SEC_TO_MS / (self.acceleration**2 * min(10., attack_speed_coeff) * self.attack_speed), 0)
     
     def get_motion_time(self, movement_type: MovementType):
         base_motion_time_sec = self.motion_time.get(movement_type)
@@ -339,12 +341,30 @@ class Hero:
         for dt in DamageType.get_leaf_members(damage_type):
             self.amplify_dict[dt] += value / 100
     
-    def get_damage(self, damage, movement_type):
+    def get_coeff(self, stat_type: StatType):
+        """
+        Gets the final calculated coefficient for a given stat.
+        This can be monkey-patched by artifacts/statuses to apply dynamic bonuses.
+        """
+        attr_name = stat_type.to_hero_attr(is_coeff=True)
+        return getattr(self, attr_name)
+    
+    def get_damage(self, damage, damage_type):
         enemy_amplify = self.party.get_amplify(self)
         additional_coeff = self.party.get_additional_coeff(self)  # include type_effectiveness, hidden damage decrease, etc.
-        applying_amplify = max(0.25, self.get_amplify(movement_type) + enemy_amplify)       
-        applying_attack_coeff = max(0.2, getattr(self, f"attack_{self.attack_type.value}_coeff"))
-        return 0.8 * (self.attack * applying_attack_coeff) * applying_amplify * (damage/100) * additional_coeff
+
+        conditional_amplify = 0
+        for modifier_fn in self.amplify_modifiers.values():
+            conditional_amplify += modifier_fn(damage_type)
+
+        applying_amplify = max(0.25, self.get_amplify(damage_type) + enemy_amplify + conditional_amplify)
+
+        attack_stat_type = StatType.AttackPhysic if self.attack_type == AttackType.Physic else StatType.AttackMagic
+        applying_attack_coeff = max(0.2, self.get_coeff(attack_stat_type))
+        
+        damage = 0.8 * (self.attack * applying_attack_coeff) * applying_amplify * (damage/100) * additional_coeff
+
+        return damage
 
     def get_name(self):
         return self.name_kr

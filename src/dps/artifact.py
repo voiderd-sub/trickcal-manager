@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 class Artifact:
     def __init__(self, name: str, stat_bonuses: Dict[str, Any], 
                  setup_effect_fn: Optional[Callable[['Hero'], None]] = None,
-                 init_effect_fn: Optional[Callable[['Hero'], None]] = None,
-                 stackable: bool = True, column_wide: bool = False):
+                 init_effect_fn: Optional[Callable[['Hero', 'Artifact'], None]] = None,
+                 stackable: bool = True):
         """
         Initializes an artifact.
 
@@ -19,14 +19,12 @@ class Artifact:
         :param setup_effect_fn: Optional function for one-time setup effects (e.g., monkey-patching). Called once per run.
         :param init_effect_fn: Optional function for effects that need re-initialization every simulation.
         :param stackable: Whether this artifact's unique effect can stack with duplicates.
-        :param column_wide: Whether this artifact's unique effect applies to the entire column.
         """
         self.name = name
         self.stat_bonuses = stat_bonuses
         self.setup_effect_fn = setup_effect_fn
         self.init_effect_fn = init_effect_fn
         self.stackable = stackable
-        self.column_wide = column_wide
 
     def apply_stats(self, hero: 'Hero'):
         """
@@ -46,4 +44,4 @@ class Artifact:
         Applies the artifact's simulation-specific initial effect to a hero.
         """
         if self.init_effect_fn:
-            self.init_effect_fn(hero) 
+            self.init_effect_fn(hero, self) 
