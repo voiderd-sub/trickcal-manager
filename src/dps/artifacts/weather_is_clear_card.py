@@ -10,10 +10,8 @@ if TYPE_CHECKING:
 class WeatherIsClearCard(Artifact):
     def __init__(self, level: int = 1):
         super().__init__(name="날씨는 맑음 카드", level=level)
-        self.setup_effect_fn = self.setup_weather_is_clear_card
-        self.init_effect_fn = self.init_weather_is_clear_card
 
-    def setup_weather_is_clear_card(self, hero: 'Hero'):
+    def apply_setup_effect(self, hero: 'Hero'):
         """
         Setup effect for Clear Weather Card:
         - Modifies the hero's aa_post_fn to add a counter and a lightning strike effect.
@@ -41,7 +39,7 @@ class WeatherIsClearCard(Artifact):
         
         hero.aa_post_fn = enhanced_aa_post_fn
 
-    def init_weather_is_clear_card(self, hero: 'Hero'):
+    def apply_init_effect(self, hero: 'Hero'):
         """
         Initialization effect for Clear Weather Card:
         - Resets the basic attack counter for the lightning strike effect.

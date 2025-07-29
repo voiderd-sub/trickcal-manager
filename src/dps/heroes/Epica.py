@@ -1,7 +1,8 @@
 from dps.action import *
 from dps.hero import Hero, ProbabilisticCondition, BuffCondition, OrCondition
-from dps.status import (BuffAttackSpeed, BuffAmplify, 
+from dps.status import (BuffStatCoeff, BuffAmplify, 
                         target_self, target_all, target_all_wo_self)
+from dps.enums import *
 
 
 class Epica(Hero):
@@ -13,7 +14,8 @@ class Epica(Hero):
         self.hero_id = 17
         self.name = "Epica"
         self.name_kr = "에피카"
-
+        self.is_eldain = True
+        
         self.attack_type = AttackType.Physic
         self.personality = Personality.Jolly
         self.attack_speed = 102
@@ -35,19 +37,21 @@ class Epica(Hero):
         name = self.get_unique_name()
         
         # Lower skill templates
-        self.status_templates[f"{name}_저학년"] = BuffAttackSpeed(
+        self.status_templates[f"{name}_저학년"] = BuffStatCoeff(
             status_id=f"{name}_저학년",
             caster=self, 
             duration=10.0, 
             value=self_as_buff_val,
-            target_resolver_fn=target_self
+            target_resolver_fn=target_self,
+            stat_type=StatType.AttackSpeed
         )
-        self.status_templates[f"{name}_저학년_전체"] = BuffAttackSpeed(
+        self.status_templates[f"{name}_저학년_전체"] = BuffStatCoeff(
             status_id=f"{name}_저학년_전체",
             caster=self, 
             duration=10.0, 
             value=other_as_buff_val,
-            target_resolver_fn=target_all_wo_self
+            target_resolver_fn=target_all_wo_self,
+            stat_type=StatType.AttackSpeed
         )
         
         # Upper skill template

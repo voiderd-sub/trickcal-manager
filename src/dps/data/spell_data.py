@@ -7,7 +7,6 @@ SPELL_DATA = {
     "단체 월반": {
         "grade": Grade.LEGENDARY,
         "cost": 33,
-        "is_stackable": True,
         "description": r"""모든 아군의 학년이 1 증가한다.""",
         "stat_types": ["Cost"],
         "stats": [[33.0], [32.0], [31.0], [30.0], None, None, None, None, None, None, None, None],
@@ -18,7 +17,6 @@ SPELL_DATA = {
     "명상의 시간": {
         "grade": Grade.LEGENDARY,
         "cost": 15,
-        "is_stackable": True,
         "description": r"""모든 아군의 기본 SP 회복량이 ①% 증가한다.""",
         "stat_types": [StatType.AttackPhysic, StatType.AttackMagic],
         "stats": [[3.47, 3.47], [3.79, 3.79], [4.11, 4.11], [4.42, 4.42], None, None, None, None, None, None, None, None],
@@ -29,7 +27,6 @@ SPELL_DATA = {
     "소매 넣기": {
         "grade": Grade.LEGENDARY,
         "cost": 31,
-        "is_stackable": True,
         "description": r"""아티팩트 장비 2개를 무작위 아군에게 장착한다.""",
         "stat_types": [StatType.CriticalRate, StatType.CriticalMult, "Cost"],
         "stats": [[5.96, 5.96, 31.0], [6.5, 6.5, 30.0], [7.04, 7.04, 29.0], [7.58, 7.58, 28.0], None, None, None, None, None, None, None, None],
@@ -40,7 +37,6 @@ SPELL_DATA = {
     "수상한 물약": {
         "grade": Grade.LEGENDARY,
         "cost": 23,
-        "is_stackable": True,
         "description": r"""웨이브 시작 시 물약이 터지며 독 안개가 뿌려진다. 모든 적들에게 9초간 중독을 건다.""",
         "stat_types": ["Cost"],
         "stats": [[23.0], [22.0], [21.0], [20.0], None, None, None, None, None, None, None, None],
@@ -51,7 +47,6 @@ SPELL_DATA = {
     "아로마 테라피": {
         "grade": Grade.LEGENDARY,
         "cost": 5,
-        "is_stackable": True,
         "description": r"""남은 SP 비율이 가장 낮은 아군의 SP를 100% 회복한다.""",
         "stat_types": [StatType.DefensePhysic, StatType.DefenseMagic, "Cost"],
         "stats": [[2.98, 2.98, 5.0], [3.25, 3.25, 5.0], [3.52, 3.52, 5.0], [3.79, 3.79, 4.0], None, None, None, None, None, None, None, None],
@@ -62,7 +57,6 @@ SPELL_DATA = {
     "전술 교본": {
         "grade": Grade.LEGENDARY,
         "cost": 19,
-        "is_stackable": True,
         "description": r"""모든 아군의 피해량이 ①% 증가한다.""",
         "stat_types": [StatType.CriticalRate, StatType.CriticalMult],
         "stats": [[5.96, 5.96], [6.5, 6.5], [7.04, 7.04], [7.58, 7.58], [8.12, 8.12], None, None, None, None, None, None, None],
@@ -73,7 +67,6 @@ SPELL_DATA = {
     "전투의 달인": {
         "grade": Grade.LEGENDARY,
         "cost": 18,
-        "is_stackable": True,
         "description": r"""모든 아군의 스킬 피해량이 ①% 증가한다.""",
         "stat_types": [StatType.AttackPhysic, StatType.AttackMagic],
         "stats": [[5.29, 5.29], [5.78, 5.78], [6.26, 6.26], [6.74, 6.74], [7.22, 7.22], None, None, None, None, None, None, None],
@@ -84,7 +77,6 @@ SPELL_DATA = {
     "치명적인 매력": {
         "grade": Grade.LEGENDARY,
         "cost": 13,
-        "is_stackable": True,
         "description": r"""모든 아군의 일반 공격 피해량이 ①% 증가한다.""",
         "stat_types": [StatType.CriticalRate, StatType.CriticalMult],
         "stats": [[5.7, 5.7], [6.22, 6.22], [6.74, 6.74], [7.26, 7.26], [7.77, 7.77], None, None, None, None, None, None, None],
@@ -95,7 +87,6 @@ SPELL_DATA = {
     "파스텔빛 소풍": {
         "grade": Grade.LEGENDARY,
         "cost": 49,
-        "is_stackable": True,
         "description": r"""12초마다 꽃잎 바람이 적들에게 ①%의 범위 피해를 입히고, 15초마다 맛있는 간식이 떨어져 8초 동안 모든 아군의 HP를 2초마다 2% 회복한다. 배치된 엘다인이 3명 이상 있는 경우 모든 아군 사도의 기본 SP 회복량이 20% 증가한다. 배치된 엘다인 1명 당 꽃잎 바람 피해가 90% 추가되고, 맛있는 간식 회복이 1% 추가된다. 꽃잎 바람의 피해는 가장 공격력이 높은 사도의 공격력을 기준으로 한다.""",
         "stat_types": [StatType.AttackPhysic, StatType.AttackMagic, "Cost"],
         "stats": [[9.76, 9.76, 49.0], [10.65, 10.65, 47.0], [11.53, 11.53, 45.0], [12.42, 12.42, 43.0], [13.31, 13.31, 41.0], None, None, None, None, None, None, None],
@@ -106,7 +97,6 @@ SPELL_DATA = {
     "따뜻한 마음씨": {
         "grade": Grade.RARE,
         "cost": 10,
-        "is_stackable": True,
         "description": r"""모든 아군의 치유량이 ①% 증가한다.""",
         "stat_types": [StatType.Hp],
         "stats": [[3.93], [4.23], [4.53], [4.84], [5.14], [5.44], [5.75], None, None, None, None, None],
@@ -117,7 +107,6 @@ SPELL_DATA = {
     "막판 스퍼트": {
         "grade": Grade.RARE,
         "cost": 13,
-        "is_stackable": True,
         "description": r"""남은 전투 시간이 40초 이하일 경우 모든 아군의 공격 속도가 ①% 증가한다.""",
         "stat_types": [StatType.AttackSpeed],
         "stats": [[4.58], [4.93], [5.29], [5.64], [6.0], [6.35], None, None, None, None, None, None],
@@ -128,7 +117,6 @@ SPELL_DATA = {
     "멤버십 카드": {
         "grade": Grade.RARE,
         "cost": 11,
-        "is_stackable": True,
         "description": r"""무작위로 11 ~ ① 사이의 코인을 획득하고, 남은 HP 비율이 가장 낮은 아군의 HP를 ②% 회복시킨다. (엘리아스 프론티어에서 사용할 수 없다.)""",
         "stat_types": [StatType.CriticalRate],
         "stats": [[5.24], [5.64], [6.05], [6.45], [6.85], [7.26], None, None, None, None, None, None],
@@ -139,7 +127,6 @@ SPELL_DATA = {
     "사기진작": {
         "grade": Grade.RARE,
         "cost": 14,
-        "is_stackable": True,
         "description": r"""모든 아군의 공격 속도가 ①% 증가한다.""",
         "stat_types": [StatType.CriticalRate],
         "stats": [[5.24], [5.64], [6.05], [6.45], [6.85], [7.26], None, None, None, None, None, None],
@@ -150,7 +137,6 @@ SPELL_DATA = {
     "선봉대": {
         "grade": Grade.RARE,
         "cost": 12,
-        "is_stackable": True,
         "description": r"""전열에 배치된 아군의 피해량이 ①% 증가한다. 전열에 배치된 아군의 받는 피해량이 ②% 감소한다.""",
         "stat_types": [StatType.DefensePhysic, StatType.DefenseMagic],
         "stats": [[3.31, 3.31], [3.56, 3.56], [3.82, 3.82], [4.08, 4.08], [4.33, 4.33], [4.59, 4.59], [4.84, 4.84], [5.1, 5.1], None, None, None, None],
@@ -161,7 +147,6 @@ SPELL_DATA = {
     "안 아프게 맞는 법": {
         "grade": Grade.RARE,
         "cost": 20,
-        "is_stackable": True,
         "description": r"""모든 아군의 받는 피해량이 ①% 감소한다.""",
         "stat_types": [StatType.CriticalResist, StatType.CriticalMultResist],
         "stats": [[4.25, 4.25], [4.58, 4.58], [4.91, 4.91], [5.24, 5.24], [5.57, 5.57], [5.9, 5.9], None, None, None, None, None, None],
@@ -172,7 +157,6 @@ SPELL_DATA = {
     "중앙GOOD": {
         "grade": Grade.RARE,
         "cost": 12,
-        "is_stackable": True,
         "description": r"""중열에 배치된 아군의 피해량이 ①% 증가한다. 중열에 배치된 아군의 받는 피해량이 ②% 감소한다.""",
         "stat_types": [StatType.CriticalRate],
         "stats": [[4.58], [4.93], [5.29], [5.64], [6.0], [6.35], [6.7], None, None, None, None, None],
@@ -183,7 +167,6 @@ SPELL_DATA = {
     "효율적인 회복": {
         "grade": Grade.RARE,
         "cost": 14,
-        "is_stackable": True,
         "description": r"""모든 아군의 HP 회복량이 ①% 증가한다.""",
         "stat_types": [StatType.DefensePhysic, StatType.DefenseMagic],
         "stats": [[3.78, 3.78], [4.07, 4.07], [4.37, 4.37], [4.66, 4.66], [4.95, 4.95], [5.24, 5.24], None, None, None, None, None, None],
@@ -194,7 +177,6 @@ SPELL_DATA = {
     "후발대": {
         "grade": Grade.RARE,
         "cost": 12,
-        "is_stackable": True,
         "description": r"""후열에 배치된 아군의 피해량이 ①% 증가한다. 후열에 배치된 아군의 받는 피해량이 ②% 감소한다.""",
         "stat_types": [StatType.CriticalMult],
         "stats": [[4.58], [4.93], [5.29], [5.64], [6.0], [6.35], None, None, None, None, None, None],
@@ -205,7 +187,6 @@ SPELL_DATA = {
     "개인 트레이닝": {
         "grade": Grade.ADVANCED,
         "cost": 10,
-        "is_stackable": True,
         "description": r"""""",
         "stat_types": [StatType.Hp],
         "stats": [[4.57], [4.86], [5.15], [5.44], [5.73], [6.03], [6.32], [6.61], None, None, None, None],
@@ -216,7 +197,6 @@ SPELL_DATA = {
     "방탄불괴": {
         "grade": Grade.ADVANCED,
         "cost": 12,
-        "is_stackable": True,
         "description": r"""""",
         "stat_types": [StatType.DefensePhysic, StatType.DefenseMagic],
         "stats": [[4.44, 4.44], [4.72, 4.72], [5.01, 5.01], [5.29, 5.29], [5.57, 5.57], [5.85, 5.85], [6.14, 6.14], [6.42, 6.42], [6.7, 6.7], [6.98, 6.98], None, None],
@@ -227,7 +207,6 @@ SPELL_DATA = {
     "성격의 카드[광기]": {
         "grade": Grade.ADVANCED,
         "cost": 14,
-        "is_stackable": True,
         "description": r"""광기 성격이 1개 더 있는 것으로 간주한다.""",
         "stat_types": [StatType.AttackPhysic, StatType.AttackMagic],
         "stats": [[2.1, 2.1], [2.24, 2.24], [2.37, 2.37], [2.51, 2.51], [2.64, 2.64], [2.77, 2.77], [2.91, 2.91], [3.04, 3.04], None, None, None, None],
@@ -238,7 +217,6 @@ SPELL_DATA = {
     "성격의 카드[냉정]": {
         "grade": Grade.ADVANCED,
         "cost": 14,
-        "is_stackable": True,
         "description": r"""냉정 성격이 1개 더 있는 것으로 간주한다.""",
         "stat_types": [StatType.DefensePhysic, StatType.DefenseMagic],
         "stats": [[2.1, 2.1], [2.24, 2.24], [2.37, 2.37], [2.51, 2.51], [2.64, 2.64], [2.77, 2.77], [2.91, 2.91], [3.04, 3.04], None, None, None, None],
@@ -249,7 +227,6 @@ SPELL_DATA = {
     "성격의 카드[순수]": {
         "grade": Grade.ADVANCED,
         "cost": 14,
-        "is_stackable": True,
         "description": r"""순수 성격이 1개 더 있는 것으로 간주한다.""",
         "stat_types": [StatType.Hp],
         "stats": [[2.34], [2.49], [2.63], [2.78], [2.93], [3.08], [3.23], [3.38], None, None, None, None],
@@ -260,7 +237,6 @@ SPELL_DATA = {
     "성격의 카드[우울]": {
         "grade": Grade.ADVANCED,
         "cost": 14,
-        "is_stackable": True,
         "description": r"""우울 성격이 1개 더 있는 것으로 간주한다.""",
         "stat_types": [StatType.CriticalRate, StatType.CriticalMult],
         "stats": [[2.34, 2.34], [2.49, 2.49], [2.63, 2.63], [2.78, 2.78], [2.93, 2.93], [3.08, 3.08], [3.23, 3.23], [3.38, 3.38], None, None, None, None],
@@ -271,7 +247,6 @@ SPELL_DATA = {
     "성격의 카드[활발]": {
         "grade": Grade.ADVANCED,
         "cost": 14,
-        "is_stackable": True,
         "description": r"""활발 성격이 1개 더 있는 것으로 간주한다.""",
         "stat_types": [StatType.AttackSpeed],
         "stats": [[2.81], [2.98], [3.16], [3.34], [3.52], [3.7], [3.88], [4.05], None, None, None, None],
@@ -282,7 +257,6 @@ SPELL_DATA = {
     "신분 상승": {
         "grade": Grade.ADVANCED,
         "cost": 13,
-        "is_stackable": True,
         "description": r"""가장 학년이 낮은 아군의 학년이 1만큼 증가한다.""",
         "stat_types": ["Cost"],
         "stats": [[13.0], [12.0], [11.0], [10.0], [9.0], [8.0], [7.0], [6.0], [5.0], [4.0], [3.0], [2.0]],
@@ -293,7 +267,6 @@ SPELL_DATA = {
     "약자무시": {
         "grade": Grade.ADVANCED,
         "cost": 12,
-        "is_stackable": True,
         "description": r"""모든 아군의 일반 공격 피해량이 ①% 증가한다.""",
         "stat_types": [StatType.AttackSpeed, StatType.CriticalMult],
         "stats": [[3.04, 3.04], [3.23, 3.23], [3.42, 3.42], [3.62, 3.62], [3.81, 3.81], [4.0, 4.0], [4.2, 4.2], [4.39, 4.39], None, None, None, None],
@@ -304,7 +277,6 @@ SPELL_DATA = {
     "저놈 잡아라!": {
         "grade": Grade.ADVANCED,
         "cost": 8,
-        "is_stackable": True,
         "description": r"""이번 웨이브 동안 모든 사도의 피해량이 ①% 증가한다.""",
         "stat_types": [StatType.AttackSpeed],
         "stats": [[2.81], [2.98], [3.16], [3.34], [3.52], [3.7], [3.88], [4.05], None, None, None, None],
@@ -315,7 +287,6 @@ SPELL_DATA = {
     "차력 시범": {
         "grade": Grade.ADVANCED,
         "cost": 6,
-        "is_stackable": True,
         "description": r"""""",
         "stat_types": [StatType.CriticalResist, StatType.CriticalMultResist],
         "stats": [[3.09, 3.09], [3.29, 3.29], [3.48, 3.48], [3.68, 3.68], [3.88, 3.88], [4.07, 4.07], [4.27, 4.27], None, None, None, None, None],
@@ -326,7 +297,6 @@ SPELL_DATA = {
     "학자": {
         "grade": Grade.ADVANCED,
         "cost": 10,
-        "is_stackable": True,
         "description": r"""""",
         "stat_types": [StatType.AttackPhysic, StatType.AttackMagic],
         "stats": [[3.53, 3.53], [3.76, 3.76], [3.98, 3.98], [4.21, 4.21], [4.43, 4.43], [4.66, 4.66], [4.88, 4.88], None, None, None, None, None],
@@ -337,7 +307,6 @@ SPELL_DATA = {
     "회심의 일격": {
         "grade": Grade.ADVANCED,
         "cost": 6,
-        "is_stackable": True,
         "description": r"""""",
         "stat_types": [StatType.CriticalMult],
         "stats": [[4.0], [4.25], [4.51], [4.76], [5.02], [5.27], [5.53], [5.78], None, None, None, None],
@@ -348,7 +317,6 @@ SPELL_DATA = {
     "건강한 신체": {
         "grade": Grade.NORMAL,
         "cost": 8,
-        "is_stackable": True,
         "description": r"""""",
         "stat_types": [StatType.DefensePhysic, StatType.DefenseMagic],
         "stats": [[2.52, 2.52], [2.65, 2.65], [2.78, 2.78], [2.9, 2.9], [3.03, 3.03], [3.15, 3.15], [3.28, 3.28], [3.41, 3.41], [3.53, 3.53], [3.66, 3.66], None, None],
@@ -359,7 +327,6 @@ SPELL_DATA = {
     "견습 마법사": {
         "grade": Grade.NORMAL,
         "cost": 9,
-        "is_stackable": True,
         "description": r"""""",
         "stat_types": [StatType.AttackMagic, StatType.CriticalResist],
         "stats": [[3.17, 2.84], [3.33, 2.98], [3.49, 3.12], [3.65, 3.26], [3.81, 3.41], [3.97, 3.55], [4.12, 3.69], [4.28, 3.83], [4.44, 3.97], [4.6, 4.12], None, None],
@@ -370,7 +337,6 @@ SPELL_DATA = {
     "그건 내 잔상": {
         "grade": Grade.NORMAL,
         "cost": 9,
-        "is_stackable": True,
         "description": r"""""",
         "stat_types": [StatType.AttackSpeed, StatType.CriticalMultResist],
         "stats": [[3.17, 3.17], [3.33, 3.33], [3.49, 3.49], [3.65, 3.65], [3.81, 3.81], [3.97, 3.97], [4.12, 4.12], [4.28, 4.28], [4.44, 4.44], [4.6, 4.6], None, None],
@@ -381,7 +347,6 @@ SPELL_DATA = {
     "딸기맛 캡슐": {
         "grade": Grade.NORMAL,
         "cost": 6,
-        "is_stackable": True,
         "description": r"""모든 사도의 HP를 ①%만큼 회복한다.""",
         "stat_types": [StatType.Hp],
         "stats": [[2.0], [2.1], [2.2], [2.3], [2.4], [2.5], [2.6], [2.7], [2.8], [2.9], None, None],
@@ -392,7 +357,6 @@ SPELL_DATA = {
     "랜덤 코인": {
         "grade": Grade.NORMAL,
         "cost": 20,
-        "is_stackable": True,
         "description": r"""무작위로 8 ~ ① 사이의 코인을 획득한다. (엘리아스 프론티어에서 사용할 수 없다.)""",
         "stat_types": [StatType.Hp],
         "stats": [[2.67], [2.8], [2.94], [3.07], [3.21], [3.34], [3.47], [3.61], [3.74], [3.87], None, None],
@@ -403,7 +367,6 @@ SPELL_DATA = {
     "소다맛 캡슐": {
         "grade": Grade.NORMAL,
         "cost": 6,
-        "is_stackable": True,
         "description": r"""모든 사도의 SP를 ①%만큼 회복한다.""",
         "stat_types": [StatType.DefensePhysic, StatType.DefenseMagic],
         "stats": [[1.45, 1.45], [1.52, 1.52], [1.59, 1.59], [1.66, 1.66], [1.74, 1.74], [1.81, 1.81], [1.88, 1.88], [1.95, 1.95], [2.03, 2.03], [2.1, 2.1], None, None],
@@ -414,7 +377,6 @@ SPELL_DATA = {
     "자기 계발": {
         "grade": Grade.NORMAL,
         "cost": 8,
-        "is_stackable": True,
         "description": r"""""",
         "stat_types": [StatType.AttackPhysic, StatType.AttackMagic],
         "stats": [[2.52, 2.52], [2.65, 2.65], [2.78, 2.78], [2.9, 2.9], [3.03, 3.03], [3.15, 3.15], [3.28, 3.28], [3.41, 3.41], [3.53, 3.53], [3.66, 3.66], None, None],
@@ -425,7 +387,6 @@ SPELL_DATA = {
     "체력증진": {
         "grade": Grade.NORMAL,
         "cost": 7,
-        "is_stackable": True,
         "description": r"""""",
         "stat_types": [StatType.Hp],
         "stats": [[2.86], [3.0], [3.14], [3.29], [3.43], [3.57], [3.71], [3.86], [4.0], [4.14], None, None],

@@ -138,12 +138,6 @@ class UpperSkillManager:
             can_cancel = is_busy and rule.cancelable_movements and hero.last_movement in rule.cancelable_movements
 
             if not is_busy or can_cancel:
-                print("TEST: SHOULD be here")
-                print(rule.cancelable_movements)
-                print(hero.last_movement)
-                print(hero.last_movement in rule.cancelable_movements)
-                print(is_busy, rule.cancelable_movements, hero.last_movement in rule.cancelable_movements)
-                print(can_cancel)
                 hero.upper_skill_flag = True
                 if can_cancel:
                     self.party.action_manager.cancel_actions_by_hero(hero.party_idx)

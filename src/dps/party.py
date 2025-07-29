@@ -21,7 +21,7 @@ class Party:
         self.applied_spell_effects = set()
 
 
-    def init_run(self, priority, rules):
+    def init_run(self, priority=None, rules=None):
         """Initializes settings that are constant for the entire run."""
         self.active_indices = [i for i, c in enumerate(self.character_list[:9]) if c is not None]
         self.applied_spell_effects = set()
@@ -90,7 +90,12 @@ class Party:
         for spell in self.spells:
             spell.apply_stats(self)
 
-        # 3. Apply artifact initialization effects for all heroes
+        # 3. Initialize/reset managers for the simulation.
+        self.status_manager.init_simulation()
+        self.action_manager.init_simulation()
+        self.upper_skill_manager.init_simulation()
+
+        # 4. Apply artifact initialization effects for all heroes
         applied_artifact_init_effects_this_sim = set()
         for i in self.active_indices:
             hero = self.character_list[i]
@@ -103,7 +108,7 @@ class Party:
                         applied_artifact_init_effects_this_sim.add(effect_key)
                     artifact.apply_init_effect(hero)
         
-        # 4. Apply party-wide initialization effects from spells for this simulation, checking for stackability.
+        # 5. Apply party-wide initialization effects from spells for this simulation, checking for stackability.
         applied_spell_init_effects_this_sim = set()
         for spell in self.spells:
             if spell.init_effect_fn:
@@ -113,10 +118,6 @@ class Party:
                         continue # Skip already-applied non-stackable init effect
                     applied_spell_init_effects_this_sim.add(effect_key)
                 spell.apply_init_effect(self)
-            
-        self.status_manager.init_simulation()
-        self.action_manager.init_simulation()
-        self.upper_skill_manager.init_simulation()
         
 
     def add_hero(self, hero, idx):

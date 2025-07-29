@@ -10,10 +10,8 @@ if TYPE_CHECKING:
 class DragonLightSword(Artifact):
     def __init__(self, level: int = 1):
         super().__init__(name="용광검", level=level)
-        self.setup_effect_fn = self.setup_dragonlightsword
-        self.init_effect_fn = self.init_dragonlightsword
 
-    def setup_dragonlightsword(self, hero: 'Hero'):
+    def apply_setup_effect(self, hero: 'Hero'):
         """Setup effect for DragonLightSword. This is called once per run."""
         if not hasattr(hero, 'original_get_coeff_dls'):
             hero.original_get_coeff_dls = hero.get_coeff
@@ -43,6 +41,6 @@ class DragonLightSword(Artifact):
 
         hero.LowerSkill = enhanced_LowerSkill
 
-    def init_dragonlightsword(self, hero: 'Hero'):
+    def apply_init_effect(self, hero: 'Hero'):
         """Initialization effect for DragonLightSword. Called at the start of each simulation."""
         hero.artifact_counters['dragonlightsword_last_reset_time'] = 0 

@@ -4,7 +4,7 @@ from dps.party import Party
 from dps.hero import Hero
 from dps.enums import *
 from dps.action import InstantAction, ProjectileAction, StatusAction
-from dps.status import BuffAttackSpeed, BuffAmplify, target_self
+from dps.status import BuffStatCoeff, BuffAmplify, target_self
 from dps.skill_conditions import CooldownReadyCondition, NeverCastCondition, MovementTriggerCondition
 from dps.artifact import Artifact
 from dps.tests.simple_hero import SimpleHero
@@ -246,11 +246,12 @@ def test_attack_speed_buff():
             motion_time = self.get_motion_time(MovementType.LowerSkill)
             
             # 5초 지속, 공격속도 100% 증가 버프 생성
-            buff_template = BuffAttackSpeed(
+            buff_template = BuffStatCoeff(
                 status_id="AttackSpeedBuff_Test",
                 caster=self,
                 target_resolver_fn=target_self,
                 duration=5,
+                stat_type=StatType.AttackSpeed,
                 value=100
             )
             

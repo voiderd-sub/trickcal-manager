@@ -9,9 +9,8 @@ if TYPE_CHECKING:
 class FriclesQueenRegentsSeal(Artifact):
     def __init__(self, level: int = 1):
         super().__init__(name="프리클의 여왕 대리 인장", level=level)
-        self.init_effect_fn = self.init_fricles_queen_regents_seal
 
-    def init_fricles_queen_regents_seal(self, hero: 'Hero'):
+    def apply_init_effect(self, hero: 'Hero'):
         """
         Initializes the effect for Fricle's Queen Regent's Seal.
         This effect increases the skill damage of all allies in the same row.

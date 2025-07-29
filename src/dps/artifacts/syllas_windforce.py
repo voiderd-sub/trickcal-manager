@@ -10,9 +10,8 @@ if TYPE_CHECKING:
 class SyllasWindforce(Artifact):
     def __init__(self, level: int = 1):
         super().__init__(name="실라의 바람살", level=level)
-        self.init_effect_fn = self.init_syllas_windforce
 
-    def init_syllas_windforce(self, hero: 'Hero'):
+    def apply_init_effect(self, hero: 'Hero'):
         """
         Initialization effect for Sylla's Windforce:
         - Increases Attack Speed by a percentage based on artifact level.

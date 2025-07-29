@@ -9,9 +9,8 @@ if TYPE_CHECKING:
 class DayasDiamondCutter(Artifact):
     def __init__(self, level: int = 1):
         super().__init__(name="다야의 다이아몬드 커터", level=level)
-        self.init_effect_fn = self.init_effect
         
-    def init_effect(self, hero: 'Hero'):
+    def apply_init_effect(self, hero: 'Hero'):
         """
         Initialization effect for Daya's Diamond Cutter:
         - Adds an amplify modifier to the hero for this simulation.

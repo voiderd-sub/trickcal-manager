@@ -1,5 +1,6 @@
 from dps.enums import *
 from dps.action import *
+from dps.stat_utils import apply_stat_bonuses
 
 import numpy as np
 from functools import partial
@@ -115,8 +116,8 @@ class DebuffSting(StatusTemplate):
         pass
 
 
-class BuffAttackSpeed(StatusTemplate):
-    def __init__(self, status_id, caster, target_resolver_fn, duration, value):
+class BuffStatCoeff(StatusTemplate):
+    def __init__(self, status_id, caster, target_resolver_fn, duration, stat_type: StatType, value):
         super().__init__(status_id=status_id,
                          caster=caster,
                          target_resolver_fn=target_resolver_fn,
@@ -124,15 +125,16 @@ class BuffAttackSpeed(StatusTemplate):
                          refresh_interval=0,
                          status_type="buff")
         self.duration = duration
-        self.value = value/100
+        self.stat_type = stat_type
+        self.value = value
     
     def apply_fn(self, reservation, target_id, current_time):
         target = self.get_target_with_id(target_id)
-        target.attack_speed_coeff += self.value
-    
+        apply_stat_bonuses(target, {self.stat_type: self.value})
+        
     def delete_fn(self, reservation, target_id, current_time):
         target = self.get_target_with_id(target_id)
-        target.attack_speed_coeff -= self.value
+        apply_stat_bonuses(target, {self.stat_type: -self.value})
 
 
 class BuffAmplify(StatusTemplate):

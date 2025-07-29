@@ -21,7 +21,7 @@ class Spell:
             raise ValueError(f"Spell '{self.name}' not found in spell_data.")
 
         self.grade: Grade = data["grade"]
-        self.stackable: bool = data["is_stackable"]
+        self.stackable: bool = True # If false, you must explicitly modify this value after inheriting it.
         self.description: str = data["description"]
         
         # Raw data from file for reference
@@ -36,19 +36,31 @@ class Spell:
         self.cost = self._get_cost_for_level()
         self.stat_bonuses = self._get_stats_for_level()
         self.effects = self._get_effects_for_level()
-        
-        # These should be defined in subclasses for artifacts with unique effects.
-        self.setup_effect_fn: Optional[Callable[['Party'], None]] = None
-        self.init_effect_fn: Optional[Callable[['Party'], None]] = None
 
     def _get_stats_for_level(self) -> Dict[StatType, float]:
-        """Extracts stat bonuses for the spell's current level."""
+        """
+        Extracts stat bonuses for the spell's current level.
+        If data for the current level is missing, it estimates the values based on level 1 stats and growth rates.
+        """
         stats = {}
-        if self.level - 1 < len(self._stats_by_level) and self._stats_by_level[self.level - 1]:
-            level_stats_values = self._stats_by_level[self.level - 1]
-            for i, stat_type in enumerate(self._stat_types):
-                if stat_type != "Cost" and i < len(level_stats_values):
-                    stats[stat_type] = level_stats_values[i]
+        level_idx = self.level - 1
+
+        # Check if data for the current level exists
+        if level_idx < len(self._stats_by_level) and self._stats_by_level[level_idx]:
+            level_stats_values = self._stats_by_level[level_idx]
+            for i, stat_type_str in enumerate(self._stat_types):
+                if stat_type_str != "Cost" and i < len(level_stats_values):
+                    stats[stat_type_str] = level_stats_values[i]
+        # If data is missing, estimate it
+        elif self._stats_by_level and self._stats_by_level[0]:
+            level_1_stats = self._stats_by_level[0]
+            for i, stat_type_str in enumerate(self._stat_types):
+                if stat_type_str != "Cost" and i < len(level_1_stats) and i < len(self._stat_growth):
+                    level_1_value = level_1_stats[i]
+                    growth = self._stat_growth[i]
+                    
+                    estimated_value = level_1_value * (1 + (self.level - 1) / 11 * growth / 100)
+                    stats[stat_type_str] = round(estimated_value, 2)
         return stats
 
     def _get_cost_for_level(self) -> int:
@@ -66,10 +78,35 @@ class Spell:
         return cost
 
     def _get_effects_for_level(self) -> List[float]:
-        """Retrieves the special effect values for the spell's current level."""
-        if self.level - 1 < len(self._effects_by_level) and self._effects_by_level[self.level - 1]:
-            return self._effects_by_level[self.level - 1] or []
-        return []
+        """
+        Retrieves the special effect values for the spell's current level.
+        If data for the current level is missing, it estimates the values based on level 1 effects and growth rates.
+        """
+        level_idx = self.level - 1
+
+        # Check if data for the current level exists
+        if level_idx < len(self._effects_by_level) and self._effects_by_level[level_idx] is not None:
+            return self._effects_by_level[level_idx] or []
+        
+        # If data is missing, estimate it
+        estimated_effects = []
+        if self._effects_by_level and self._effects_by_level[0] is not None:
+            level_1_effects = self._effects_by_level[0]
+            for i, effect_val in enumerate(level_1_effects):
+                if i < len(self._effect_growth):
+                    growth = self._effect_growth[i]
+                    
+                    estimated_value = effect_val + (self.level - 1) * growth
+                    
+                    # Rounding rule based on level 1 value type
+                    if effect_val == int(effect_val):
+                        estimated_effects.append(round(estimated_value))
+                    else:
+                        estimated_effects.append(round(estimated_value, 2))
+                else:
+                     estimated_effects.append(effect_val)
+        
+        return estimated_effects
 
     def apply_stats(self, party: 'Party'):
         """
@@ -83,12 +120,10 @@ class Spell:
         """
         Applies the spell's one-time setup effect to the party.
         """
-        if self.setup_effect_fn:
-            self.setup_effect_fn(party)
+        pass
 
     def apply_init_effect(self, party: 'Party'):
         """
         Applies the spell's simulation-specific initial effect to the party.
         """
-        if self.init_effect_fn:
-            self.init_effect_fn(party) 
+        pass

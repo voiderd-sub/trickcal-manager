@@ -25,6 +25,7 @@ class Hero:
         self.status_templates = {}
         self.applied_effects = set()
         self.artifact_counters = dict()   # Counters for artifact effects
+        self.is_eldain = False            # Whether the hero is Eldain; default is False
 
     
     def __repr__(self):
@@ -89,6 +90,7 @@ class Hero:
         if not hasattr(self, "attack"):
             self.attack = 100
         self.amplify_dict = {dt: 1.0 for dt in DamageType.leaf_types()}
+        self.taken_amplify_dict = {dt: 1.0 for dt in DamageType.leaf_types()}
         for stat_type in StatType:
             setattr(self, stat_type.value+"_coeff", 1.0)
         self.acceleration = 1.
@@ -329,6 +331,11 @@ class Hero:
     def add_amplify(self, damage_type: DamageType, value: float):
         for dt in DamageType.get_leaf_members(damage_type):
             self.amplify_dict[dt] += value / 100
+    
+    def reduce_damage_taken(self, damage_type: DamageType, value: float):
+        """Reduces the damage taken by the hero by a certain percentage."""
+        for dt in DamageType.get_leaf_members(damage_type):
+            self.taken_amplify_dict[dt] -= value / 100
     
     def get_coeff(self, stat_type: StatType):
         """

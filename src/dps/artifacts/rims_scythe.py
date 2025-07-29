@@ -8,9 +8,8 @@ if TYPE_CHECKING:
 class RimsScythe(Artifact):
     def __init__(self, level: int = 1):
         super().__init__(name="림의 낫", level=level)
-        self.setup_effect_fn = self.setup_rims_scythe
 
-    def setup_rims_scythe(self, hero: 'Hero'):
+    def apply_setup_effect(self, hero: 'Hero'):
         """
         Setup effect for Rim's Scythe:
         - Modifies the hero's aa_post_fn to add an execution effect.

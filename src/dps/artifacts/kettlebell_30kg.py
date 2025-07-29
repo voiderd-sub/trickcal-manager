@@ -10,9 +10,8 @@ if TYPE_CHECKING:
 class Kettlebell30kg(Artifact):
     def __init__(self, level: int = 1):
         super().__init__(name="30KG 케틀벨", level=level)
-        self.init_effect_fn = self.init_kettlebell_30kg
 
-    def init_kettlebell_30kg(self, hero: 'Hero'):
+    def apply_init_effect(self, hero: 'Hero'):
         """
         Initialization effect for 30KG Kettlebell:
         - Increases the hero's skill damage by a percentage based on level.
