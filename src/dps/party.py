@@ -3,6 +3,7 @@ from dps.status_manager import StatusManager
 from dps.action_manager import ActionManager
 from dps.upper_skill_manager import UpperSkillManager
 from dps.skill_conditions import CooldownReadyCondition, MovementTriggerCondition
+from dps.spell import Spell
 
 import numpy as np
 import pandas as pd
@@ -16,23 +17,30 @@ class Party:
         self.action_manager = ActionManager(self)
         self.status_manager = StatusManager(self)
         self.upper_skill_manager = UpperSkillManager(self)
+        self.spells = []
+        self.applied_spell_effects = set()
 
 
-    def init_simulation(self, priority, rules):
-        self.current_time = 0  # ms
-        self.simulation_result = dict()
-        self.damage_records = []
-        self.movement_log = []
-        self.next_update = np.full(12, np.inf)       # idx=9:action manager, 10:status manager, 11:upper skill manager
-
+    def init_run(self, priority, rules):
+        """Initializes settings that are constant for the entire run."""
         self.active_indices = [i for i, c in enumerate(self.character_list[:9]) if c is not None]
+        self.applied_spell_effects = set()
 
-        # Initialize all heroes first, and set their next update time
+        # 1. Initialize hero base settings for the run.
         for i in self.active_indices:
-            self.character_list[i].init_simulation()
-            self.next_update[i] = 0
+            self.character_list[i].init_run()
 
-        # Set priorities and rules
+        # 2. Apply party-wide one-time setup effects from spells, checking for stackability.
+        for spell in self.spells:
+            if spell.setup_effect_fn:
+                effect_key = spell.setup_effect_fn.__name__
+                if not spell.stackable:
+                    if effect_key in self.applied_spell_effects:
+                        continue # Skip already-applied non-stackable setup effect
+                    self.applied_spell_effects.add(effect_key)
+                spell.apply_setup_effect(self)
+
+        # 3. Set priorities and rules for the run.
         self.upper_skill_priorities = [10] * 9
         if priority:
             for i, p in enumerate(priority):
@@ -45,7 +53,7 @@ class Party:
         else:
             self.upper_skill_rules = [CooldownReadyCondition() if c else None for c in self.character_list[:9]]
 
-        # Connect movement triggers
+        # 4. Connect movement triggers
         hero_map = {h.get_unique_name(): h for h in self.character_list if h is not None}
         for i, rule in enumerate(self.upper_skill_rules):
             if isinstance(rule, MovementTriggerCondition):
@@ -63,6 +71,35 @@ class Party:
                     )
             elif self.character_list[i]: # Set rules for non-trigger heroes
                 self.character_list[i].set_upper_skill_rule(rule)
+
+
+    def init_simulation(self):
+        """Initializes/resets the state for a single simulation."""
+        self.current_time = 0  # ms
+        self.simulation_result = dict()
+        self.damage_records = []
+        self.movement_log = []
+        self.next_update = np.full(12, np.inf)
+
+        # 1. Initialize/reset hero state for the simulation.
+        for i in self.active_indices:
+            self.character_list[i].init_simulation()
+            self.next_update[i] = 0
+        
+        # 2. Apply party-wide stat bonuses from spells for this simulation.
+        for spell in self.spells:
+            spell.apply_stats(self)
+        
+        # 3. Apply party-wide initialization effects from spells for this simulation, checking for stackability.
+        applied_init_effects_this_sim = set()
+        for spell in self.spells:
+            if spell.init_effect_fn:
+                effect_key = spell.init_effect_fn.__name__
+                if not spell.stackable:
+                    if effect_key in applied_init_effects_this_sim:
+                        continue # Skip already-applied non-stackable init effect
+                    applied_init_effects_this_sim.add(effect_key)
+                spell.apply_init_effect(self)
             
         self.status_manager.init_simulation()
         self.action_manager.init_simulation()
@@ -81,6 +118,9 @@ class Party:
         if hero:
             hero.add_artifact(artifact)
 
+    def add_spell(self, spell: Spell):
+        self.spells.append(spell)
+
     def set_global_upper_skill_lock(self, current_time):
         self.upper_skill_manager.locked_until = current_time + GLOBAL_UPPER_SKILL_LOCK_MS
         self.next_update[11] = self.upper_skill_manager.locked_until
@@ -89,7 +129,7 @@ class Party:
         return current_time >= self.upper_skill_manager.locked_until
 
     def get_amplify(self, hero):
-        # TODO : NEED TO REVISE
+        # NOT FOR HERO. (this is the function that calculates enemy-wise amplify)
         return 0.
     
     def get_additional_coeff(self, hero):
@@ -97,10 +137,10 @@ class Party:
         return 1.
 
     def run(self, max_t, num_simulation, priority=None, rules=None):
-        rows = []
-        import time
+        self.init_run(priority, rules)
+        
         for _ in tqdm(range(num_simulation)):
-            self.init_simulation(priority, rules)
+            self.init_simulation()
             prev_time = 0
             while self.current_time < int(max_t * SEC_TO_MS):
                 assert self.current_time >= prev_time, "time paradox!"

@@ -32,15 +32,24 @@ class Hero:
 
     def add_artifact(self, artifact: Artifact):
         self.artifacts.append(artifact)
-        # Handle unique effect stacking
-        if artifact.unique_effect_fn:
-            effect_key = artifact.unique_effect_fn.__name__
-            if not artifact.stackable and effect_key in self.applied_effects:
-                return  # Skip non-stackable effects that are already applied
-            self.applied_effects.add(effect_key)
-            artifact.apply_unique_effect(self)
 
-    def init_simulation(self):
+    def init_run(self):
+        """
+        Initializes settings that are constant across multiple simulations in a single run.
+        This includes one-time setup effects from artifacts.
+        """
+        self.applied_effects = set()
+        
+        # Apply one-time setup effects from artifacts, checking for stackability.
+        for artifact in self.artifacts:
+            if artifact.setup_effect_fn:
+                effect_key = artifact.setup_effect_fn.__name__
+                if not artifact.stackable:
+                    if effect_key in self.applied_effects:
+                        continue  # Skip already-applied non-stackable setup effect
+                    self.applied_effects.add(effect_key)
+                artifact.apply_setup_effect(self)
+
         # Check skill level data is exists.
         # If not, use the value of the level that has data but is lower than the user's skill level.
         for skill_type in ["lowerskill", "upperskill"]:
@@ -53,6 +62,15 @@ class Hero:
                     print(f"Data for {skill_type} level {user_level} is not exists.")
                     print(f"Use data of level {valid_level} instead.")
 
+        # Initialize movement triggers and upper skill rule
+        self.upper_skill_rule = None
+        self.movement_triggers = defaultdict(list)
+
+    def init_simulation(self):
+        """
+        Initializes/resets the hero's state for a single simulation run.
+        This includes timers, counters, and logs.
+        """
         self._initialize_eac()
 
         self.aa_cd = round(300 * SEC_TO_MS / self.attack_speed)
@@ -64,9 +82,9 @@ class Hero:
         self.last_movement = MovementType.Wait
         self.last_movement_time = 0
         self.upper_skill_flag = False
-        self.upper_skill_rule = None
         self.next_t_without_interrupt = -1
-        self.movement_triggers = defaultdict(list)
+
+        # Initialize base stats and coefficients
         if not hasattr(self, "attack"):
             self.attack = 100
         self.amplify_dict = {dt: 1.0 for dt in DamageType.leaf_types()}
@@ -74,12 +92,20 @@ class Hero:
             setattr(self, stat_type.value+"_coeff", 1.0)
         self.acceleration = 1.
 
+        # Apply stat bonuses from artifacts
         for artifact in self.artifacts:
             artifact.apply_stats(self)
 
-        # Initialize unique effect tracking
-        for k, v in self.artifact_counters.items():
-            self.artifact_counters[k] = 0
+        # Apply initialization effects from artifacts for this simulation, checking for stackability.
+        applied_init_effects_this_sim = set()
+        for artifact in self.artifacts:
+            if artifact.init_effect_fn:
+                effect_key = artifact.init_effect_fn.__name__
+                if not artifact.stackable:
+                    if effect_key in applied_init_effects_this_sim:
+                        continue # Skip already-applied non-stackable init effect in this simulation
+                    applied_init_effects_this_sim.add(effect_key)
+                artifact.apply_init_effect(self)
 
         self.movement_log = []
         self.movement_timestamps = {MovementType.AutoAttackBasic: [],
@@ -311,7 +337,7 @@ class Hero:
 
     def add_amplify(self, damage_type: DamageType, value: float):
         for dt in DamageType.get_leaf_members(damage_type):
-            self.amplify_dict[dt] += value
+            self.amplify_dict[dt] += value / 100
     
     def get_damage(self, damage, movement_type):
         enemy_amplify = self.party.get_amplify(self)

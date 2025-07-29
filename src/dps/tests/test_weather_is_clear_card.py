@@ -1,34 +1,35 @@
 import pytest
 from dps.party import Party
 from dps.tests.simple_hero import SimpleHero
-from dps.artifacts.clear_weather_card import WeatherIsClearCard
+from dps.artifacts.weather_is_clear_card import WeatherIsClearCard
 
 
-def test_clear_weather_card_stats():
-    """Test that ClearWeatherCard correctly applies stat bonuses"""
+def test_weather_is_clear_card_stats():
+    """Test that WeatherIsClearCard correctly applies stat bonuses"""
     party = Party()
     hero = SimpleHero()
     party.add_hero(hero, 0)
     
-    # Add ClearWeatherCard
+    # Add WeatherIsClearCard
     artifact = WeatherIsClearCard()
     party.add_artifact(artifact, 0)
     
     # Initialize simulation to apply stats
-    party.init_simulation(None, None)
+    party.init_run(None, None)
+    party.init_simulation()
     
     # Check that stats are applied correctly
     assert hero.attack_speed_coeff == pytest.approx(1.1798), f"Expected attack_speed_coeff to be 1.1798, got {hero.attack_speed_coeff}"
     assert hero.critical_rate_coeff == pytest.approx(1.1798), f"Expected critical_rate_coeff to be 1.1798, got {hero.critical_rate_coeff}"
 
 
-def test_clear_weather_card_lightning_effect():
-    """Test that ClearWeatherCard triggers lightning damage every 3 basic attacks"""
+def test_weather_is_clear_card_lightning_effect():
+    """Test that WeatherIsClearCard triggers lightning damage every 3 basic attacks"""
     party = Party()
     hero = SimpleHero()
     party.add_hero(hero, 0)
     
-    # Add ClearWeatherCard
+    # Add WeatherIsClearCard
     artifact = WeatherIsClearCard()
     party.add_artifact(artifact, 0)
     
@@ -58,13 +59,13 @@ def test_clear_weather_card_lightning_effect():
         f"Expected {expected_lightning_count} lightning strikes, got {len(lightning_times)}"
 
 
-def test_clear_weather_card_non_stackable():
-    """Test that ClearWeatherCard effect does not stack when multiple are equipped"""
+def test_weather_is_clear_card_non_stackable():
+    """Test that WeatherIsClearCard effect does not stack when multiple are equipped"""
     party = Party()
     hero = SimpleHero()
     party.add_hero(hero, 0)
     
-    # Add two ClearWeatherCards
+    # Add two WeatherIsClearCards
     artifact1 = WeatherIsClearCard()
     artifact2 = WeatherIsClearCard()
     party.add_artifact(artifact1, 0)
@@ -85,7 +86,7 @@ def test_clear_weather_card_non_stackable():
 
 
 if __name__ == "__main__":
-    test_clear_weather_card_stats()
-    test_clear_weather_card_lightning_effect()
-    test_clear_weather_card_non_stackable()
-    print("✅ All ClearWeatherCard tests passed!") 
+    test_weather_is_clear_card_stats()
+    test_weather_is_clear_card_lightning_effect()
+    test_weather_is_clear_card_non_stackable()
+    print("✅ All WeatherIsClearCard tests passed!") 

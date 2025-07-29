@@ -145,7 +145,7 @@ class BuffAmplify(StatusTemplate):
                          status_type="buff")
         self.duration = duration
         self.applying_dmg_type = applying_dmg_type
-        self.value = value/100
+        self.value = value
     
     def apply_fn(self, reservation, target_id, current_time):
         target = self.get_target_with_id(target_id)
