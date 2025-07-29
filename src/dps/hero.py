@@ -43,13 +43,12 @@ class Hero:
         
         # Apply one-time setup effects from artifacts, checking for stackability.
         for artifact in self.artifacts:
-            if artifact.setup_effect_fn:
-                effect_key = artifact.setup_effect_fn.__name__
-                if not artifact.stackable:
-                    if effect_key in self.applied_effects:
-                        continue  # Skip already-applied non-stackable setup effect
-                    self.applied_effects.add(effect_key)
-                artifact.apply_setup_effect(self)
+            effect_key = artifact.effect_id
+            if not artifact.stackable:
+                if effect_key in self.applied_effects:
+                    continue  # Skip already-applied non-stackable setup effect
+                self.applied_effects.add(effect_key)
+            artifact.apply_setup_effect(self)
 
         # Check skill level data is exists.
         # If not, use the value of the level that has data but is lower than the user's skill level.

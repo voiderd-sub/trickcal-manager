@@ -44,6 +44,8 @@ class Artifact:
         self.stat_bonuses = self._get_stats_for_level()
         self.effects = self._get_effects_for_level()
 
+        self.effect_id = type(self).__name__
+
 
     def _get_stats_for_level(self) -> Dict[StatType, float]:
         """

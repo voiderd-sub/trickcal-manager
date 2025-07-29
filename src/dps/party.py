@@ -32,13 +32,12 @@ class Party:
 
         # 2. Apply party-wide one-time setup effects from spells, checking for stackability.
         for spell in self.spells:
-            if spell.setup_effect_fn:
-                effect_key = spell.setup_effect_fn.__name__
-                if not spell.stackable:
-                    if effect_key in self.applied_spell_effects:
-                        continue # Skip already-applied non-stackable setup effect
-                    self.applied_spell_effects.add(effect_key)
-                spell.apply_setup_effect(self)
+            effect_key = spell.effect_id
+            if not spell.stackable:
+                if effect_key in self.applied_spell_effects:
+                    continue # Skip already-applied non-stackable setup effect
+                self.applied_spell_effects.add(effect_key)
+            spell.apply_setup_effect(self)
 
         # 3. Set priorities and rules for the run.
         self.upper_skill_priorities = [10] * 9
@@ -100,24 +99,22 @@ class Party:
         for i in self.active_indices:
             hero = self.character_list[i]
             for artifact in hero.artifacts:
-                if artifact.init_effect_fn:
-                    effect_key = (hero.party_idx, artifact.init_effect_fn.__name__)
-                    if not artifact.stackable:
-                        if effect_key in applied_artifact_init_effects_this_sim:
-                            continue
-                        applied_artifact_init_effects_this_sim.add(effect_key)
-                    artifact.apply_init_effect(hero)
+                effect_key = (hero.party_idx, artifact.effect_id)
+                if not artifact.stackable:
+                    if effect_key in applied_artifact_init_effects_this_sim:
+                        continue
+                    applied_artifact_init_effects_this_sim.add(effect_key)
+                artifact.apply_init_effect(hero)
         
         # 5. Apply party-wide initialization effects from spells for this simulation, checking for stackability.
         applied_spell_init_effects_this_sim = set()
         for spell in self.spells:
-            if spell.init_effect_fn:
-                effect_key = spell.init_effect_fn.__name__
-                if not spell.stackable:
-                    if effect_key in applied_spell_init_effects_this_sim:
-                        continue # Skip already-applied non-stackable init effect
-                    applied_spell_init_effects_this_sim.add(effect_key)
-                spell.apply_init_effect(self)
+            effect_key = spell.effect_id
+            if not spell.stackable:
+                if effect_key in applied_spell_init_effects_this_sim:
+                    continue # Skip already-applied non-stackable init effect
+                applied_spell_init_effects_this_sim.add(effect_key)
+            spell.apply_init_effect(self)
         
 
     def add_hero(self, hero, idx):
