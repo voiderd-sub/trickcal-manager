@@ -89,16 +89,29 @@ class Party:
         # 2. Apply party-wide stat bonuses from spells for this simulation.
         for spell in self.spells:
             spell.apply_stats(self)
+
+        # 3. Apply artifact initialization effects for all heroes
+        applied_artifact_init_effects_this_sim = set()
+        for i in self.active_indices:
+            hero = self.character_list[i]
+            for artifact in hero.artifacts:
+                if artifact.init_effect_fn:
+                    effect_key = (hero.party_idx, artifact.init_effect_fn.__name__)
+                    if not artifact.stackable:
+                        if effect_key in applied_artifact_init_effects_this_sim:
+                            continue
+                        applied_artifact_init_effects_this_sim.add(effect_key)
+                    artifact.apply_init_effect(hero)
         
-        # 3. Apply party-wide initialization effects from spells for this simulation, checking for stackability.
-        applied_init_effects_this_sim = set()
+        # 4. Apply party-wide initialization effects from spells for this simulation, checking for stackability.
+        applied_spell_init_effects_this_sim = set()
         for spell in self.spells:
             if spell.init_effect_fn:
                 effect_key = spell.init_effect_fn.__name__
                 if not spell.stackable:
-                    if effect_key in applied_init_effects_this_sim:
+                    if effect_key in applied_spell_init_effects_this_sim:
                         continue # Skip already-applied non-stackable init effect
-                    applied_init_effects_this_sim.add(effect_key)
+                    applied_spell_init_effects_this_sim.add(effect_key)
                 spell.apply_init_effect(self)
             
         self.status_manager.init_simulation()

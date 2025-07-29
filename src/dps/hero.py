@@ -97,17 +97,6 @@ class Hero:
         for artifact in self.artifacts:
             artifact.apply_stats(self)
 
-        # Apply initialization effects from artifacts for this simulation, checking for stackability.
-        applied_init_effects_this_sim = set()
-        for artifact in self.artifacts:
-            if artifact.init_effect_fn:
-                effect_key = artifact.init_effect_fn.__name__
-                if not artifact.stackable:
-                    if effect_key in applied_init_effects_this_sim:
-                        continue # Skip already-applied non-stackable init effect in this simulation
-                    applied_init_effects_this_sim.add(effect_key)
-                artifact.apply_init_effect(self)
-
         self.movement_log = []
         self.movement_timestamps = {MovementType.AutoAttackBasic: [],
                                   MovementType.AutoAttackEnhanced: [],
@@ -355,7 +344,7 @@ class Hero:
 
         conditional_amplify = 0
         for modifier_fn in self.amplify_modifiers.values():
-            conditional_amplify += modifier_fn(damage_type)
+            conditional_amplify += modifier_fn(damage_type) / 100
 
         applying_amplify = max(0.25, self.get_amplify(damage_type) + enemy_amplify + conditional_amplify)
 

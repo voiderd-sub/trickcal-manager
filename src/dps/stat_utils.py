@@ -15,5 +15,5 @@ def apply_stat_bonuses(hero: 'Hero', stat_bonuses: Dict[str, Any]):
     for stat_type, value in stat_bonuses.items():
         value_percent = value / 100.0
         attr_name = stat_type.to_hero_attr(is_coeff=True)
-        current_value = getattr(hero, attr_name, 1.0)
+        current_value = getattr(hero, attr_name)
         setattr(hero, attr_name, current_value + value_percent)

@@ -1,32 +1,32 @@
 import pytest
 from dps.party import Party
 from dps.tests.simple_hero import SimpleHero
-from dps.tests.simple_spell import create_test_spell
+from dps.spell import Spell
+from dps.enums import StatType
 
 def get_total_damage(party):
     """Helper function to calculate total damage for the party."""
     total_damage = 0
     for hero in party.character_list:
-        if hero and hero.damage_records:
+        if hero and hasattr(hero, 'damage_records'):
             for damage_type, damage_list in hero.damage_records.items():
                 total_damage += sum(dmg for _, dmg in damage_list)
     return total_damage
 
 def test_spell_effects():
     """
-    Tests if the test spell correctly applies its stat bonus and unique effect.
-    - Stat Bonus: +5% party-wide attack.
-    - Unique Effect: +100% all damage amplification.
+    Tests if the '학자' spell correctly applies its stat bonus.
+    - Stat Bonus: +3.53% party-wide physic attack and magic attack at level 1.
     """
     # --- Base Case: No Spell ---
     party_no_spell = Party()
     hero_no_spell = SimpleHero("Hero")
-    # Disable complexities for predictable damage
     hero_no_spell.upper_skill_cd = 1000000 
     hero_no_spell.sp_recovery_rate = 0
     party_no_spell.add_hero(hero_no_spell, 0)
     party_no_spell.run(max_t=2, num_simulation=1)
     damage_no_spell = get_total_damage(party_no_spell)
+    attack_no_spell = hero_no_spell.get_coeff(StatType.AttackPhysic)
 
     # --- Case: With Spell ---
     party_with_spell = Party()
@@ -35,23 +35,28 @@ def test_spell_effects():
     hero_with_spell.sp_recovery_rate = 0
     party_with_spell.add_hero(hero_with_spell, 0)
     
-    # Add the test spell
-    spell = create_test_spell()
+    # Add the '학자' spell
+    spell = Spell(name="학자", level=1)
     party_with_spell.add_spell(spell)
     
     party_with_spell.run(max_t=2, num_simulation=1)
     damage_with_spell = get_total_damage(party_with_spell)
+    attack_with_spell = hero_with_spell.get_coeff(StatType.AttackPhysic)
 
     print("\n--- Spell Effect Test ---")
+    print(f"Attack with NO spell: {attack_no_spell}")
+    print(f"Attack WITH spell: {attack_with_spell}")
     print(f"Damage with NO spell: {damage_no_spell}")
     print(f"Damage WITH spell: {damage_with_spell}")
 
     # Verification
-    # Expected damage = BaseDamage * (1 + AttackBonus) * (1 + AmplifyBonus)
-    # AttackBonus = 5% = 0.05
-    # AmplifyBonus = 100% = 1.00
-    # Expected damage = damage_no_spell * 1.05 * 2.0
-    expected_damage = damage_no_spell * 1.05 * 2.0
+    # Expected Attack = BaseAttack * (1 + AttackBonus / 100)
+    # AttackBonus from '학자' level 1 is 3.53
+    expected_attack = attack_no_spell * (1 + 3.53 / 100)
+    assert attack_with_spell == pytest.approx(expected_attack)
+
+    # Damage should increase proportionally to attack
+    expected_damage = damage_no_spell * (expected_attack / attack_no_spell)
     
     assert damage_with_spell == pytest.approx(expected_damage), \
         f"Damage with spell is incorrect. Expected: {expected_damage}, Got: {damage_with_spell}"
@@ -68,7 +73,7 @@ def test_simulation_idempotency():
         hero = SimpleHero("IdempotentHero")
         hero.upper_skill_cd = 10 # Use a skill to ensure more complex state changes
         party.add_hero(hero, 0)
-        spell = create_test_spell()
+        spell = Spell(name="학자", level=1)
         party.add_spell(spell)
         return party
     

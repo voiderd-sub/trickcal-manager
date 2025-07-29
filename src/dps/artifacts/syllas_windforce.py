@@ -7,24 +7,16 @@ if TYPE_CHECKING:
     from dps.hero import Hero
     from dps.artifact import Artifact
 
-def init_syllas_windforce(hero: 'Hero', artifact: 'Artifact'):
-    """
-    Initialization effect for Sylla's Windforce:
-    - Increases Attack Speed by 60%.
-    This is called at the beginning of each simulation.
-    """
-    # The logic is same as 'stat bonus',
-    # but since it is a unique effect, it is implemented separately like this.
-    apply_stat_bonuses(hero, {StatType.AttackSpeed: 60})
-
 class SyllasWindforce(Artifact):
-    def __init__(self):
-        super().__init__(
-            name="실라의 바람살",
-            stat_bonuses={
-                StatType.CriticalRate: 24.2
-            },
-            setup_effect_fn=None,
-            init_effect_fn=init_syllas_windforce,
-            stackable=True
-        )
+    def __init__(self, level: int = 1):
+        super().__init__(name="실라의 바람살", level=level)
+        self.init_effect_fn = self.init_syllas_windforce
+
+    def init_syllas_windforce(self, hero: 'Hero'):
+        """
+        Initialization effect for Sylla's Windforce:
+        - Increases Attack Speed by a percentage based on artifact level.
+        This is called at the beginning of each simulation.
+        """
+        if self.effects:
+            apply_stat_bonuses(hero, {StatType.AttackSpeed: self.effects[0]})

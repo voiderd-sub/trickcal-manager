@@ -74,6 +74,12 @@ class DamageType(IntFlag):
             cls.Debuff, cls.Artifact
         }
 
+class Grade(StrEnum):
+    LEGENDARY = auto()
+    RARE = auto()
+    ADVANCED = auto()
+    NORMAL = auto()
+
 class Personality(StrEnum):
     Naive = auto()
     Mad = auto()
