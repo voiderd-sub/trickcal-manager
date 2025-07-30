@@ -13,6 +13,7 @@ from .jade_magic_book import JadeMagicBook
 from .pendant_of_healing import PendantOfHealing
 from .rusty_red_sword import RustyRedSword
 from .toy_telescope import ToyTelescope
+from .butters_yellow_card import ButtersYellowCard
 
 # A dictionary to easily access artifact classes by their name.
 # The keys should match the artifact names defined in artifact_data.py.
@@ -31,6 +32,7 @@ ARTIFACT_CLASS_MAP = {
     "치유의 펜던트": PendantOfHealing,
     "녹슨 붉은 검": RustyRedSword,
     "장난감 망원경": ToyTelescope,
+    "버터의 옐로카드": ButtersYellowCard,
 }
 
 __all__ = [
@@ -48,5 +50,6 @@ __all__ = [
     "PendantOfHealing",
     "RustyRedSword",
     "ToyTelescope",
-    "ARTIFACT_CLASS_MAP"
+    "ARTIFACT_CLASS_MAP",
+    "ButtersYellowCard",
 ] 

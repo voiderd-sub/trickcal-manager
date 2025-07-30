@@ -37,6 +37,9 @@ class Spell:
         self.stat_bonuses = self._get_stats_for_level()
         self.effects = self._get_effects_for_level()
 
+        # If different spells have the same unique effect
+        # and the unique effect cannot be duplicated,
+        # this attribute should be overridden with the same value for them.
         self.effect_id = type(self).__name__
 
     def _get_stats_for_level(self) -> Dict[StatType, float]:
