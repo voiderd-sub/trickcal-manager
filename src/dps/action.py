@@ -90,14 +90,3 @@ class StatusAction(Action):
 
         if self.post_fn:
             self.post_fn(self)
-
-def sp_recovery_on_auto_attack(post_fn):
-    """
-    Decorator for post_fn to handle SP recovery on auto attacks.
-    """
-    def wrapper(action):
-        if action.source_movement in [MovementType.AutoAttackBasic, MovementType.AutoAttackEnhanced]:
-            action.hero.aa_post_fn()
-        if post_fn:
-            post_fn(action)
-    return wrapper

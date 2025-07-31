@@ -680,6 +680,7 @@ def test_upper_skill_interrupt():
             records.append(damage_src)
         
     print("Recorded Damage Sources:", records)
+    print(hero.damage_records)
     assert len(records) == 1 and records[0] == "UpperSkill", \
         "Only UpperSkill should have recorded damage. Other movements should be cancelled."
 
@@ -1065,6 +1066,296 @@ def test_upper_skill_on_seamless_action_chain():
     print("✅ Upper Skill on Seamless Action Chain Test Passed!")
 
 
+# ===== Enhanced Attack Condition (EAC) Tests =====
+
+class EACHero(SimpleHero):
+    """
+    Enhanced Attack Condition을 테스트하기 위한 영웅 클래스.
+    일반 공격과 강화 공격의 데미지를 다르게 설정하여 구분할 수 있도록 함.
+    """
+    BASIC_DMG = 100
+    ENHANCED_DMG = 200
+    
+    def __init__(self, name="EACHero", eac=None):
+        super().__init__(name)
+        self._eac = eac
+        self.upper_skill_cd = 1000000  # Upper skill 사용 안함
+        self.sp_recovery_rate = 0      # Lower skill 사용 안함
+        self.sp_per_aa = 0             # 기본 공격으로 SP 획득 안함
+    
+    def setup_eac(self):
+        """외부에서 주입된 EAC를 반환"""
+        return self._eac
+    
+    def _setup_basic_attack_actions(self):
+        """일반 공격 액션 설정"""
+        return [(InstantAction(self, self.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic), 0.5)]
+    
+    def _setup_enhanced_attack_actions(self):
+        """강화 공격 액션 설정"""
+        return [(InstantAction(self, self.ENHANCED_DMG, MovementType.AutoAttackEnhanced, DamageType.AutoAttackEnhanced), 0.5)]
+
+
+def test_periodic_condition():
+    """
+    PeriodicCondition 테스트: N회 공격마다 강화 공격이 발동하는지 검증
+    """
+    from dps.hero import PeriodicCondition
+    
+    # 3회마다 강화 공격이 발동하도록 설정
+    hero = EACHero("PeriodicHero")
+    eac = PeriodicCondition(hero, 3)
+    hero._eac = eac
+    
+    party = Party()
+    party.add_hero(hero, 0)
+    
+    # 10초간 시뮬레이션 (약 10회 공격)
+    party.run(max_t=10, num_simulation=1)
+    
+    # 결과 분석
+    basic_attacks = [t for t, m in hero.movement_log if m == MovementType.AutoAttackBasic]
+    enhanced_attacks = [t for t, m in hero.movement_log if m == MovementType.AutoAttackEnhanced]
+    
+    print(f"\n--- PeriodicCondition Test (3회마다) ---")
+    print(f"일반 공격 횟수: {len(basic_attacks)}")
+    print(f"강화 공격 횟수: {len(enhanced_attacks)}")
+    print(f"총 공격 횟수: {len(basic_attacks) + len(enhanced_attacks)}")
+    
+    # 3회마다 강화 공격이 발동하므로, 총 공격 횟수의 약 1/3이 강화 공격이어야 함
+    total_attacks = len(basic_attacks) + len(enhanced_attacks)
+    expected_enhanced_ratio = 1/3
+    actual_enhanced_ratio = len(enhanced_attacks) / total_attacks if total_attacks > 0 else 0
+    
+    assert abs(actual_enhanced_ratio - expected_enhanced_ratio) < 0.1, \
+        f"강화 공격 비율이 예상과 다름: 예상 {expected_enhanced_ratio:.2f}, 실제 {actual_enhanced_ratio:.2f}"
+    
+    print("✅ PeriodicCondition 테스트 통과!")
+
+
+def test_probabilistic_condition():
+    """
+    ProbabilisticCondition 테스트: 주어진 확률에 따라 강화 공격이 발동하는지 검증
+    """
+    from dps.hero import ProbabilisticCondition
+    
+    # 50% 확률로 강화 공격이 발동하도록 설정
+    hero = EACHero("ProbabilisticHero")
+    eac = ProbabilisticCondition(hero, 0.5)
+    hero._eac = eac
+    
+    party = Party()
+    party.add_hero(hero, 0)
+    
+    # 충분히 많은 공격을 위해 30초간 시뮬레이션
+    party.run(max_t=300, num_simulation=1)
+    
+    # 결과 분석
+    basic_attacks = [t for t, m in hero.movement_log if m == MovementType.AutoAttackBasic]
+    enhanced_attacks = [t for t, m in hero.movement_log if m == MovementType.AutoAttackEnhanced]
+    
+    print(f"\n--- ProbabilisticCondition Test (50% 확률) ---")
+    print(f"일반 공격 횟수: {len(basic_attacks)}")
+    print(f"강화 공격 횟수: {len(enhanced_attacks)}")
+    print(f"총 공격 횟수: {len(basic_attacks) + len(enhanced_attacks)}")
+    
+    total_attacks = len(basic_attacks) + len(enhanced_attacks)
+    actual_probability = len(enhanced_attacks) / total_attacks if total_attacks > 0 else 0
+    
+    # 50% 확률이므로 40%~60% 범위 내에 있어야 함 (통계적 허용 오차)
+    assert 0.4 <= actual_probability <= 0.6, \
+        f"강화 공격 확률이 예상 범위를 벗어남: 예상 0.5±0.1, 실제 {actual_probability:.2f}"
+    
+    print("✅ ProbabilisticCondition 테스트 통과!")
+
+
+def test_cooldown_condition():
+    """
+    CooldownCondition 테스트: 설정된 쿨타임에 맞춰 강화 공격이 발동하는지 검증
+    """
+    from dps.hero import CooldownCondition
+    
+    # 3초 쿨타임으로 강화 공격이 발동하도록 설정
+    hero = EACHero("CooldownHero")
+    eac = CooldownCondition(hero, 3)
+    hero._eac = eac
+    
+    party = Party()
+    party.add_hero(hero, 0)
+    
+    # 15초간 시뮬레이션 (약 5회 강화 공격 예상)
+    party.run(max_t=15, num_simulation=1)
+    
+    # 결과 분석
+    basic_attacks = [t for t, m in hero.movement_log if m == MovementType.AutoAttackBasic]
+    enhanced_attacks = [round(t/SEC_TO_MS, 1) for t, m in hero.movement_log if m == MovementType.AutoAttackEnhanced]
+    
+    print(f"\n--- CooldownCondition Test (3초 쿨타임) ---")
+    print(f"일반 공격 횟수: {len(basic_attacks)}")
+    print(f"강화 공격 횟수: {len(enhanced_attacks)}")
+    print(f"강화 공격 시점: {enhanced_attacks}")
+    
+    # 첫 번째 강화 공격은 3초 후에 발동 가능 (쿨타임 완료 후)
+    # 이후 3초마다 발동 가능
+    expected_enhanced_times = [3, 6, 9, 12]  # 15초 내 예상 시점
+    
+    assert len(enhanced_attacks) >= 4, f"강화 공격 횟수가 너무 적음: {len(enhanced_attacks)}"
+    
+    # 각 강화 공격 시점이 예상 범위 내에 있는지 확인
+    for i, actual_time in enumerate(enhanced_attacks[:4]):  # 처음 4개만 확인
+        expected_time = expected_enhanced_times[i]
+        assert abs(actual_time - expected_time) <= 0.5, \
+            f"강화 공격 시점 불일치 (인덱스 {i}): 예상 {expected_time}초, 실제 {actual_time}초"
+    
+    print("✅ CooldownCondition 테스트 통과!")
+
+
+def test_buff_condition():
+    """
+    BuffCondition 테스트: 특정 버프를 보유했을 때만 강화 공격이 발동하는지 검증
+    """
+    from dps.hero import BuffCondition
+    
+    # "TestBuff" 버프가 있을 때만 강화 공격이 발동하도록 설정
+    hero = EACHero("BuffHero")
+    eac = BuffCondition(hero, "TestBuff")
+    hero._eac = eac
+    
+    party = Party()
+    party.add_hero(hero, 0)
+    
+    # 버프 템플릿 생성
+    buff_template = BuffStatCoeff(
+        status_id="TestBuff",
+        caster=hero,
+        target_resolver_fn=target_self,
+        duration=5,  # 5초 지속
+        stat_type=StatType.AttackSpeed,
+        value=50
+    )
+    
+    # 2초 후에 버프 적용
+    def apply_buff_at_2s(t):
+        if t >= 2 * SEC_TO_MS:
+            action = StatusAction(
+                hero=hero,
+                source_movement=MovementType.AutoAttackBasic,
+                damage_type=DamageType.NONE,
+                status_template=buff_template
+            )
+            hero.reserv_action(action, t)
+    
+    # 원래 BasicAttack 메서드를 백업하고 버프 적용 로직 추가
+    original_basic_attack = hero.BasicAttack
+    def new_basic_attack(t):
+        apply_buff_at_2s(t)
+        return original_basic_attack(t)
+    
+    hero.BasicAttack = new_basic_attack
+    
+    # 10초간 시뮬레이션
+    party.run(max_t=10, num_simulation=1)
+    
+    # 결과 분석
+    basic_attacks = [round(t/SEC_TO_MS, 1) for t, m in hero.movement_log if m == MovementType.AutoAttackBasic]
+    enhanced_attacks = [round(t/SEC_TO_MS, 1) for t, m in hero.movement_log if m == MovementType.AutoAttackEnhanced]
+    
+    print(f"\n--- BuffCondition Test (TestBuff 버프 시 강화 공격) ---")
+    print(f"일반 공격 시점: {basic_attacks}")
+    print(f"강화 공격 시점: {enhanced_attacks}")
+    
+    # 버프가 적용되기 전(2초 이전)에는 강화 공격이 없어야 함
+    enhanced_before_buff = [t for t in enhanced_attacks if t < 2.0]
+    assert len(enhanced_before_buff) == 0, \
+        f"버프 적용 전에 강화 공격이 발생함: {enhanced_before_buff}"
+    
+    # 버프가 적용된 후(2초 이후)에는 강화 공격이 있어야 함
+    enhanced_after_buff = [t for t in enhanced_attacks if t >= 2.0]
+    assert len(enhanced_after_buff) > 0, \
+        f"버프 적용 후에 강화 공격이 발생하지 않음"
+    
+    print("✅ BuffCondition 테스트 통과!")
+
+
+def test_and_condition():
+    """
+    AndCondition 테스트: 두 조건이 모두 충족될 때만 강화 공격이 발동하는지 검증
+    """
+    from dps.hero import AndCondition, PeriodicCondition, CooldownCondition
+    
+    # 3회마다 AND 2초 쿨타임 조건 조합
+    hero = EACHero("AndHero")
+    periodic_cond = PeriodicCondition(hero, 3)
+    cooldown_cond = CooldownCondition(hero, 2)
+    eac = AndCondition(hero, periodic_cond, cooldown_cond)
+    hero._eac = eac
+    
+    party = Party()
+    party.add_hero(hero, 0)
+    
+    # 10초간 시뮬레이션
+    party.run(max_t=10, num_simulation=1)
+    
+    # 결과 분석
+    basic_attacks = [round(t/SEC_TO_MS, 1) for t, m in hero.movement_log if m == MovementType.AutoAttackBasic]
+    enhanced_attacks = [round(t/SEC_TO_MS, 1) for t, m in hero.movement_log if m == MovementType.AutoAttackEnhanced]
+    
+    print(f"\n--- AndCondition Test (3회마다 AND 2초 쿨타임) ---")
+    print(f"일반 공격 시점: {basic_attacks}")
+    print(f"강화 공격 시점: {enhanced_attacks}")
+    
+    # 두 조건이 모두 충족되는 시점들을 계산
+    # 3회마다 AND 2초 쿨타임 조건이므로, 2초마다 강화 공격이 가능하고
+    # 그 중에서 3회째 공격 시점에만 실제로 강화 공격이 발생
+    # 실제 결과: [2.0, 5.0, 8.0] - 이는 올바른 결과임
+    
+    # 강화 공격이 발생했는지 확인 (최소 1개 이상)
+    assert len(enhanced_attacks) > 0, "강화 공격이 발생하지 않음"
+    
+    # 강화 공격 간격이 약 3초인지 확인 (2초 쿨타임 + 1초 공격 간격)
+    if len(enhanced_attacks) >= 2:
+        intervals = [enhanced_attacks[i+1] - enhanced_attacks[i] for i in range(len(enhanced_attacks)-1)]
+        avg_interval = sum(intervals) / len(intervals)
+        assert 2.5 <= avg_interval <= 3.5, f"강화 공격 간격이 예상과 다름: {avg_interval:.1f}초"
+    
+    print("✅ AndCondition 테스트 통과!")
+
+
+def test_or_condition():
+    """
+    OrCondition 테스트: 두 조건 중 하나라도 충족되면 강화 공격이 발동하는지 검증
+    """
+    from dps.hero import OrCondition, PeriodicCondition, CooldownCondition
+    
+    # 4회마다 OR 3회마다 강화 공격이 발생하도록 설정
+    hero = EACHero("OrHero")
+    periodic_cond4 = PeriodicCondition(hero, 4)
+    periodic_cond3 = PeriodicCondition(hero, 3)
+    eac = OrCondition(hero, periodic_cond4, periodic_cond3)
+    hero._eac = eac
+    
+    party = Party()
+    party.add_hero(hero, 0)
+    
+    # 12초간 시뮬레이션
+    party.run(max_t=12, num_simulation=1)
+    
+    # 결과 분석
+    basic_attacks = [round(t/SEC_TO_MS, 1) for t, m in hero.movement_log if m == MovementType.AutoAttackBasic]
+    enhanced_attacks = [round(t/SEC_TO_MS, 1) for t, m in hero.movement_log if m == MovementType.AutoAttackEnhanced]
+    
+    print(f"\n--- OrCondition Test (4회마다 OR 3회마다) ---")
+    print(f"일반 공격 시점: {basic_attacks}")
+    print(f"강화 공격 시점: {enhanced_attacks}")
+    
+    # 이론상 강화공격 타이밍: 3, 4, 6, 8, 9, 12번째 <- 발생 시각은 1씩 당겨져야 함 (0초부터 시작)
+    theoretical_enhanced_times = [2, 3, 5, 7, 8, 11]
+    for t in theoretical_enhanced_times:
+        assert t in enhanced_attacks, f"이론상 강화공격 타이밍 {t}초에 강화공격이 발생하지 않음"
+    
+    print("✅ OrCondition 테스트 통과!")
+
+
 if __name__ == "__main__":
     test_simple_hero_movement_timing(default_settings())
     test_projectile_action(default_settings())
@@ -1079,3 +1370,11 @@ if __name__ == "__main__":
     test_selective_cancel()
     test_priority_respected_when_busy()
     test_upper_skill_on_seamless_action_chain()
+    
+    # EAC 테스트 추가
+    test_periodic_condition()
+    test_probabilistic_condition()
+    test_cooldown_condition()
+    test_buff_condition()
+    test_and_condition()
+    test_or_condition()

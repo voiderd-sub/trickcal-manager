@@ -24,7 +24,7 @@ class Daya(Hero):
 
         self.motion_time = {
             "Basic" : 1.836 * SEC_TO_MS,
-            "Enhanced" : VERY_BIG_NUMBER,
+            "Enhanced" : MAX_MOTION_TIME,
             "LowerSkill" : 2.166 * SEC_TO_MS,
             "UpperSkill" : 3.866 * SEC_TO_MS,
         }

@@ -3,6 +3,7 @@ from dps.hero import Hero, ProbabilisticCondition, BuffCondition, OrCondition
 from dps.status import (BuffStatCoeff, BuffAmplify, 
                         target_self, target_all, target_all_wo_self)
 from dps.enums import *
+from dps.data.hero_data import HERO_DATA
 
 
 class Epica(Hero):
@@ -11,20 +12,7 @@ class Epica(Hero):
 
     def __init__(self, user_provided_info):
         super().__init__(user_provided_info)
-        self.hero_id = 17
-        self.name = "Epica"
-        self.name_kr = "에피카"
-        self.is_eldain = True
-        
-        self.attack_type = AttackType.Physic
-        self.personality = Personality.Jolly
-        self.attack_speed = 102
-        self.init_sp = 100
-        self.max_sp = 450
-        self.sp_recovery_rate = 20
-        self.sp_per_aa = 0
-        self.upper_skill_cd = 54
-
+  
         self.motion_time = {
             MovementType.AutoAttackBasic: 1.690,
             MovementType.AutoAttackEnhanced: 1.667,

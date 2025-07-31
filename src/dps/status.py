@@ -156,3 +156,34 @@ class BuffAmplify(StatusTemplate):
     def delete_fn(self, reservation, target_id, current_time):
         target = self.get_target_with_id(target_id)
         target.add_amplify(self.applying_dmg_type, -self.value)
+
+class BuffReduceDamageTakenAndAccelerate(StatusTemplate):
+    def __init__(self, status_id, caster, duration, value, ramp_up_duration, hold_duration, max_factor):
+        super().__init__(status_id=status_id,
+                         caster=caster,
+                         target_resolver_fn=target_all,
+                         max_stack=0,
+                         refresh_interval=0,
+                         status_type="buff")
+        self.duration = duration
+        self.value = value
+        self.ramp_up_duration = ramp_up_duration
+        self.hold_duration = hold_duration
+        self.max_factor = max_factor
+
+    def apply_fn(self, reservation, target_id, current_time):
+        target = self.get_target_with_id(target_id)
+        target.reduce_damage_taken(DamageType.ALL, self.value)
+        if target_id == self.caster.party_idx: # Apply acceleration only once
+            self.caster.party.start_acceleration_effect(
+                current_time,
+                self.ramp_up_duration,
+                self.hold_duration,
+                self.max_factor
+            )
+
+    def delete_fn(self, reservation, target_id, current_time):
+        target = self.get_target_with_id(target_id)
+        target.reduce_damage_taken(DamageType.ALL, -self.value)
+        if target_id == self.caster.party_idx: # Reset acceleration only once
+            self.caster.party.reset_acceleration()

@@ -31,7 +31,7 @@ def test_dragonlightsword_precise_attack_timing_with_motion():
         dls_as_bonus = stacks * 0.08
         base_as_coeff = hero.attack_speed_coeff 
         total_as_coeff = base_as_coeff + dls_as_bonus
-        return round(300 * SEC_TO_MS / (hero.acceleration**2 * min(10., total_as_coeff) * hero.attack_speed), 0)
+        return round(300 * SEC_TO_MS / (min(10., total_as_coeff) * hero.attack_speed), 0)
 
     last_reset_time = 0
     interrupting_interval_idx = -1

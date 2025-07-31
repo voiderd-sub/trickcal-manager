@@ -5,7 +5,13 @@ class ToyTelescope(Artifact):
     # This dictionary will hold the character-specific distance factor 'a'.
     # It should be populated manually with {character_name: factor}
     # Characters not in this map will have a factor of 0.
-    DISTANCE_FACTOR_MAP = {}
+    DISTANCE_FACTOR_MAP = {
+        "시온 더 다크불릿": 1.0,
+        "실라": 1.0,
+        "죠안": 0.470,
+        "림(혼돈)": 0.415,
+        "아멜리아": 0.261,
+    }
 
     def __init__(self, level: int = 1):
         super().__init__(name="장난감 망원경", level=level)

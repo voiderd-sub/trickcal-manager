@@ -1,3 +1,4 @@
+from dps.data.hero_data import HERO_DATA
 from dps.enums import *
 from dps.skill_conditions import *
 from dps.artifact import Artifact
@@ -16,6 +17,11 @@ def find_valid_skill_level(L, i):
 
 class Hero:
     def __init__(self, user_provided_info):
+        self.name = self.__class__.__name__
+        if self.name in HERO_DATA:
+            for key, value in HERO_DATA[self.name].items():
+                setattr(self, key, value)
+
         for key, value in user_provided_info.items():
             setattr(self, key, value)
         
@@ -25,7 +31,8 @@ class Hero:
         self.status_templates = {}
         self.applied_effects = set()
         self.artifact_counters = dict()   # Counters for artifact effects
-        self.is_eldain = False            # Whether the hero is Eldain; default is False
+        if not hasattr(self, "is_eldain"):       # Whether the hero is Eldain; default is False
+            self.is_eldain = False
 
     
     def __repr__(self):
@@ -74,7 +81,6 @@ class Hero:
         self._initialize_eac()
 
         self.amplify_modifiers = {}
-        self.aa_cd = round(300 * SEC_TO_MS / self.attack_speed)
         self.sp = self.init_sp
         self.sp_timer = 0
         self.upper_skill_timer = round(self.upper_skill_cd * SEC_TO_MS * 0.5)
@@ -84,6 +90,7 @@ class Hero:
         self.last_movement_time = 0
         self.upper_skill_flag = False
         self.next_t_without_interrupt = -1
+        self.woke_up_early = False
 
         # Initialize base stats and coefficients
         if not hasattr(self, "attack"):
@@ -92,7 +99,6 @@ class Hero:
         self.taken_amplify_dict = {dt: 1.0 for dt in DamageType.leaf_types()}
         for stat_type in StatType:
             setattr(self, stat_type.value+"_coeff", 1.0)
-        self.acceleration = 1.
 
         # Apply stat bonuses from artifacts
         for artifact in self.artifacts:
@@ -105,19 +111,29 @@ class Hero:
                                   MovementType.UpperSkill: [],
                                   }
         self.damage_records = defaultdict(list)
-
         self.last_motion_time = 0
+
 
     def _setup_all_movement_actions(self):
         """Pre-generates and sorts action templates for all movement types."""
         auto_attack_basic_actions = self._setup_basic_attack_actions()
         for (action, t_ratio) in auto_attack_basic_actions:
-            action.post_fn = lambda action: self.aa_post_fn()
+            original_post_fn = action.post_fn
+            def new_post_fn(action, original_post_fn=original_post_fn):
+                if original_post_fn:
+                    original_post_fn(action)
+                self.aa_post_fn()
+            action.post_fn = new_post_fn
         self._action_templates[MovementType.AutoAttackBasic] = auto_attack_basic_actions
 
         auto_attack_enhanced_actions = self._setup_enhanced_attack_actions()
         for (action, t_ratio) in auto_attack_enhanced_actions:
-            action.post_fn = lambda action: self.aa_post_fn()
+            original_post_fn = action.post_fn
+            def new_post_fn(action, original_post_fn=original_post_fn):
+                if original_post_fn:
+                    original_post_fn(action)
+                self.aa_post_fn()
+            action.post_fn = new_post_fn
         self._action_templates[MovementType.AutoAttackEnhanced] = auto_attack_enhanced_actions
 
         self._action_templates[MovementType.LowerSkill] = self._setup_lower_skill_actions()
@@ -159,33 +175,50 @@ class Hero:
             else:                  return MovementType.AutoAttackBasic
         return MovementType.Wait
 
-    def update_timers_and_request_skill(self, t):
-        # update sp
+    def update_timers_and_request_skill(self, t,
+                                        additional_sp=0,
+                                        additonal_upper_skill_cd_reduce=0):
         dt = t - self.last_updated
+        # update sp
+        self.sp = min(self.max_sp, self.sp + additional_sp)
         if self.last_movement not in (MovementType.LowerSkill, MovementType.UpperSkill):
             self.sp_timer += dt
             if self.sp_timer >= SP_INTERVAL:
                 num_sp_recover, self.sp_timer = divmod(self.sp_timer, SP_INTERVAL)
                 self.sp = min(self.max_sp, self.sp + self.sp_recovery_rate * num_sp_recover)
 
-        # update cd
+        # update aa cd
         self.aa_timer = max(0, self.aa_timer - dt)
         
+        # update upper skill cd
         prev_upper_skill_timer = self.upper_skill_timer
-        self.upper_skill_timer = max(0, self.upper_skill_timer - dt)
+        self.upper_skill_timer = max(0, self.upper_skill_timer - dt 
+                                        - additonal_upper_skill_cd_reduce)
         if prev_upper_skill_timer > 0 and self.upper_skill_timer == 0:
             if self.upper_skill_rule and self.upper_skill_rule.should_request(self):
                 self.party.upper_skill_manager.add_request(self.party_idx)
 
-        self.aa_cd = self.get_aa_cd()
         self.last_updated = t
 
+        if additional_sp > 0 or additonal_upper_skill_cd_reduce > 0:
+            # Wake up hero early if SP or cooldown is applied
+            self.original_next_t = self.party.next_update[self.party_idx]
+            self.party.next_update[self.party_idx] = t
+            self.woke_up_early = True
+
+
     def choose_and_execute_movement(self, t):
-        if self.next_t_without_interrupt >= 0:
-            return_value = self.next_t_without_interrupt
-            self.next_t_without_interrupt = -1
-            if not self.upper_skill_flag:
-                return return_value
+        # If the hero woke up early, it means the hero is in the middle of a movement.
+        # There are two cases: (1) using upper skill during movement, (2) not using upper skill.
+        # In case (1), execute the movement if woke_up_early and upper_skill_flag == True.
+        # In case (2), do not perform a new movement, only update the next update time.
+        if self.woke_up_early:
+            self.woke_up_early = False
+            if not self.upper_skill_flag and self.last_movement != MovementType.Wait:
+                # Only set the next update time without performing a movement.
+                dt = self.original_next_t - t
+                dt = self.reserve_wakeup_during_motion(t, dt)
+                return t + dt
         
         movement = self.choose_movement()
         
@@ -196,7 +229,7 @@ class Hero:
             # Start the movement and get its full duration
             match movement:
                 case MovementType.AutoAttackBasic | MovementType.AutoAttackEnhanced:
-                    self.aa_timer = self.aa_cd
+                    self.aa_timer = self.get_aa_cd()
                 case MovementType.LowerSkill:
                     self.sp = 0
                 case MovementType.UpperSkill:
@@ -211,14 +244,19 @@ class Hero:
 
             dt = round(self.do_movement(movement, t))
             self.movement_timestamps[movement].append(round(t) / SEC_TO_MS)
-            
-            # Decide the actual time step
-            if self.upper_skill_timer > 0 and self.upper_skill_timer < dt:
-                self.next_t_without_interrupt = t + dt
-                dt = self.upper_skill_timer
+            dt = self.reserve_wakeup_during_motion(t, dt)
+
         self.last_movement = movement
         self.movement_log.append((t, movement))
         return t + dt
+
+    def reserve_wakeup_during_motion(self, t, dt):
+        # Consider the case where the upper skill cooldown is 0 during the movement.
+        if self.upper_skill_timer > 0 and self.upper_skill_timer < dt:
+            self.original_next_t = t + dt
+            dt = self.upper_skill_timer
+            self.woke_up_early = True
+        return dt
     
     def calculate_cumulative_damage(self, max_T):
         for key, record in self.damage_records.items():
@@ -300,13 +338,17 @@ class Hero:
         # Schedule the first action in the chain.
         first_action, first_time = action_tuples[0]
         self.reserv_action(first_action, first_time)
+    
+    def add_non_cancelable_action(self, action, t, delay):
+        self.party.action_manager.add_pending_effect(t, action, delay)
 
     def aa_post_fn(self):
         self.sp = min(self.max_sp, self.sp + self.sp_per_aa)
 
     def get_aa_cd(self):
         attack_speed_coeff = self.get_coeff(StatType.AttackSpeed)
-        return round(300 * SEC_TO_MS / (self.acceleration**2 * min(10., attack_speed_coeff) * self.attack_speed), 0)
+        acceleration = self.party.get_current_acceleration_factor(self.party.current_time)
+        return round(300 * SEC_TO_MS / (acceleration**2 * min(10., attack_speed_coeff) * self.attack_speed), 0)
     
     def get_motion_time(self, movement_type: MovementType):
         base_motion_time_sec = self.motion_time.get(movement_type)
@@ -314,12 +356,13 @@ class Hero:
             raise ValueError(f"Motion time for {movement_type} is not defined.")
         
         motion_time_ms = base_motion_time_sec * SEC_TO_MS
+        acceleration = self.party.get_current_acceleration_factor(self.party.current_time)
 
         match movement_type:
             case MovementType.AutoAttackBasic | MovementType.AutoAttackEnhanced:
                 return min(motion_time_ms, self.get_aa_cd())
             case MovementType.LowerSkill | MovementType.UpperSkill:
-                return motion_time_ms / self.acceleration
+                return motion_time_ms / acceleration
         
         raise ValueError(f"Invalid movement type: {movement_type}")
     
@@ -386,6 +429,40 @@ class Hero:
         if self.eac:
             self.eac.init_simulation()
 
+    def _initialize_aside_skills(self):
+        """Initializes all relevant effects based on the aside level."""
+        if not hasattr(self, "aside_level") or self.aside_level == 0:
+            return
+
+        # Level 1: Apply stat bonuses (common to all levels)
+        if self.aside_level >= 1:
+            self._apply_aside_skill_l1_stats()
+
+        # Level 2: Activate unique hero skill (needs to be overridden)
+        if self.aside_level >= 2:
+            self._activate_aside_skill_l2_special()
+
+        # Level 3: Apply party/global buffs (needs to be overridden)
+        if self.aside_level >= 3:
+            self._apply_aside_skill_l3_buff()
+
+    def _apply_aside_skill_l1_stats(self):
+        """Applies a fixed 6% stat bonus for Level 1 aside skill."""
+        bonus_stats = getattr(self, "aside_stats_l1", [])
+        for stat_type in bonus_stats:
+            attr_name = stat_type.to_hero_attr(is_coeff=True)
+            current_coeff = getattr(self, attr_name, 1.0)
+            setattr(self, attr_name, current_coeff + 0.06)
+
+    def _activate_aside_skill_l2_special(self):
+        """(Override Required) Activates the unique Level 2 aside skill."""
+        pass
+
+    def _apply_aside_skill_l3_buff(self):
+        """(Override Required) Applies the unique Level 3 aside buff."""
+        pass
+
+
 class EnhancedAttackCondition:
     """Base class for enhanced attack conditions."""
     def __init__(self, hero):
@@ -419,10 +496,13 @@ class PeriodicCondition(EnhancedAttackCondition):
             raise ValueError("Cycle must be positive.")
         self.cycle = cycle
 
+    def init_simulation(self):
+        self.counter = 0
+
     def is_met(self):
-        timestamps = self.hero.movement_timestamps
-        num_attacks = len(timestamps[MovementType.AutoAttackBasic]) + len(timestamps[MovementType.AutoAttackEnhanced])
-        return (num_attacks + 1) % self.cycle == 0
+        self.counter += 1
+        self.counter %= self.cycle
+        return self.counter == 0
 
 class BuffCondition(EnhancedAttackCondition):
     """Triggers if the hero has a specific buff."""
@@ -438,10 +518,10 @@ class CooldownCondition(EnhancedAttackCondition):
     def __init__(self, hero, cooldown_sec):
         super().__init__(hero)
         self.cooldown = cooldown_sec * SEC_TO_MS
-        self.last_triggered_time = -self.cooldown # Allow first attack to be enhanced
+        self.last_triggered_time = 0  # Start with full cooldown
 
     def init_simulation(self):
-        self.last_triggered_time = -self.cooldown
+        self.last_triggered_time = 0  # Start with full cooldown
 
     def is_met(self):
         return self.hero.last_updated >= self.last_triggered_time + self.cooldown
@@ -456,9 +536,13 @@ class AndCondition(EnhancedAttackCondition):
         self.conditions = conditions
 
     def is_met(self):
-        return all(cond.is_met() for cond in self.conditions)
+        # Evaluate all conditions to ensure side effects (like counters) are triggered.
+        # Do not use short-circuiting `all()`.
+        results = [cond.is_met() for cond in self.conditions]
+        return all(results)
 
     def on_enhanced_attack(self, t):
+        # If AndCondition is met, all sub-conditions were also met.
         for cond in self.conditions:
             cond.on_enhanced_attack(t)
     
@@ -471,15 +555,21 @@ class OrCondition(EnhancedAttackCondition):
     def __init__(self, hero, *conditions):
         super().__init__(hero)
         self.conditions = conditions
+        self.last_results = []
 
     def is_met(self):
-        return any(cond.is_met() for cond in self.conditions)
+        # Evaluate all conditions to ensure side effects (like counters) are triggered.
+        # Do not use short-circuiting `any()`.
+        self.last_results = [cond.is_met() for cond in self.conditions]
+        return any(self.last_results)
 
     def on_enhanced_attack(self, t):
-        for cond in self.conditions:
-            if cond.is_met():
+        # Only call on_enhanced_attack for the sub-conditions that were actually met.
+        for i, cond in enumerate(self.conditions):
+            if self.last_results and self.last_results[i]:
                 cond.on_enhanced_attack(t)
 
     def init_simulation(self):
+        self.last_results = []
         for cond in self.conditions:
             cond.init_simulation()

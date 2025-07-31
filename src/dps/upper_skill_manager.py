@@ -128,13 +128,10 @@ class UpperSkillManager:
             # 1. The hero's last movement is not wait.
             is_last_movement_not_wait = hero.last_movement != MovementType.Wait
             # 2. The action's scheduled end time (`next_update`) is in the future.
-            is_mid_action = self.party.next_update[hero.party_idx] > current_time
-            # 3. A long action was paused for an UpperSkill cooldown. In this special
-            #    case, `next_t_without_interrupt` is set, meaning the hero is still
-            #    technically in the middle of that action.
-            is_paused_long_action = hero.next_t_without_interrupt != -1
+            # is_mid_action = self.party.next_update[hero.party_idx] > current_time
+            is_mid_action = (self.party.next_update[hero.party_idx] > current_time) or hero.woke_up_early
             
-            is_busy = is_last_movement_not_wait and (is_mid_action or is_paused_long_action)
+            is_busy = is_last_movement_not_wait and is_mid_action
             can_cancel = is_busy and rule.cancelable_movements and hero.last_movement in rule.cancelable_movements
 
             if not is_busy or can_cancel:

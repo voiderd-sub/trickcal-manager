@@ -1,9 +1,9 @@
 from enum import Enum, auto, IntFlag
 
-VERY_BIG_NUMBER = 1e10
+MAX_MOTION_TIME = 1e3 # The basic attack motion length is too long, so it is always bound by attack speed.
 SEC_TO_MS = 1000
 DELTA_T = 0.1
-SP_INTERVAL = 1 * SEC_TO_MS
+SP_INTERVAL = 1 * SEC_TO_MS     # In practice, 61/60.
 GLOBAL_UPPER_SKILL_LOCK_MS = 1 * SEC_TO_MS
 
 class StrEnum(str, Enum):
@@ -69,7 +69,7 @@ class DamageType(IntFlag):
     @classmethod
     def leaf_types(cls):
         return {
-            cls.LowerSkill, cls.UpperSkill,
+            cls.LowerSkill, cls.UpperSkill, cls.AsideSkill,
             cls.AutoAttackBasic, cls.AutoAttackEnhanced,
             cls.Debuff, cls.Artifact
         }
@@ -86,6 +86,29 @@ class Personality(StrEnum):
     Cool = auto()
     Jolly = auto()
     Gloomy = auto()
+
+
+class Position(StrEnum):
+    Front = auto()
+    Middle = auto()
+    Back = auto()
+    Free = auto()
+
+
+class Class(StrEnum):
+    Dealer = auto()
+    Tanker = auto()
+    Supporter = auto()
+
+
+class Race(StrEnum):
+    Spirit = auto()
+    Elf = auto()
+    Fairy = auto()
+    Dragon = auto()
+    Witch = auto()
+    Ghost = auto()
+    Furry = auto()
 
 
 class StatType(StrEnum):

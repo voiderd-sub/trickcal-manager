@@ -19,6 +19,7 @@ class Party:
         self.upper_skill_manager = UpperSkillManager(self)
         self.spells = []
         self.applied_spell_effects = set()
+        self.reset_acceleration()
 
 
     def init_run(self, priority=None, rules=None):
@@ -48,7 +49,11 @@ class Party:
         
         self.upper_skill_rules = [None] * 9
         if rules:
-            self.upper_skill_rules = rules
+            for i, rule in enumerate(rules):
+                if rule:
+                    self.upper_skill_rules[i] = rule
+                elif self.character_list[i]:
+                    self.upper_skill_rules[i] = CooldownReadyCondition()
         else:
             self.upper_skill_rules = [CooldownReadyCondition() if c else None for c in self.character_list[:9]]
 
@@ -79,6 +84,8 @@ class Party:
         self.damage_records = []
         self.movement_log = []
         self.next_update = np.full(12, np.inf)
+
+        self.reset_acceleration()
 
         # 1. Initialize/reset hero state for the simulation.
         for i in self.active_indices:
@@ -115,7 +122,38 @@ class Party:
                     continue # Skip already-applied non-stackable init effect
                 applied_spell_init_effects_this_sim.add(effect_key)
             spell.apply_init_effect(self)
-        
+
+        # 6. Initialize aside skills for all heroes
+        for i in self.active_indices:
+            self.character_list[i]._initialize_aside_skills()
+
+    def reset_acceleration(self):
+        self.accel_start_time = 0
+        self.accel_ramp_up_duration = 0
+        self.accel_hold_duration = 0
+        self.max_acceleration_factor = 1.0
+
+    def start_acceleration_effect(self, t, ramp_up_duration, hold_duration, max_factor):
+        self.accel_start_time = t
+        self.accel_ramp_up_duration = ramp_up_duration * SEC_TO_MS
+        self.accel_hold_duration = hold_duration * SEC_TO_MS
+        self.max_acceleration_factor = 1.0 + max_factor / 100
+
+    def get_current_acceleration_factor(self, t):
+        if self.max_acceleration_factor == 1.0:
+            return 1.0
+
+        elapsed_time = t - self.accel_start_time
+        total_duration = self.accel_ramp_up_duration + self.accel_hold_duration
+
+        if elapsed_time <= 0 or elapsed_time > total_duration:
+            return 1.0
+
+        if elapsed_time <= self.accel_ramp_up_duration:
+            progress = elapsed_time / self.accel_ramp_up_duration
+            return 1.0 + (self.max_acceleration_factor - 1.0) * progress
+        else:
+            return self.max_acceleration_factor
 
     def add_hero(self, hero, idx):
         self.character_list[idx] = hero
@@ -168,14 +206,12 @@ class Party:
                 all_min_indices = np.where(self.next_update == self.current_time)[0]
 
                 # --- Step B: Managers resolve requests and set flags ---
-                # Run UpperSkillManager first as it can influence other heroes' actions
-                if 11 in all_min_indices:
-                    self.upper_skill_manager.resolve_request(self.current_time)
                 if 9 in all_min_indices:
                     self.action_manager.resolve_all_actions(self.current_time)
                 if 10 in all_min_indices:
                     self.status_manager.resolve_status_reserv(self.current_time)
-
+                if 11 in all_min_indices:
+                    self.upper_skill_manager.resolve_request(self.current_time)
                 all_min_indices = np.where(self.next_update == self.current_time)[0]
 
                 # --- Step C: All active heroes choose and execute their movement ---
@@ -184,7 +220,6 @@ class Party:
                         hero = self.character_list[idx]
                         new_t = hero.choose_and_execute_movement(self.current_time)
                         self.next_update[idx] = new_t
-                
                 # Go to next timestep
                 self.current_time = int(self.next_update.min())
         return
@@ -195,7 +230,7 @@ class Party:
         #             name = character.get_unique_name()
         #             print(name, character.damage_records)
         #             character.calculate_cumulative_damage(max_t)
-
+        #
         #             total_dmg = 0
         #             for dmg_type, value in character.damage_records.items():
         #                 rows.append({
