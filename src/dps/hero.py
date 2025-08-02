@@ -31,6 +31,8 @@ class Hero:
         self.status_templates = {}
         self.applied_effects = set()
         self.artifact_counters = dict()   # Counters for artifact effects
+        self.exclusive_weapon_name = None
+        self.equipped_exclusive_weapon_level = 0
         if not hasattr(self, "is_eldain"):       # Whether the hero is Eldain; default is False
             self.is_eldain = False
 
@@ -72,6 +74,13 @@ class Hero:
         # Initialize movement triggers and upper skill rule
         self.upper_skill_rule = None
         self.movement_triggers = defaultdict(list)
+
+        # Check for exclusive weapon
+        if self.exclusive_weapon_name:
+            for artifact in self.artifacts:
+                if artifact.name_kr == self.exclusive_weapon_name:
+                    self.equipped_exclusive_weapon_level = artifact.level
+                    break
 
     def init_simulation(self):
         """
@@ -429,24 +438,58 @@ class Hero:
         if self.eac:
             self.eac.init_simulation()
 
-    def _initialize_aside_skills(self):
-        """Initializes all relevant effects based on the aside level."""
+    def setup_aside_skills(self):
+        """
+        Sets up aside skill effects that are constant for the entire run.
+        This is called once from party.init_run().
+        """
+        if not hasattr(self, "aside_level") or self.aside_level == 0:
+            return
+        # Only L2 has run-setup effect.
+        if self.aside_level >= 2:
+            self._setup_aside_skill_l2()
+
+    def setup_exclusive_weapon_effects(self):
+        """Sets up exclusive weapon effects that are constant for the entire run."""
+        if self.equipped_exclusive_weapon_level >= 1:
+            self._setup_ew_l1()
+        if self.equipped_exclusive_weapon_level >= 3:
+            self._setup_ew_l3()
+
+    def initialize_aside_skills(self):
+        """
+        Initializes/resets aside skill effects for each simulation.
+        This is called from party.init_simulation().
+        """
         if not hasattr(self, "aside_level") or self.aside_level == 0:
             return
 
-        # Level 1: Apply stat bonuses (common to all levels)
         if self.aside_level >= 1:
-            self._apply_aside_skill_l1_stats()
-
-        # Level 2: Activate unique hero skill (needs to be overridden)
+            self._initialize_aside_skill_l1()
         if self.aside_level >= 2:
-            self._activate_aside_skill_l2_special()
-
-        # Level 3: Apply party/global buffs (needs to be overridden)
+            self._initialize_aside_skill_l2()
         if self.aside_level >= 3:
-            self._apply_aside_skill_l3_buff()
+            self._initialize_aside_skill_l3()
 
-    def _apply_aside_skill_l1_stats(self):
+    def initialize_exclusive_weapon_effects(self):
+        """Initializes/resets exclusive weapon effects for each simulation."""
+        if self.equipped_exclusive_weapon_level >= 1:
+            self._initialize_ew_l1()
+        if self.equipped_exclusive_weapon_level >= 3:
+            self._initialize_ew_l3()
+
+    # --- Stubs for subclasses to override ---
+
+    def _setup_aside_skill_l2(self):
+        pass
+
+    def _setup_ew_l1(self):
+        pass
+
+    def _setup_ew_l3(self):
+        pass
+
+    def _initialize_aside_skill_l1(self):
         """Applies a fixed 6% stat bonus for Level 1 aside skill."""
         bonus_stats = getattr(self, "aside_stats_l1", [])
         for stat_type in bonus_stats:
@@ -454,12 +497,16 @@ class Hero:
             current_coeff = getattr(self, attr_name, 1.0)
             setattr(self, attr_name, current_coeff + 0.06)
 
-    def _activate_aside_skill_l2_special(self):
-        """(Override Required) Activates the unique Level 2 aside skill."""
+    def _initialize_aside_skill_l2(self):
         pass
 
-    def _apply_aside_skill_l3_buff(self):
-        """(Override Required) Applies the unique Level 3 aside buff."""
+    def _initialize_aside_skill_l3(self):
+        pass
+    
+    def _initialize_ew_l1(self):
+        pass
+
+    def _initialize_ew_l3(self):
         pass
 
 
@@ -486,7 +533,7 @@ class ProbabilisticCondition(EnhancedAttackCondition):
         self.probability = probability
 
     def is_met(self):
-        return np.random.rand() < self.probability
+        return self.hero.party.rng.random() < self.probability
 
 class PeriodicCondition(EnhancedAttackCondition):
     """Triggers every N attacks."""

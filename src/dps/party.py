@@ -20,6 +20,7 @@ class Party:
         self.spells = []
         self.applied_spell_effects = set()
         self.reset_acceleration()
+        self.rng = np.random.default_rng()
 
 
     def init_run(self, priority=None, rules=None):
@@ -31,7 +32,15 @@ class Party:
         for i in self.active_indices:
             self.character_list[i].init_run()
 
-        # 2. Apply party-wide one-time setup effects from spells, checking for stackability.
+        # 2. Setup aside skills for all heroes
+        for i in self.active_indices:
+            self.character_list[i].setup_aside_skills()
+
+        # 3. Setup exclusive weapon effects for all heroes
+        for i in self.active_indices:
+            self.character_list[i].setup_exclusive_weapon_effects()
+
+        # 3. Apply party-wide one-time setup effects from spells, checking for stackability.
         for spell in self.spells:
             effect_key = spell.effect_id
             if not spell.stackable:
@@ -40,7 +49,7 @@ class Party:
                 self.applied_spell_effects.add(effect_key)
             spell.apply_setup_effect(self)
 
-        # 3. Set priorities and rules for the run.
+        # 4. Set priorities and rules for the run.
         self.upper_skill_priorities = [10] * 9
         if priority:
             for i, p in enumerate(priority):
@@ -57,7 +66,7 @@ class Party:
         else:
             self.upper_skill_rules = [CooldownReadyCondition() if c else None for c in self.character_list[:9]]
 
-        # 4. Connect movement triggers
+        # 5. Connect movement triggers
         hero_map = {h.get_unique_name(): h for h in self.character_list if h is not None}
         for i, rule in enumerate(self.upper_skill_rules):
             if isinstance(rule, MovementTriggerCondition):
@@ -125,7 +134,11 @@ class Party:
 
         # 6. Initialize aside skills for all heroes
         for i in self.active_indices:
-            self.character_list[i]._initialize_aside_skills()
+            self.character_list[i].initialize_aside_skills()
+
+        # 7. Initialize exclusive weapon effects for all heroes
+        for i in self.active_indices:
+            self.character_list[i].initialize_exclusive_weapon_effects()
 
     def reset_acceleration(self):
         self.accel_start_time = 0

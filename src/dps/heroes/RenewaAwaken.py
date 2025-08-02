@@ -154,7 +154,7 @@ class RenewaAwaken(Hero):
     def setup_eac(self):
         return PeriodicCondition(self, 4)
 
-    def _activate_aside_skill_l2_special(self):
+    def _initialize_aside_skill_l2(self):
         """Activates the missile launch cycle for the Level 2 aside skill.
         The first missile is launched at 7.06 seconds.
         """
