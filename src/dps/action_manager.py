@@ -27,13 +27,13 @@ class ActionManager:
         next_time = min(next_action_time, next_effect_time)
         self.party.next_update[9] = next_time if next_time == float('inf') else round(next_time)
 
-    def add_action_reserv(self, time, action):
+    def add_action_reserv(self, time, action, on_complete_callback=None):
         """
         Add a reservation for the action.
         Also index the action for fast lookup.
         """
-        action_tuple = (round(time), action)
-        insort(self.action_queue, action_tuple)
+        action_tuple = (round(time), action, on_complete_callback)
+        insort(self.action_queue, action_tuple, key=lambda x: x[0])
         self.update_next_update()
         
         self.actions_by_hero[action.hero.party_idx].append(action_tuple)
@@ -55,16 +55,19 @@ class ActionManager:
         Resolve all actions in the action queue and pending effect queue.
         """
         while self.action_queue and self.action_queue[0][0] <= current_time:
-            time, action = self.action_queue.pop(0)
-            self._remove_from_indices((time, action))
+            time, action, callback = self.action_queue.pop(0)
+            action_tuple = (time, action, callback)
+            self._remove_from_indices(action_tuple)
             action.action_fn(time)
+            if callback:
+                callback()
         while self.pending_effect_queue and self.pending_effect_queue[0][0] <= current_time:
             execution_time, action = self.pending_effect_queue.pop(0)
             action.action_fn(execution_time)
         self.update_next_update()
     
     def _remove_from_indices(self, action_tuple):
-        _, action = action_tuple
+        _, action, _ = action_tuple
         self.actions_by_hero[action.hero.party_idx].remove(action_tuple)
         if action.source_movement:
             self.actions_by_movement[action.source_movement].remove(action_tuple)

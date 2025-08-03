@@ -2,6 +2,7 @@ from dps.data.hero_data import HERO_DATA
 from dps.enums import *
 from dps.skill_conditions import *
 from dps.artifact import Artifact
+from dps.action import ProjectileAction, InstantAction
 
 import numpy as np
 from collections import defaultdict
@@ -33,6 +34,7 @@ class Hero:
         self.artifact_counters = dict()   # Counters for artifact effects
         self.exclusive_weapon_name = None
         self.equipped_exclusive_weapon_level = 0
+        self.aa_post_fns = []
         if not hasattr(self, "is_eldain"):       # Whether the hero is Eldain; default is False
             self.is_eldain = False
 
@@ -49,6 +51,7 @@ class Hero:
         This includes one-time setup effects from artifacts.
         """
         self.applied_effects = set()
+        self.aa_post_fns = [self._aa_sp_recovery]
         
         # Apply one-time setup effects from artifacts, checking for stackability.
         for artifact in self.artifacts:
@@ -78,7 +81,7 @@ class Hero:
         # Check for exclusive weapon
         if self.exclusive_weapon_name:
             for artifact in self.artifacts:
-                if artifact.name_kr == self.exclusive_weapon_name:
+                if artifact.name == self.exclusive_weapon_name:
                     self.equipped_exclusive_weapon_level = artifact.level
                     break
 
@@ -127,22 +130,18 @@ class Hero:
         """Pre-generates and sorts action templates for all movement types."""
         auto_attack_basic_actions = self._setup_basic_attack_actions()
         for (action, t_ratio) in auto_attack_basic_actions:
-            original_post_fn = action.post_fn
-            def new_post_fn(action, original_post_fn=original_post_fn):
-                if original_post_fn:
-                    original_post_fn(action)
-                self.aa_post_fn()
-            action.post_fn = new_post_fn
+            if isinstance(action, ProjectileAction):
+                action.instant_action.post_fns_on_launch.append(lambda _: self.aa_post_fn())
+            elif isinstance(action, InstantAction):
+                action.post_fns_on_launch.append(lambda _: self.aa_post_fn())
         self._action_templates[MovementType.AutoAttackBasic] = auto_attack_basic_actions
 
         auto_attack_enhanced_actions = self._setup_enhanced_attack_actions()
         for (action, t_ratio) in auto_attack_enhanced_actions:
-            original_post_fn = action.post_fn
-            def new_post_fn(action, original_post_fn=original_post_fn):
-                if original_post_fn:
-                    original_post_fn(action)
-                self.aa_post_fn()
-            action.post_fn = new_post_fn
+            if isinstance(action, ProjectileAction):
+                action.instant_action.post_fns_on_launch.append(lambda _: self.aa_post_fn())
+            elif isinstance(action, InstantAction):
+                action.post_fns_on_launch.append(lambda _: self.aa_post_fn())
         self._action_templates[MovementType.AutoAttackEnhanced] = auto_attack_enhanced_actions
 
         self._action_templates[MovementType.LowerSkill] = self._setup_lower_skill_actions()
@@ -320,38 +319,42 @@ class Hero:
     def is_enhanced(self):
         return self.eac and self.eac.is_met()
 
-    def reserv_action(self, action, t):
-        self.party.action_manager.add_action_reserv(t, action)
+    def reserv_action(self, action, t, on_complete_callback=None):
+        self.party.action_manager.add_action_reserv(t, action, on_complete_callback)
 
     def reserv_action_chain(self, action_tuples):
         """
-        Reserves a chain of actions. The next action is reserved in the post_fn of the previous action.
-        Assumes that the actions in the chain (except possibly the last one) do not have a pre-existing post_fn.
+        Reserves a chain of actions using callbacks, without modifying the action templates.
         :param action_tuples: A list of (action, execution_time) tuples.
         """
         if not action_tuples:
             return
-        # Iterate backwards from the second to last action to chain them up.
-        for i in range(len(action_tuples) - 2, -1, -1):
-            # Get the current action which needs its post_fn set.
-            current_action, _ = action_tuples[i]
+
+        def create_reservation_callback(index):
+            if index >= len(action_tuples):
+                return None
             
-            # Get the next action that should be scheduled by the current one.
-            next_action, next_time = action_tuples[i+1]
+            action, time = action_tuples[index]
             
-            # Set the post_fn of the current action to reserve the next action.
-            # We use functools.partial to capture the correct action and time.
-            partial_fn = partial(self.reserv_action, next_action, next_time)
-            current_action.post_fn = lambda _,p=partial_fn: p()
-        
-        # Schedule the first action in the chain.
-        first_action, first_time = action_tuples[0]
-        self.reserv_action(first_action, first_time)
+            # Create a callback that will reserve the NEXT action in the chain.
+            next_callback = create_reservation_callback(index + 1)
+            
+            # Return a function that, when called, reserves the CURRENT action with the next_callback.
+            return partial(self.reserv_action, action, time, next_callback)
+
+        # Start the chain by calling the first reservation function.
+        first_reservation_fn = create_reservation_callback(0)
+        if first_reservation_fn:
+            first_reservation_fn()
     
     def add_non_cancelable_action(self, action, t, delay):
         self.party.action_manager.add_pending_effect(t, action, delay)
 
     def aa_post_fn(self):
+        for aa_post_fn_component in self.aa_post_fns:
+            aa_post_fn_component()
+
+    def _aa_sp_recovery(self):
         self.sp = min(self.max_sp, self.sp + self.sp_per_aa)
 
     def get_aa_cd(self):

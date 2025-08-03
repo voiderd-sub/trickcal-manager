@@ -10,16 +10,10 @@ class PendantOfHealing(Artifact):
     def apply_setup_effect(self, hero):
         """
         Setup effect for Pendant of Healing:
-        - Modifies the hero's aa_post_fn to add a life steal effect with a cooldown.
+        - Adds a life steal effect to the hero's basic attack post-function subscribers.
         This is called once per run.
         """
-        return
-        if not hasattr(hero, 'original_aa_post_fn_poh'):
-            hero.original_aa_post_fn_poh = hero.aa_post_fn
-        
-        def new_aa_post_fn():
-            hero.original_aa_post_fn_poh()
-            
+        def life_steal_effect():
             current_time = hero.party.action_manager.current_time
             last_proc_time = hero.artifact_counters.get('pendant_of_healing_last_proc', -self.cooldown)
             
@@ -33,7 +27,7 @@ class PendantOfHealing(Artifact):
                 # hero.heal(heal_amount)
                 pass
 
-        hero.aa_post_fn = new_aa_post_fn
+        hero.aa_post_fns.append(life_steal_effect)
 
     def apply_init_effect(self, hero):
         """

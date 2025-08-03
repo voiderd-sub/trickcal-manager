@@ -87,15 +87,7 @@ class Sylla(Hero):
         return [(action, 0.59)]
 
     def _setup_aside_skill_l2(self):
-        if hasattr(self, 'original_aa_post_fn_sylla'):
-            return
-            
-        self.original_aa_post_fn_sylla = self.aa_post_fn
-
         def whirlwind_on_hit():
-            if self.original_aa_post_fn_sylla:
-                self.original_aa_post_fn_sylla()
-
             if self.party.rng.random() < 0.75:
                 whirlwind_action = InstantAction(
                     hero=self,
@@ -104,8 +96,7 @@ class Sylla(Hero):
                     damage_type=DamageType.AsideSkill
                 )
                 self.reserv_action(whirlwind_action, self.party.current_time)
-        
-        self.aa_post_fn = whirlwind_on_hit
+        self.aa_post_fns.append(whirlwind_on_hit)
 
     def _initialize_aside_skill_l2(self):
         apply_stat_bonuses(self, {StatType.AttackSpeed: 40})

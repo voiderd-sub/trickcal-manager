@@ -12,16 +12,10 @@ class RimsScythe(Artifact):
     def apply_setup_effect(self, hero: 'Hero'):
         """
         Setup effect for Rim's Scythe:
-        - Modifies the hero's aa_post_fn to add an execution effect.
+        - Adds an execution effect to the hero's basic attack post-function subscribers.
         This is called once per run.
         """
-        if not hasattr(hero, 'original_aa_post_fn_rs'):
-            hero.original_aa_post_fn_rs = hero.aa_post_fn
-        
-        def enhanced_aa_post_fn():
-            # Call original function first
-            hero.original_aa_post_fn_rs()
-            
+        def execution_effect():
             # --- Placeholder for Execution Logic ---
             # TODO: Implement the execution logic.
             # This requires access to the enemy object targeted by the auto-attack.
@@ -31,4 +25,4 @@ class RimsScythe(Artifact):
             # 4. If all conditions are met, set target.current_hp = 0 or apply fatal damage.
             pass
 
-        hero.aa_post_fn = enhanced_aa_post_fn 
+        hero.aa_post_fns.append(execution_effect) 

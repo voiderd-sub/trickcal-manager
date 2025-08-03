@@ -71,10 +71,10 @@ def aoe_test_environment(monkeypatch):
 
     # 3. 미사일 로깅
     original_add_action = party.action_manager.add_action_reserv
-    def patched_add_action(time, action):
+    def patched_add_action(time, action, on_complete_callback=None):
         if action.damage_type == DamageType.AsideSkill:
             logs["missile"].append(time / SEC_TO_MS)
-        original_add_action(time, action)
+        original_add_action(time, action, on_complete_callback)
     monkeypatch.setattr(party.action_manager, 'add_action_reserv', patched_add_action)
 
     # 4. 어사이드 스킬 쿨감 비활성화

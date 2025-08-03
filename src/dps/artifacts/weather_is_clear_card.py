@@ -14,15 +14,10 @@ class WeatherIsClearCard(Artifact):
     def apply_setup_effect(self, hero: 'Hero'):
         """
         Setup effect for Clear Weather Card:
-        - Modifies the hero's aa_post_fn to add a counter and a lightning strike effect.
+        - Adds a lightning strike effect to the hero's basic attack post-function subscribers.
         This is called once per run.
         """
-        if not hasattr(hero, 'original_aa_post_fn_cwc'):
-            hero.original_aa_post_fn_cwc = hero.aa_post_fn
-        
-        def enhanced_aa_post_fn():
-            hero.original_aa_post_fn_cwc()
-            
+        def lightning_strike_effect():
             hero.artifact_counters['weather_is_clear_card_counter'] += 1
             
             if hero.artifact_counters['weather_is_clear_card_counter'] >= 3:
@@ -37,7 +32,7 @@ class WeatherIsClearCard(Artifact):
                     )
                     hero.reserv_action(lightning_action, hero.party.current_time)
         
-        hero.aa_post_fn = enhanced_aa_post_fn
+        hero.aa_post_fns.append(lightning_strike_effect)
 
     def apply_init_effect(self, hero: 'Hero'):
         """

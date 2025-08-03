@@ -83,12 +83,12 @@ class RenewaAwaken(Hero):
         damage_per_hit = total_damage / 5
         name = self.get_unique_name()
 
-        def remove_buff():
+        def remove_buff(action):
             # A function that removes a buff and, if successful,
             # applies an attack speed buff. Currently unimplemented.
             pass
         
-        def remove_shield():
+        def remove_shield(action):
             # A function that removes a shield and, if successful,
             # applies a heal. Currently unimplemented.
             pass
@@ -101,7 +101,7 @@ class RenewaAwaken(Hero):
                     damage_coeff=damage_per_hit,
                     source_movement=MovementType.LowerSkill,
                     damage_type=DamageType.LowerSkill,
-                    post_fn=remove_buff,
+                    post_fns_on_launch=[remove_buff],
                 )
             elif i == 1 or i == 3:
                 damage_action = InstantAction(
@@ -109,7 +109,7 @@ class RenewaAwaken(Hero):
                     damage_coeff=damage_per_hit,
                     source_movement=MovementType.LowerSkill,
                     damage_type=DamageType.LowerSkill,
-                    post_fn=remove_shield,
+                    post_fns_on_launch=[remove_shield],
                 )
             else:
                 damage_action = InstantAction(
@@ -117,7 +117,7 @@ class RenewaAwaken(Hero):
                     damage_coeff=damage_per_hit,
                     source_movement=MovementType.LowerSkill,
                     damage_type=DamageType.LowerSkill,
-                    post_fn=lambda action: remove_buff() or remove_shield()
+                    post_fns_on_launch=[lambda action: remove_buff(action) or remove_shield(action)]
                 )
             actions.append((damage_action, t_ratios[i]))
 
@@ -172,7 +172,7 @@ class RenewaAwaken(Hero):
             damage_coeff=0,
             source_movement=MovementType.AsideSkill,
             damage_type=DamageType.NONE,
-            post_fn=partial(self._aside_skill_effect, next_fire_time)
+            post_fns_on_launch=[partial(self._aside_skill_effect, next_fire_time)]
         )
         # Use add_pending_effect to make it uncancelable by other hero actions
         self.add_non_cancelable_action(trigger_action, current_time_ms, delay=cooldown_sec)
@@ -190,10 +190,10 @@ class RenewaAwaken(Hero):
             damage_coeff=400,
             source_movement=MovementType.AsideSkill,
             damage_type=DamageType.AsideSkill,
-            post_fn=lambda action: self.update_timers_and_request_skill(
+            post_fns_on_launch=[lambda action: self.update_timers_and_request_skill(
                 self.party.current_time,
                 additonal_upper_skill_cd_reduce=2 * SEC_TO_MS
-            )
+            )]
         )
         self.add_non_cancelable_action(damage_action, hit_time, delay=0)
 

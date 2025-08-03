@@ -31,26 +31,30 @@ class SimpleHero(Hero):
             MovementType.UpperSkill: 3,
         }
 
-    def BasicAttack(self, t):
+    def _setup_basic_attack_actions(self):
         action = InstantAction(
-            self, 
-            SimpleHero.BASIC_DMG, 
-            MovementType.AutoAttackBasic, 
-            DamageType.AutoAttackBasic,
-            post_fn=lambda action: self.aa_post_fn()
+            hero=self, 
+            damage_coeff=SimpleHero.BASIC_DMG, 
+            source_movement=MovementType.AutoAttackBasic, 
+            damage_type=DamageType.AutoAttackBasic
         )
-        motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
-        self.reserv_action(action, t + 0.5 * motion_time)
-        return motion_time
+        return [(action, 0.5)]
 
-    def LowerSkill(self, t):
-        action = ProjectileAction(self, SimpleHero.lowerskill_value[self.lowerskill_level], 1.5, MovementType.LowerSkill, DamageType.LowerSkill)
-        motion_time = self.get_motion_time(MovementType.LowerSkill)
-        self.reserv_action(action, t + 0.5 * motion_time)
-        return motion_time
+    def _setup_lower_skill_actions(self):
+        action = ProjectileAction(
+            hero=self, 
+            damage_coeff=SimpleHero.lowerskill_value[self.lowerskill_level-1], 
+            hit_delay=1.5, 
+            source_movement=MovementType.LowerSkill, 
+            damage_type=DamageType.LowerSkill
+        )
+        return [(action, 0.5)]
 
-    def UpperSkill(self, t):
-        action = InstantAction(self, SimpleHero.upperskill_value[self.upperskill_level], MovementType.UpperSkill, DamageType.UpperSkill)
-        motion_time = self.get_motion_time(MovementType.UpperSkill)
-        self.reserv_action(action, t + 0.5 * motion_time)
-        return motion_time
+    def _setup_upper_skill_actions(self):
+        action = InstantAction(
+            hero=self,
+            damage_coeff=SimpleHero.upperskill_value[self.upperskill_level-1], 
+            source_movement=MovementType.UpperSkill, 
+            damage_type=DamageType.UpperSkill
+        )
+        return [(action, 0.5)]
