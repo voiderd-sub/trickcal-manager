@@ -24,27 +24,6 @@ class Sylla(Hero):
             MovementType.UpperSkill: 3.6,
         }
 
-    def _setup_ew_l1(self):
-        self.motion_time[MovementType.AutoAttackBasic] = MAX_MOTION_TIME
-        
-        action1 = ProjectileAction(
-            hero=self,
-            damage_coeff=80,
-            hit_delay=0.5,
-            source_movement=MovementType.AutoAttackBasic,
-            damage_type=DamageType.AutoAttackBasic,
-        )
-        action2 = ProjectileAction(
-            hero=self,
-            damage_coeff=80,
-            hit_delay=0.6,
-            source_movement=MovementType.AutoAttackBasic,
-            damage_type=DamageType.AutoAttackBasic,
-        )
-        # This will be sorted in `_setup_all_movement_actions`
-        self._action_templates[MovementType.AutoAttackBasic] = [(action1, 0.45), (action2, 0.80)]
-
-
     def _setup_basic_attack_actions(self):
         action = ProjectileAction(
             hero=self,
@@ -101,3 +80,26 @@ class Sylla(Hero):
     def _initialize_aside_skill_l2(self):
         apply_stat_bonuses(self, {StatType.AttackSpeed: 40})
 
+    def _setup_ew_l1(self):
+        self.motion_time[MovementType.AutoAttackBasic] = MAX_MOTION_TIME
+        
+        action1 = ProjectileAction(
+            hero=self,
+            damage_coeff=80,
+            hit_delay=0.5,
+            source_movement=MovementType.AutoAttackBasic,
+            damage_type=DamageType.AutoAttackBasic,
+        )
+        action2 = ProjectileAction(
+            hero=self,
+            damage_coeff=80,
+            hit_delay=0.6,
+            source_movement=MovementType.AutoAttackBasic,
+            damage_type=DamageType.AutoAttackBasic,
+        )
+        # This will be sorted in `_setup_all_movement_actions`
+        self._action_templates[MovementType.AutoAttackBasic] = [(action1, 0.45), (action2, 0.80)]
+    
+    def _initialize_ew_l3(self):
+        # additional attackspeed 12.5%
+        apply_stat_bonuses(self, {StatType.AttackSpeed: 12.5})
