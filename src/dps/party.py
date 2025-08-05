@@ -198,6 +198,37 @@ class Party:
         # TODO : NEED TO REVISE
         return 1.
 
+    def step(self):
+        """Proceeds the simulation to the next event time."""
+
+        all_min_indices = np.where(self.next_update == self.current_time)[0]
+
+        # --- Step A: Update timers and request skills for all active heroes ---
+        for idx in all_min_indices:
+            if idx < 9:
+                hero = self.character_list[idx]
+                hero.update_timers_and_request_skill(self.current_time)
+
+        all_min_indices = np.where(self.next_update == self.current_time)[0]
+
+        # --- Step B: Managers resolve requests and set flags ---
+        if 9 in all_min_indices:
+            self.action_manager.resolve_all_actions(self.current_time)
+        if 10 in all_min_indices:
+            self.status_manager.resolve_status_reserv(self.current_time)
+        if 11 in all_min_indices:
+            self.upper_skill_manager.resolve_request(self.current_time)
+        all_min_indices = np.where(self.next_update == self.current_time)[0]
+
+        # --- Step C: All active heroes choose and execute their movement ---
+        for idx in all_min_indices:
+            if idx < 9:
+                hero = self.character_list[idx]
+                new_t = hero.choose_and_execute_movement(self.current_time)
+                self.next_update[idx] = new_t
+        
+        self.current_time = int(self.next_update.min())
+
     def run(self, max_t, num_simulation, priority=None, rules=None):
         self.init_run(priority, rules)
         
@@ -207,34 +238,7 @@ class Party:
             while self.current_time < int(max_t * SEC_TO_MS):
                 assert self.current_time >= prev_time, "time paradox!"
                 prev_time = self.current_time
-
-                all_min_indices = np.where(self.next_update == self.current_time)[0]
-
-                # --- Step A: Update timers and request skills for all active heroes ---
-                for idx in all_min_indices:
-                    if idx < 9:
-                        hero = self.character_list[idx]
-                        hero.update_timers_and_request_skill(self.current_time)
-
-                all_min_indices = np.where(self.next_update == self.current_time)[0]
-
-                # --- Step B: Managers resolve requests and set flags ---
-                if 9 in all_min_indices:
-                    self.action_manager.resolve_all_actions(self.current_time)
-                if 10 in all_min_indices:
-                    self.status_manager.resolve_status_reserv(self.current_time)
-                if 11 in all_min_indices:
-                    self.upper_skill_manager.resolve_request(self.current_time)
-                all_min_indices = np.where(self.next_update == self.current_time)[0]
-
-                # --- Step C: All active heroes choose and execute their movement ---
-                for idx in all_min_indices:
-                    if idx < 9:
-                        hero = self.character_list[idx]
-                        new_t = hero.choose_and_execute_movement(self.current_time)
-                        self.next_update[idx] = new_t
-                # Go to next timestep
-                self.current_time = int(self.next_update.min())
+                self.step()
         return
         #     # Simulation terminated; extract results
         #     for idx in range(9):

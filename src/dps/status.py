@@ -53,8 +53,9 @@ class StatusReservation:
     def __init__(self, template: StatusTemplate, start_time):
         self.template = template
         self.start_time = start_time
+        self.caster_id = template.caster.party_idx
         self.duration = getattr(self.template, 'duration', 0)
-        self.end_time = round(start_time + self.duration * SEC_TO_MS)
+        self.end_time = round(start_time + self.duration * SEC_TO_MS) if self.duration != float('inf') else float('inf')
         self.next_update = self.start_time
         self.next_step = "apply"
         self.resolved_targets = self.template.target_resolver_fn(self.template.caster)
@@ -117,11 +118,11 @@ class DebuffSting(StatusTemplate):
 
 
 class BuffStatCoeff(StatusTemplate):
-    def __init__(self, status_id, caster, target_resolver_fn, duration, stat_type: StatType, value):
+    def __init__(self, status_id, caster, target_resolver_fn, duration, stat_type: StatType, value, max_stack=1):
         super().__init__(status_id=status_id,
                          caster=caster,
                          target_resolver_fn=target_resolver_fn,
-                         max_stack=0,
+                         max_stack=max_stack,
                          refresh_interval=0,
                          status_type="buff")
         self.duration = duration
@@ -138,11 +139,11 @@ class BuffStatCoeff(StatusTemplate):
 
 
 class BuffAmplify(StatusTemplate):
-    def __init__(self, status_id, caster, target_resolver_fn, duration, applying_dmg_type, value):
+    def __init__(self, status_id, caster, target_resolver_fn, duration, applying_dmg_type, value, max_stack=1):
         super().__init__(status_id=status_id,
                          caster=caster,
                          target_resolver_fn=target_resolver_fn,
-                         max_stack=0,
+                         max_stack=max_stack,
                          refresh_interval=0,
                          status_type="buff")
         self.duration = duration

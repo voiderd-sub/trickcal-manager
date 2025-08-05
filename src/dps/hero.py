@@ -3,6 +3,7 @@ from dps.enums import *
 from dps.skill_conditions import *
 from dps.artifact import Artifact
 from dps.action import ProjectileAction, InstantAction
+from dps.status import StatusReservation
 
 import numpy as np
 from collections import defaultdict
@@ -511,6 +512,17 @@ class Hero:
 
     def _initialize_ew_l3(self):
         pass
+    
+    def apply_status_immediately(self, status_template):
+        """
+        Create a status reservation and apply it immediately.
+        
+        Args:
+            status_template: The status template to apply
+        """
+        reservation = StatusReservation(template=status_template, start_time=self.party.current_time)
+        self.party.status_manager.add_status_reserv(reservation)
+        self.party.status_manager.resolve_status_reserv(self.party.current_time)
 
 
 class EnhancedAttackCondition:
