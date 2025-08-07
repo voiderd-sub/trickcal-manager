@@ -20,6 +20,12 @@ def target_all_wo_self(hero: 'Hero') -> List[int]:
     # Returns all hero indices (0-8) except self, excluding the enemy (9).
     return [i for i, char in enumerate(hero.party.character_list) if char is not None and i < 9 and i != hero.party_idx]
 
+def target_predefined(target_indices: List[int]):
+    """Wrapper function that returns predefined target indices"""
+    def resolver(hero: 'Hero') -> List[int]:
+        return target_indices
+    return resolver
+
 class StatusTemplate:
     def __init__(self,
                  status_id: str,
@@ -118,7 +124,7 @@ class DebuffSting(StatusTemplate):
 
 
 class BuffStatCoeff(StatusTemplate):
-    def __init__(self, status_id, caster, target_resolver_fn, duration, stat_type: StatType, value, max_stack=1):
+    def __init__(self, status_id, caster, target_resolver_fn, duration, stat_bonuses, max_stack=1):
         super().__init__(status_id=status_id,
                          caster=caster,
                          target_resolver_fn=target_resolver_fn,
@@ -126,16 +132,16 @@ class BuffStatCoeff(StatusTemplate):
                          refresh_interval=0,
                          status_type="buff")
         self.duration = duration
-        self.stat_type = stat_type
-        self.value = value
+        self.stat_bonuses = stat_bonuses  # {StatType: value} dictionary
     
     def apply_fn(self, reservation, target_id, current_time):
         target = self.get_target_with_id(target_id)
-        apply_stat_bonuses(target, {self.stat_type: self.value})
+        apply_stat_bonuses(target, self.stat_bonuses)
         
     def delete_fn(self, reservation, target_id, current_time):
         target = self.get_target_with_id(target_id)
-        apply_stat_bonuses(target, {self.stat_type: -self.value})
+        negative_bonuses = {stat_type: -value for stat_type, value in self.stat_bonuses.items()}
+        apply_stat_bonuses(target, negative_bonuses)
 
 
 class BuffAmplify(StatusTemplate):
@@ -158,33 +164,41 @@ class BuffAmplify(StatusTemplate):
         target = self.get_target_with_id(target_id)
         target.add_amplify(self.applying_dmg_type, -self.value)
 
-class BuffReduceDamageTakenAndAccelerate(StatusTemplate):
-    def __init__(self, status_id, caster, duration, value, ramp_up_duration, hold_duration, max_factor):
+
+class BuffDamageReduction(StatusTemplate):
+    def __init__(self, status_id, caster, target_resolver_fn, duration, applying_dmg_type, value, max_stack=1):
         super().__init__(status_id=status_id,
                          caster=caster,
-                         target_resolver_fn=target_all,
-                         max_stack=0,
+                         target_resolver_fn=target_resolver_fn,
+                         max_stack=max_stack,
                          refresh_interval=0,
                          status_type="buff")
         self.duration = duration
+        self.applying_dmg_type = applying_dmg_type
         self.value = value
-        self.ramp_up_duration = ramp_up_duration
-        self.hold_duration = hold_duration
-        self.max_factor = max_factor
-
+    
     def apply_fn(self, reservation, target_id, current_time):
         target = self.get_target_with_id(target_id)
-        target.reduce_damage_taken(DamageType.ALL, self.value)
-        if target_id == self.caster.party_idx: # Apply acceleration only once
-            self.caster.party.start_acceleration_effect(
-                current_time,
-                self.ramp_up_duration,
-                self.hold_duration,
-                self.max_factor
-            )
-
+        target.reduce_damage_taken(self.applying_dmg_type, self.value)
+    
     def delete_fn(self, reservation, target_id, current_time):
         target = self.get_target_with_id(target_id)
-        target.reduce_damage_taken(DamageType.ALL, -self.value)
-        if target_id == self.caster.party_idx: # Reset acceleration only once
-            self.caster.party.reset_acceleration()
+        target.reduce_damage_taken(self.applying_dmg_type, -self.value)
+
+
+class BuffDeception(StatusTemplate):
+    """ Dummy buff for deception """
+    def __init__(self, status_id, caster, target_resolver_fn, duration, max_stack=1):
+        super().__init__(status_id=status_id,
+                         caster=caster,
+                         target_resolver_fn=target_resolver_fn,
+                         max_stack=max_stack,
+                         refresh_interval=0,
+                         status_type="buff")
+        self.duration = duration
+    
+    def apply_fn(self, reservation, target_id, current_time):
+        pass
+    
+    def delete_fn(self, reservation, target_id, current_time):
+        pass

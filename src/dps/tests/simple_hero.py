@@ -38,7 +38,7 @@ class SimpleHero(Hero):
             source_movement=MovementType.AutoAttackBasic, 
             damage_type=DamageType.AutoAttackBasic
         )
-        return [(action, 0.5)]
+        return [[(action, 0.5)]]
 
     def _setup_lower_skill_actions(self):
         action = ProjectileAction(
@@ -48,7 +48,7 @@ class SimpleHero(Hero):
             source_movement=MovementType.LowerSkill, 
             damage_type=DamageType.LowerSkill
         )
-        return [(action, 0.5)]
+        return [[(action, 0.5)]]
 
     def _setup_upper_skill_actions(self):
         action = InstantAction(
@@ -57,4 +57,4 @@ class SimpleHero(Hero):
             source_movement=MovementType.UpperSkill, 
             damage_type=DamageType.UpperSkill
         )
-        return [(action, 0.5)]
+        return [[(action, 0.5)]]

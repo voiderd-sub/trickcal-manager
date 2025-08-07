@@ -1,12 +1,44 @@
 from dps.action import ProjectileAction, StatusAction, InstantAction
 from dps.hero import Hero, PeriodicCondition
-from dps.status import BuffStatCoeff, target_self, BuffReduceDamageTakenAndAccelerate
+from dps.status import BuffStatCoeff, target_self, target_all, StatusTemplate
 from dps.enums import *
 from functools import partial
 
 
+class BuffReduceDamageTakenAndAccelerate(StatusTemplate):
+    def __init__(self, status_id, caster, duration, value, ramp_up_duration, hold_duration, max_factor):
+        super().__init__(status_id=status_id,
+                         caster=caster,
+                         target_resolver_fn=target_all,
+                         max_stack=0,
+                         refresh_interval=0,
+                         status_type="buff")
+        self.duration = duration
+        self.value = value
+        self.ramp_up_duration = ramp_up_duration
+        self.hold_duration = hold_duration
+        self.max_factor = max_factor
+
+    def apply_fn(self, reservation, target_id, current_time):
+        target = self.get_target_with_id(target_id)
+        target.reduce_damage_taken(DamageType.ALL, self.value)
+        if target_id == self.caster.party_idx: # Apply acceleration only once
+            self.caster.party.start_acceleration_effect(
+                current_time,
+                self.ramp_up_duration,
+                self.hold_duration,
+                self.max_factor
+            )
+
+    def delete_fn(self, reservation, target_id, current_time):
+        target = self.get_target_with_id(target_id)
+        target.reduce_damage_taken(DamageType.ALL, -self.value)
+        if target_id == self.caster.party_idx: # Reset acceleration only once
+            self.caster.party.reset_acceleration()
+
+
 class RenewaAwaken(Hero):
-    lowerskill_value = [400 + 50 * i for i in range(13)]
+    lowerskill_value = [400 + 50 * level for level in range(13)]
     upperskill_value = [(600, 32), (720, 36), (840, 40), (960, 45), (1080, 49), (1200, 53), (1320, 57), (1440, 62), (1560, 66), (1680, 70), (1800, 74), (1920, 79), (2040, 83)]
 
     def __init__(self, user_provided_info):
@@ -25,18 +57,16 @@ class RenewaAwaken(Hero):
             status_id=f"{name}_강평_공증",
             caster=self,
             duration=8.0,
-            value=15,
-            target_resolver_fn=target_self,
-            stat_type=StatType.AttackPhysic,
+            stat_bonuses={StatType.AttackPhysic: 15},
+            target_resolver_fn=target_self
         )
 
         self.status_templates[f"{name}_저학_공속증"] = BuffStatCoeff(
             status_id=f"{name}_저학_공속증",
             caster=self,
             duration=10.0,
-            value=80,
-            target_resolver_fn=target_self,
-            stat_type=StatType.AttackSpeed,
+            stat_bonuses={StatType.AttackSpeed: 80},
+            target_resolver_fn=target_self
         )
 
         _, accel_factor = self.upperskill_value[self.upperskill_level-1]
@@ -59,7 +89,7 @@ class RenewaAwaken(Hero):
             source_movement=MovementType.AutoAttackBasic,
             damage_type=DamageType.AutoAttackBasic,
         )
-        return [(action, 0.48)]
+        return [[(action, 0.48)]]
 
     def _setup_enhanced_attack_actions(self):
         name = self.get_unique_name()
@@ -75,7 +105,7 @@ class RenewaAwaken(Hero):
             damage_type=DamageType.NONE,
             status_template=self.status_templates[f"{name}_강평_공증"],
         )
-        return [(damage_action, 0.48), (buff_action, 0.48)]
+        return [[(damage_action, 0.48), (buff_action, 0.48)]]
 
     def _setup_lower_skill_actions(self):
         actions = []
@@ -121,7 +151,7 @@ class RenewaAwaken(Hero):
                 )
             actions.append((damage_action, t_ratios[i]))
 
-        return actions
+        return [actions]
 
     def _setup_upper_skill_actions(self):
         actions = []
@@ -149,7 +179,7 @@ class RenewaAwaken(Hero):
             )
             actions.append((damage_action, hit_time / self.motion_time[MovementType.UpperSkill]))
 
-        return actions
+        return [actions]
 
     def setup_eac(self):
         return PeriodicCondition(self, 4)
@@ -159,6 +189,12 @@ class RenewaAwaken(Hero):
         The first missile is launched at 7.06 seconds.
         """
         self._schedule_next_aside_missile(0)
+    
+    def _initialize_aside_skill_l3(self):
+        # Increase damage dealt by all allies by 22.5%
+        for ally_idx in self.party.active_indices:
+            ally = self.party.character_list[ally_idx]
+            ally.add_amplify(DamageType.ALL, 22.5)
 
     def _schedule_next_aside_missile(self, current_time_ms):
         """Schedules the next missile launch, factoring in current acceleration."""

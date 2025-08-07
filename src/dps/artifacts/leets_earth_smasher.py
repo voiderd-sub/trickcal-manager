@@ -14,7 +14,8 @@ class LeetsEarthSmasher(Artifact):
         # This artifact affects all heroes in the same row as the wearer.
         # The wearer is 'hero'. We need to find other heroes in the same row from hero.party
         
-        wearer_row = hero.row
-        for ally in hero.party.character_list:
-            if ally and ally.row == wearer_row:
+        hero_row = hero.party_idx // 3
+        for ally_idx in hero.party.active_indices:
+            ally = hero.party.character_list[ally_idx]
+            if ally and ally.party_idx // 3 == hero_row:
                 ally.reduce_damage_taken(DamageType.ALL, effect_value) 

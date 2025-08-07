@@ -125,49 +125,57 @@ class Hero:
                                   }
         self.damage_records = defaultdict(list)
         self.last_motion_time = 0
+        
+        # SP recovery pause system
+        self.sp_recovery_pause_end_time = 0
 
 
     def _setup_all_movement_actions(self):
         """Pre-generates and sorts action templates for all movement types."""
-        auto_attack_basic_actions = self._setup_basic_attack_actions()
-        for (action, t_ratio) in auto_attack_basic_actions:
-            if isinstance(action, ProjectileAction):
-                action.instant_action.post_fns_on_launch.append(lambda _: self.aa_post_fn())
-            elif isinstance(action, InstantAction):
-                action.post_fns_on_launch.append(lambda _: self.aa_post_fn())
-        self._action_templates[MovementType.AutoAttackBasic] = auto_attack_basic_actions
+        auto_attack_basic_templates = self._setup_basic_attack_actions()
+        for template in auto_attack_basic_templates:
+            for (action, t_ratio) in template:
+                if isinstance(action, ProjectileAction):
+                    action.instant_action.post_fns_on_launch.append(lambda _: self.aa_post_fn())
+                elif isinstance(action, InstantAction):
+                    action.post_fns_on_launch.append(lambda _: self.aa_post_fn())
+        self._action_templates[MovementType.AutoAttackBasic] = auto_attack_basic_templates
 
-        auto_attack_enhanced_actions = self._setup_enhanced_attack_actions()
-        for (action, t_ratio) in auto_attack_enhanced_actions:
-            if isinstance(action, ProjectileAction):
-                action.instant_action.post_fns_on_launch.append(lambda _: self.aa_post_fn())
-            elif isinstance(action, InstantAction):
-                action.post_fns_on_launch.append(lambda _: self.aa_post_fn())
-        self._action_templates[MovementType.AutoAttackEnhanced] = auto_attack_enhanced_actions
+        auto_attack_enhanced_templates = self._setup_enhanced_attack_actions()
+        for template in auto_attack_enhanced_templates:
+            for (action, t_ratio) in template:
+                if isinstance(action, ProjectileAction):
+                    action.instant_action.post_fns_on_launch.append(lambda _: self.aa_post_fn())
+                elif isinstance(action, InstantAction):
+                    action.post_fns_on_launch.append(lambda _: self.aa_post_fn())
+        self._action_templates[MovementType.AutoAttackEnhanced] = auto_attack_enhanced_templates
 
         self._action_templates[MovementType.LowerSkill] = self._setup_lower_skill_actions()
         self._action_templates[MovementType.UpperSkill] = self._setup_upper_skill_actions()
 
-        # Sort all templates by their t_ratio (the second element in the tuple)
-        for template in self._action_templates.values():
-            if template:
-                template.sort(key=lambda x: x[1])
+        # Check that all templates are sorted by t_ratio (the second element in the tuple)
+        for templates in self._action_templates.values():
+            for template in templates:
+                if template:
+                    t_ratios = [x[1] for x in template]
+                    assert all(t_ratios[i] <= t_ratios[i+1] for i in range(len(t_ratios)-1)), \
+                        f"Action template t_ratios are not monotonically increasing: {t_ratios}"
 
     def _setup_basic_attack_actions(self):
-        """Returns a list of (action, t_ratio) for basic attacks."""
-        return []
+        """Returns a list of templates, where each template is a list of (action, t_ratio)."""
+        return [[]]
 
     def _setup_enhanced_attack_actions(self):
-        """Returns a list of (action, t_ratio) for enhanced attacks."""
-        return []
+        """Returns a list of templates, where each template is a list of (action, t_ratio)."""
+        return [[]]
 
     def _setup_lower_skill_actions(self):
-        """Returns a list of (action, t_ratio) for lower skill."""
-        return []
+        """Returns a list of templates, where each template is a list of (action, t_ratio)."""
+        return [[]]
 
     def _setup_upper_skill_actions(self):
-        """Returns a list of (action, t_ratio) for upper skill."""
-        return []
+        """Returns a list of templates, where each template is a list of (action, t_ratio)."""
+        return [[]]
 
     def _setup_status_templates(self):
         """Initializes status templates for the hero. Should be overridden by subclasses."""
@@ -188,13 +196,18 @@ class Hero:
                                         additional_sp=0,
                                         additonal_upper_skill_cd_reduce=0):
         dt = t - self.last_updated
-        # update sp
-        self.sp = min(self.max_sp, self.sp + additional_sp)
-        if self.last_movement not in (MovementType.LowerSkill, MovementType.UpperSkill):
-            self.sp_timer += dt
-            if self.sp_timer >= SP_INTERVAL:
-                num_sp_recover, self.sp_timer = divmod(self.sp_timer, SP_INTERVAL)
-                self.sp = min(self.max_sp, self.sp + self.sp_recovery_rate * num_sp_recover)
+        
+        # Check if SP recovery is paused
+        sp_recovery_paused = t < self.sp_recovery_pause_end_time
+        
+        # Update SP - block all SP recovery if paused
+        if not sp_recovery_paused:
+            self.sp = min(self.max_sp, self.sp + additional_sp)
+            if self.last_movement not in (MovementType.LowerSkill, MovementType.UpperSkill):
+                self.sp_timer += dt            
+                if self.sp_timer >= SP_INTERVAL:
+                    num_sp_recover, self.sp_timer = divmod(self.sp_timer, SP_INTERVAL)
+                    self.sp = min(self.max_sp, self.sp + self.sp_recovery_rate * num_sp_recover)
 
         # update aa cd
         self.aa_timer = max(0, self.aa_timer - dt)
@@ -209,7 +222,7 @@ class Hero:
 
         self.last_updated = t
 
-        if additional_sp > 0 or additonal_upper_skill_cd_reduce > 0:
+        if (not sp_recovery_paused and additional_sp > 0) or additonal_upper_skill_cd_reduce > 0:
             # Wake up hero early if SP or cooldown is applied
             self.original_next_t = self.party.next_update[self.party_idx]
             self.party.next_update[self.party_idx] = t
@@ -232,7 +245,14 @@ class Hero:
         movement = self.choose_movement()
         
         if movement == MovementType.Wait:
-            wait_time = min(SP_INTERVAL - self.sp_timer, self.aa_timer, self.upper_skill_timer)
+            # Check if SP recovery is paused
+            sp_recovery_paused = t < self.sp_recovery_pause_end_time
+            
+            # Calculate wait time - include SP recovery pause end time if paused
+            if sp_recovery_paused:
+                wait_time = min(self.sp_recovery_pause_end_time - t, self.aa_timer, self.upper_skill_timer)
+            else:
+                wait_time = min(SP_INTERVAL - self.sp_timer, self.aa_timer, self.upper_skill_timer)
             dt = max(1, round(wait_time))
         else:
             # Start the movement and get its full duration
@@ -275,28 +295,32 @@ class Hero:
                     break
         
     def do_movement(self, movement_type, t):
-        motion_time = self.get_motion_time(movement_type)
+        # Get template index for the movement type
+        template_index = self._choose_movement_template(movement_type)
+        motion_time = self.get_motion_time(movement_type, template_index)
         self.last_motion_time = motion_time
         self.last_updated = t
         
         # Dispatch to specific movement methods
         if movement_type == MovementType.AutoAttackBasic:
-            self.BasicAttack(t)
+            self.BasicAttack(template_index, t)
         elif movement_type == MovementType.AutoAttackEnhanced:
-            self.EnhancedAttack(t)
+            self.EnhancedAttack(template_index, t)
             self.eac.on_enhanced_attack(t)      # self.eac is not None here.
         elif movement_type == MovementType.LowerSkill:
-            self.LowerSkill(t)
+            self.LowerSkill(template_index, t)
         elif movement_type == MovementType.UpperSkill:
-            self.UpperSkill(t)
+            self.UpperSkill(template_index, t)
         
         return motion_time
 
-    def _reserv_actions_from_template(self, movement_type, t):
+    def _reserv_actions_from_template(self, movement_type, template_index, t):
         """Helper to create and reserve actions from a template."""
-        motion_time = self.get_motion_time(movement_type)
+        motion_time = self.get_motion_time(movement_type, template_index)
         action_tuples = []
-        template = self._action_templates.get(movement_type, [])
+        templates = self._action_templates.get(movement_type, [[]])
+        template = templates[template_index]
+        
         for action, t_ratio in template:
             action_tuples.append((action, t + motion_time * t_ratio))
         
@@ -305,17 +329,21 @@ class Hero:
         
         self.reserv_action_chain(action_tuples)
 
-    def BasicAttack(self, t):
-        self._reserv_actions_from_template(MovementType.AutoAttackBasic, t)
+    def BasicAttack(self, template_index, t):
+        self._reserv_actions_from_template(MovementType.AutoAttackBasic, template_index, t)
 
-    def EnhancedAttack(self, t):
-        self._reserv_actions_from_template(MovementType.AutoAttackEnhanced, t)
+    def EnhancedAttack(self, template_index, t):
+        self._reserv_actions_from_template(MovementType.AutoAttackEnhanced, template_index, t)
 
-    def LowerSkill(self, t):
-        self._reserv_actions_from_template(MovementType.LowerSkill, t)
+    def LowerSkill(self, template_index, t):
+        self._reserv_actions_from_template(MovementType.LowerSkill, template_index, t)
 
-    def UpperSkill(self, t):
-        self._reserv_actions_from_template(MovementType.UpperSkill, t)
+    def UpperSkill(self, template_index, t):
+        self._reserv_actions_from_template(MovementType.UpperSkill, template_index, t)
+
+    def _choose_movement_template(self, movement_type):
+        """Override this to choose which template to use for each movement type."""
+        return 0
 
     def is_enhanced(self):
         return self.eac and self.eac.is_met()
@@ -363,10 +391,19 @@ class Hero:
         acceleration = self.party.get_current_acceleration_factor(self.party.current_time)
         return round(300 * SEC_TO_MS / (acceleration**2 * min(10., attack_speed_coeff) * self.attack_speed), 0)
     
-    def get_motion_time(self, movement_type: MovementType):
-        base_motion_time_sec = self.motion_time.get(movement_type)
-        if base_motion_time_sec is None:
+    def get_motion_time(self, movement_type: MovementType, template_index: int = 0):
+        motion_times = self.motion_time.get(movement_type)
+        if motion_times is None:
             raise ValueError(f"Motion time for {movement_type} is not defined.")
+        
+        # If motion_times is a list, get the specific template's motion time
+        if isinstance(motion_times, list):
+            if template_index >= len(motion_times):
+                raise ValueError(f"Template index {template_index} out of range for {movement_type}")
+            base_motion_time_sec = motion_times[template_index]
+        else:
+            # Backward compatibility: if motion_times is a single value
+            base_motion_time_sec = motion_times
         
         motion_time_ms = base_motion_time_sec * SEC_TO_MS
         acceleration = self.party.get_current_acceleration_factor(self.party.current_time)
@@ -524,6 +561,22 @@ class Hero:
         self.party.status_manager.add_status_reserv(reservation)
         self.party.status_manager.resolve_status_reserv(self.party.current_time)
 
+    def pause_sp_recovery(self, end_time):
+        """
+        Pause SP recovery until the specified end time.
+        
+        Args:
+            end_time: Time when SP recovery should resume (in milliseconds)
+        """
+        self.sp_recovery_pause_end_time = end_time
+
+    def resume_sp_recovery(self):
+        """
+        Resume SP recovery immediately.
+        Called when skill is cancelled or when pause period ends.
+        """
+        self.sp_recovery_pause_end_time = 0
+
 
 class EnhancedAttackCondition:
     """Base class for enhanced attack conditions."""
@@ -554,8 +607,8 @@ class PeriodicCondition(EnhancedAttackCondition):
     """Triggers every N attacks."""
     def __init__(self, hero, cycle):
         super().__init__(hero)
-        if cycle <= 0:
-            raise ValueError("Cycle must be positive.")
+        assert cycle > 0, "Cycle must be positive."
+        assert isinstance(cycle, int), "Cycle must be an integer."
         self.cycle = cycle
 
     def init_simulation(self):
@@ -577,13 +630,14 @@ class BuffCondition(EnhancedAttackCondition):
 
 class CooldownCondition(EnhancedAttackCondition):
     """Triggers when a cooldown is over."""
-    def __init__(self, hero, cooldown_sec):
+    def __init__(self, hero, cooldown_sec, initial_cd_sec=0):
         super().__init__(hero)
         self.cooldown = cooldown_sec * SEC_TO_MS
-        self.last_triggered_time = 0  # Start with full cooldown
+        self.initial_cd = initial_cd_sec * SEC_TO_MS
+        self.last_triggered_time = self.initial_cd
 
     def init_simulation(self):
-        self.last_triggered_time = 0  # Start with full cooldown
+        self.last_triggered_time = self.initial_cd
 
     def is_met(self):
         return self.hero.last_updated >= self.last_triggered_time + self.cooldown

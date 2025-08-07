@@ -14,8 +14,8 @@ class Epica(Hero):
         super().__init__(user_provided_info)
   
         self.motion_time = {
-            MovementType.AutoAttackBasic: 1.690,
-            MovementType.AutoAttackEnhanced: 1.667,
+            MovementType.AutoAttackBasic: [1.690, 1.690],
+            MovementType.AutoAttackEnhanced: [1.667, 1.667],
             MovementType.LowerSkill: 2.900,
             MovementType.UpperSkill: 10.00,
         }
@@ -29,17 +29,15 @@ class Epica(Hero):
             status_id=f"{name}_저학년",
             caster=self, 
             duration=10.0, 
-            value=self_as_buff_val,
-            target_resolver_fn=target_self,
-            stat_type=StatType.AttackSpeed
+            stat_bonuses={StatType.AttackSpeed: self_as_buff_val},
+            target_resolver_fn=target_self
         )
         self.status_templates[f"{name}_저학년_전체"] = BuffStatCoeff(
             status_id=f"{name}_저학년_전체",
             caster=self, 
             duration=10.0, 
-            value=other_as_buff_val,
-            target_resolver_fn=target_all_wo_self,
-            stat_type=StatType.AttackSpeed
+            stat_bonuses={StatType.AttackSpeed: other_as_buff_val},
+            target_resolver_fn=target_all_wo_self
         )
         
         # Upper skill template
@@ -53,38 +51,66 @@ class Epica(Hero):
         )
 
     def _setup_basic_attack_actions(self):
-        actions_info = [(0.65, 100)]
-        if self.aside_level >= 2:
-            actions_info.append((0.71, 100))
-
-        action_template = []
-        for t_ratio, damage_coeff in actions_info:
-            action = ProjectileAction(
-                hero=self,
-                damage_coeff=damage_coeff,
-                hit_delay=0.5,
-                source_movement=MovementType.AutoAttackBasic,
-                damage_type=DamageType.AutoAttackBasic,
-            )
-            action_template.append((action, t_ratio))
-        return action_template
+        basic_template = []
+        action = ProjectileAction(
+            hero=self,
+            damage_coeff=100,
+            hit_delay=0.5,
+            source_movement=MovementType.AutoAttackBasic,
+            damage_type=DamageType.AutoAttackBasic,
+        )
+        basic_template.append((action, 0.65))
+        
+        a2_template = []
+        action1 = ProjectileAction(
+            hero=self,
+            damage_coeff=100,
+            hit_delay=0.5,
+            source_movement=MovementType.AutoAttackBasic,
+            damage_type=DamageType.AutoAttackBasic,
+        )
+        action2 = ProjectileAction(
+            hero=self,
+            damage_coeff=100,
+            hit_delay=0.5,
+            source_movement=MovementType.AutoAttackBasic,
+            damage_type=DamageType.AutoAttackBasic,
+        )
+        a2_template.append((action1, 0.65))
+        a2_template.append((action2, 0.71))
+        
+        return [basic_template, a2_template]
 
     def _setup_enhanced_attack_actions(self):
-        actions_info = [(0.95, 200)]
-        if self.aside_level >= 2:
-            actions_info.append((0.71, 200))
+        basic_template = []
+        action = ProjectileAction(
+            hero=self,
+            damage_coeff=200,
+            hit_delay=1.05,
+            source_movement=MovementType.AutoAttackEnhanced,
+            damage_type=DamageType.AutoAttackEnhanced,
+        )
+        basic_template.append((action, 0.71))
         
-        action_template = []
-        for t_ratio, damage_coeff in actions_info:
-            action = ProjectileAction(
-                hero=self,
-                damage_coeff=damage_coeff,
-                hit_delay=1.05,
-                source_movement=MovementType.AutoAttackEnhanced,
-                damage_type=DamageType.AutoAttackEnhanced,
-            )
-            action_template.append((action, t_ratio))
-        return action_template
+        a2_template = []
+        action1 = ProjectileAction(
+            hero=self,
+            damage_coeff=200,
+            hit_delay=1.05,
+            source_movement=MovementType.AutoAttackEnhanced,
+            damage_type=DamageType.AutoAttackEnhanced,
+        )
+        action2 = ProjectileAction(
+            hero=self,
+            damage_coeff=200,
+            hit_delay=1.05,
+            source_movement=MovementType.AutoAttackEnhanced,
+            damage_type=DamageType.AutoAttackEnhanced,
+        )
+        a2_template.append((action1, 0.71))
+        a2_template.append((action2, 0.95))
+        
+        return [basic_template, a2_template]
     
     def _setup_lower_skill_actions(self):
         # Self buff action
@@ -103,7 +129,7 @@ class Epica(Hero):
             status_template=self.status_templates[f"{self.get_unique_name()}_저학년_전체"]
         )
         
-        return [(self_buff_action, 0.55), (other_buff_action, 0.55)]
+        return [[(self_buff_action, 0.55), (other_buff_action, 0.55)]]
 
     def _setup_upper_skill_actions(self):
         # Damage actions
@@ -130,7 +156,21 @@ class Epica(Hero):
             status_template=self.status_templates[f"{self.get_unique_name()}_고학년"]
         )
         
-        return damage_actions + [(buff_action, 0.09)]
+        return [[(buff_action, 0.09)] + damage_actions]
+
+    def _setup_aside_skill_l2(self):
+        # Override action template selection if aside level is 2 or higher
+        # The increased enhanced attack probability is handled in setup_eac.
+        self._choose_basic_attack_template = lambda: 1
+        self._choose_enhanced_attack_template = lambda: 1
+    
+    def _initialize_aside_skill_l3(self):
+        # Increase middle row damage dealt by 19.5%, reduce damage taken by 9.75%
+        for ally_idx in self.party.active_indices:
+            ally = self.party.character_list[ally_idx]
+            if ally.party_idx // 3 == 1:    # middle row
+                ally.reduce_damage_taken(DamageType.ALL, 9.75) 
+                ally.add_amplify(DamageType.ALL, 19.5)
 
     def setup_eac(self):
         prob = 0.25 + (0.15 if self.aside_level >= 2 else 0)

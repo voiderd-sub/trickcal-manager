@@ -38,12 +38,12 @@ def test_sylla_no_ew(sylla_party):
     party, sylla = sylla_party
     party.init_run() # Initialize the party and hero for the run
 
-    assert sylla.motion_time[MovementType.AutoAttackBasic] == 1.0
+    assert sylla.motion_time[MovementType.AutoAttackBasic][sylla._choose_movement_template(MovementType.AutoAttackBasic)] == 1.0
     
     # In no_ew case, _setup_basic_attack_actions is called inside hero._setup_all_movement_actions
     # which is called when party.add_hero.
     # The actions are stored in _action_templates.
-    actions = sylla._action_templates[MovementType.AutoAttackBasic]
+    actions = sylla._action_templates[MovementType.AutoAttackBasic][sylla._choose_movement_template(MovementType.AutoAttackBasic)]
     assert len(actions) == 1
     action, _ = actions[0]
     assert action.damage_coeff == 70
@@ -57,16 +57,16 @@ def test_sylla_ew_l1(sylla_party):
     party, sylla = sylla_party
     
     # Before init_run, the ew effect is not applied yet.
-    assert sylla.motion_time[MovementType.AutoAttackBasic] == 1.0
+    assert sylla.motion_time[MovementType.AutoAttackBasic][sylla._choose_movement_template(MovementType.AutoAttackBasic)] == 1.0
 
     # init_run will detect the exclusive weapon and call setup_exclusive_weapon_effects
     party.init_run()
 
     # After init_run, the motion time should be updated by _setup_ew_l1
-    assert sylla.motion_time[MovementType.AutoAttackBasic] == MAX_MOTION_TIME
+    assert sylla.motion_time[MovementType.AutoAttackBasic][sylla._choose_movement_template(MovementType.AutoAttackBasic)] == MAX_MOTION_TIME
 
     # And the actions should be replaced
-    actions = sylla._action_templates[MovementType.AutoAttackBasic]
+    actions = sylla._action_templates[MovementType.AutoAttackBasic][sylla._choose_movement_template(MovementType.AutoAttackBasic)]
     assert len(actions) == 2
     
     # Actions are sorted by t_ratio, so we can check them in order.

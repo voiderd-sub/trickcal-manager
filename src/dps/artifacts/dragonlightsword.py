@@ -32,12 +32,12 @@ class DragonLightSword(Artifact):
 
         hero.get_coeff = enhanced_get_coeff
 
-        if not hasattr(hero, 'original_LowerSkill_dls'):
-            hero.original_LowerSkill_dls = hero.LowerSkill
+        # Do not store original_LowerSkill_dls attribute; use closure to capture original method
+        original_LowerSkill = hero.LowerSkill
 
-        def enhanced_LowerSkill(t):
+        def enhanced_LowerSkill(template_index, t):
             hero.artifact_counters['dragonlightsword_last_reset_time'] = t
-            hero.original_LowerSkill_dls(t)
+            original_LowerSkill(template_index, t)
 
         hero.LowerSkill = enhanced_LowerSkill
 

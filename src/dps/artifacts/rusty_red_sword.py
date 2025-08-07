@@ -15,8 +15,7 @@ class RustyRedSword(Artifact):
                 caster=None,  # Caster will be set when the effect is applied
                 target_resolver_fn=target_self,
                 duration=6,
-                stat_type=StatType.AttackSpeed,
-                value=self.effects[0]
+                stat_bonuses={StatType.AttackSpeed: self.effects[0]}
             )
             
             self.amp_buff = BuffAmplify(

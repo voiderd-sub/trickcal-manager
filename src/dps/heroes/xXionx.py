@@ -1,7 +1,7 @@
 from dps.action import InstantAction, StatusAction
 from dps.hero import Hero, PeriodicCondition
 from dps.enums import *
-from dps.status import StatusTemplate, target_self, BuffStatCoeff, StatusReservation
+from dps.status import StatusTemplate, target_self, BuffStatCoeff
 from dps.stat_utils import apply_stat_bonuses
 
 
@@ -32,22 +32,21 @@ class DarkBulletBuff(StatusTemplate):
 
 
 class xXionx(Hero):
-    lowerskill_value = [(160 + 20 * level) for level in range(13)]
-    upperskill_value = [(360 + 25 * level) for level in range(13)]
+    lowerskill_value = [(180 + 20 * level) for level in range(13)]
+    upperskill_value = [(385 + 25 * level) for level in range(13)]
 
     def __init__(self, user_provided_info):
         super().__init__(user_provided_info)
         self.motion_time = {
             MovementType.AutoAttackBasic: 2.25,
             MovementType.AutoAttackEnhanced: 2.667,
+            MovementType.LowerSkill: [6.550, 7.567, 8.584, 9.601, 10.618],  # motion time for 2~6 dark bullets
             MovementType.UpperSkill: 5.5,
         }
 
-    def init_run(self):
-        super().init_run()
-        if self.aside_level >= 2:
-            self.update_timers_and_request_skill = self.update_timers_and_request_skill_aside_2
-            self.choose_and_execute_movement = self.choose_and_execute_movement_aside_2
+    def _setup_aside_skill_l2(self):
+        self.update_timers_and_request_skill = self.update_timers_and_request_skill_aside_2
+        self.choose_and_execute_movement = self.choose_and_execute_movement_aside_2
 
     def init_simulation(self):
         super().init_simulation()
@@ -62,8 +61,7 @@ class xXionx(Hero):
             caster=self,
             target_resolver_fn=target_self,
             duration=6,
-            stat_type=StatType.AttackSpeed,
-            value=100, # 100% increase
+            stat_bonuses={StatType.AttackSpeed: 100}, # 100% increase
             max_stack=1 # Refresh duration on re-application
         )
 
@@ -106,7 +104,8 @@ class xXionx(Hero):
         movement_before_super = self.choose_movement()
         
         if movement_before_super in (MovementType.LowerSkill, MovementType.UpperSkill):
-            motion_time = self.get_motion_time(movement_before_super)
+            template_index = self._choose_movement_template(movement_before_super)
+            motion_time = self.get_motion_time(movement_before_super, template_index)
             skill_end_time = t + motion_time
             self._schedule_aside_l2_buff(skill_end_time)
 
@@ -122,7 +121,7 @@ class xXionx(Hero):
             source_movement=MovementType.AutoAttackBasic,
             damage_type=DamageType.AutoAttackBasic,
         )
-        return [(action, 0.45)]
+        return [[(action, 0.45)]]
 
     def _setup_enhanced_attack_actions(self):
         name = self.get_unique_name()
@@ -140,53 +139,36 @@ class xXionx(Hero):
             status_template=self.status_templates[name + "_마탄"]
         )
         
-        return [(damage_action, 0.31), (buff_action, 0.74)]
+        return [[(damage_action, 0.31), (buff_action, 0.74)]]
 
-    def get_motion_time(self, movement_type: MovementType):        
-        if movement_type == MovementType.LowerSkill:
-            name = self.get_unique_name() + "_마탄"
-            current_stacks = self.party.status_manager.get_buff_count(self.party_idx, name)
-            num_attacks = min(current_stacks + 2, 6)
-
-            time_to_buff = 0.983
-            time_to_first_hit_from_buff = 1.2
-            time_between_hits = 61 / 60
-            time_after_last_hit = 2.333
+    def _setup_lower_skill_actions(self):
+        name = self.get_unique_name()
+        templates = []
+        
+        # Generate templates for 2~6 dark bullets (since 2 dark bullets are charged)
+        motion_times = [6.550, 7.567, 8.584, 9.601, 10.618]  # motion time for 2~6 dark bullets
+        
+        for darkbullet_count in range(5):  # 0~4 (corresponds to 2~6 dark bullets)
+            template = []
+            actual_darkbullet_count = darkbullet_count + 2  # actual number of dark bullets
+            num_attacks = min(actual_darkbullet_count + 2, 6)
+            motion_time = motion_times[darkbullet_count]
             
-            total_duration_sec = (time_to_buff + 
-                                  time_to_first_hit_from_buff + 
-                                  max(0, num_attacks - 1) * time_between_hits + 
-                                  time_after_last_hit)
-            acceleration = self.party.get_current_acceleration_factor(self.party.current_time)
+            # Buff actions (add 2 dark bullets)
+            buff_action = StatusAction(
+                hero=self, 
+                source_movement=MovementType.LowerSkill, 
+                damage_type=DamageType.LowerSkill, 
+                status_template=self.status_templates[name + "_마탄"]
+            )
+            buff_t_ratio = 0.983 / motion_time
+            template.append((buff_action, buff_t_ratio))
+            template.append((buff_action, buff_t_ratio))
             
-            return total_duration_sec * SEC_TO_MS / acceleration
-        
-        return super().get_motion_time(movement_type)
-
-    def LowerSkill(self, t):
-        action_tuples = []
-        
-        name = f"{self.get_unique_name()}_마탄"
-        current_stacks = self.party.status_manager.get_buff_count(self.party_idx, name)
-        num_attacks = min(current_stacks + 2, 6)
-
-        # 1. Reserve buff actions
-        time_to_buff_ms = t + 0.983 * SEC_TO_MS
-        buff_action = StatusAction(
-            hero=self, 
-            source_movement=MovementType.LowerSkill, 
-            damage_type=DamageType.LowerSkill, 
-            status_template=self.status_templates[name]
-        )
-        
-        action_tuples.append((buff_action, time_to_buff_ms))
-        action_tuples.append((buff_action, time_to_buff_ms))
-
-        # 2. Reserve damage actions
-        if num_attacks > 0:
-            first_hit_time_ms = t + (0.983 + 1.2) * SEC_TO_MS
-            time_between_hits_ms = (61 / 60) * SEC_TO_MS
-
+            # Damage actions
+            first_hit_t_ratio = (0.983 + 1.2) / motion_time  # first attack timing
+            time_between_hits_ratio = (61 / 60) / motion_time  # interval between attacks
+            
             for i in range(num_attacks):
                 damage_action = InstantAction(
                     hero=self,
@@ -195,10 +177,21 @@ class xXionx(Hero):
                     damage_type=DamageType.LowerSkill,
                     post_fns_on_launch=[self._consume_darkbullet]
                 )
-                hit_time = first_hit_time_ms + i * time_between_hits_ms
-                action_tuples.append((damage_action, hit_time))
+                hit_t_ratio = first_hit_t_ratio + i * time_between_hits_ratio
+                template.append((damage_action, hit_t_ratio))
+            
+            templates.append(template)
         
-        self.reserv_action_chain(action_tuples)
+        return templates
+
+    def _choose_movement_template(self, movement_type):
+        if movement_type == MovementType.LowerSkill:
+            name = self.get_unique_name() + "_마탄"
+            current_stacks = self.party.status_manager.get_buff_count(self.party_idx, name)
+            # Map to range 0~4 for 2~6 dark bullets
+            template_index = max(0, min(current_stacks - 2, 4))  # map 2~6 to 0~4
+            return template_index
+        return 0
 
     def _consume_darkbullet(self, action):
         name = f"{self.get_unique_name()}_마탄"
@@ -220,4 +213,12 @@ class xXionx(Hero):
             damage_type=DamageType.UpperSkill
         )
 
-        return [(buff_action, 0.68), (damage_action, 0.69)]
+        return [[(buff_action, 0.68), (damage_action, 0.69)]]
+
+    def _initialize_aside_skill_l3(self):
+        # Increase back row damage dealt by 19.5%, reduce damage taken by 9.75%
+        for ally_idx in self.party.active_indices:
+            ally = self.party.character_list[ally_idx]
+            if ally.party_idx // 3 == 2:    # back row
+                ally.add_amplify(DamageType.ALL, 19.5)
+                ally.reduce_damage_taken(DamageType.ALL, 9.75)

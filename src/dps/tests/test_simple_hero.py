@@ -182,8 +182,8 @@ def test_chained_actions():
     기본 공격에 instant action과 projectile action을 모두 포함시킨다.
     """
     class ChainedAttackHero(SimpleHero):
-        def BasicAttack(self, t):            
-            motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
+        def BasicAttack(self, template_index, t):            
+            motion_time = self.get_motion_time(MovementType.AutoAttackBasic, template_index)
             action1 = InstantAction(self, SimpleHero.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
             action2 = ProjectileAction(self, SimpleHero.BASIC_DMG * 0.5, 0.5, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
 
@@ -242,8 +242,8 @@ def test_attack_speed_buff():
     LowerSkill 사용 시 5초간 공격속도 100% 증가 버프가 적용되는지 테스트한다.
     """
     class BuffHero(SimpleHero):
-        def LowerSkill(self, t):
-            motion_time = self.get_motion_time(MovementType.LowerSkill)
+        def LowerSkill(self, template_index, t):
+            motion_time = self.get_motion_time(MovementType.LowerSkill, template_index)
             
             # 5초 지속, 공격속도 100% 증가 버프 생성
             buff_template = BuffStatCoeff(
@@ -251,8 +251,7 @@ def test_attack_speed_buff():
                 caster=self,
                 target_resolver_fn=target_self,
                 duration=5,
-                stat_type=StatType.AttackSpeed,
-                value=100
+                stat_bonuses={StatType.AttackSpeed: 100}
             )
             
             # Movement 90% 시점에 StatusAction 예약
@@ -354,20 +353,20 @@ def test_amplify_buff(amplify_type, amplify_value):
             self.sp_per_aa = 0
             self.sp_recovery_rate = 10
 
-        def BasicAttack(self, t):
+        def BasicAttack(self, template_index, t):
             action = InstantAction(self, self.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
-            motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
+            motion_time = self.get_motion_time(MovementType.AutoAttackBasic, template_index)    
             self.reserv_action(action, t + 0.5 * motion_time)
             return motion_time
 
-        def UpperSkill(self, t):
+        def UpperSkill(self, template_index, t):
             action = InstantAction(self, self.UPPER_SKILL_DMG, MovementType.UpperSkill, DamageType.UpperSkill)
-            motion_time = self.get_motion_time(MovementType.UpperSkill)
+            motion_time = self.get_motion_time(MovementType.UpperSkill, template_index)
             self.reserv_action(action, t + 0.5 * motion_time)
             return motion_time
-        
-        def LowerSkill(self, t):
-            motion_time = self.get_motion_time(MovementType.LowerSkill)
+
+        def LowerSkill(self, template_index, t):
+            motion_time = self.get_motion_time(MovementType.LowerSkill, template_index)
             buff_template = BuffAmplify(
                 status_id=f"AmplifyBuff_{str_amplify_type}",
                 caster=self,
@@ -621,9 +620,9 @@ def test_upper_skill_interrupt():
         # change basic attack hit time 0.5 to 0.6;
         # If this value is set to 50%, it becomes complicated
         # because basic attack action time = upper skill cooldown time.
-        def BasicAttack(self, t):
+        def BasicAttack(self, template_index, t):
             action = InstantAction(self, self.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
-            motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
+            motion_time = self.get_motion_time(MovementType.AutoAttackBasic, template_index)    
             self.reserv_action(action, t + 0.6 * motion_time)
             return motion_time
 
@@ -831,10 +830,10 @@ def test_movement_trigger_with_interrupt():
             self.attack_speed = 30
             self.upper_skill_cd = 1 # Upper skill is always ready
             
-        def BasicAttack(self, t):
+        def BasicAttack(self, template_index, t):
             # Damage action is at the end of the long motion
             action = InstantAction(self, self.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
-            motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
+            motion_time = self.get_motion_time(MovementType.AutoAttackBasic, template_index)    
             self.reserv_action(action, t + 0.9 * motion_time)
             return motion_time
 
@@ -907,9 +906,9 @@ def test_selective_cancel():
             self.motion_time[MovementType.AutoAttackBasic] = 5
             self.attack_speed = 300 / 5 # ensures basic attack motion time = basic attack cd
 
-        def BasicAttack(self, t):
+        def BasicAttack(self, template_index, t):
             action = InstantAction(self, self.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic)
-            motion_time = self.get_motion_time(MovementType.AutoAttackBasic)
+            motion_time = self.get_motion_time(MovementType.AutoAttackBasic, template_index)    
             self.reserv_action(action, t + 0.9 * motion_time)
             return motion_time
 
@@ -1089,11 +1088,11 @@ class EACHero(SimpleHero):
     
     def _setup_basic_attack_actions(self):
         """일반 공격 액션 설정"""
-        return [(InstantAction(self, self.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic), 0.5)]
+        return [[(InstantAction(self, self.BASIC_DMG, MovementType.AutoAttackBasic, DamageType.AutoAttackBasic), 0.5)]]
     
     def _setup_enhanced_attack_actions(self):
         """강화 공격 액션 설정"""
-        return [(InstantAction(self, self.ENHANCED_DMG, MovementType.AutoAttackEnhanced, DamageType.AutoAttackEnhanced), 0.5)]
+        return [[(InstantAction(self, self.ENHANCED_DMG, MovementType.AutoAttackEnhanced, DamageType.AutoAttackEnhanced), 0.5)]]
 
 
 def test_periodic_condition():
@@ -1230,8 +1229,7 @@ def test_buff_condition():
         caster=hero,
         target_resolver_fn=target_self,
         duration=5,  # 5초 지속
-        stat_type=StatType.AttackSpeed,
-        value=50
+        stat_bonuses={StatType.AttackSpeed: 50}
     )
     
     # 2초 후에 버프 적용
@@ -1247,9 +1245,9 @@ def test_buff_condition():
     
     # 원래 BasicAttack 메서드를 백업하고 버프 적용 로직 추가
     original_basic_attack = hero.BasicAttack
-    def new_basic_attack(t):
+    def new_basic_attack(template_index, t):
         apply_buff_at_2s(t)
-        return original_basic_attack(t)
+        return original_basic_attack(template_index, t)
     
     hero.BasicAttack = new_basic_attack
     

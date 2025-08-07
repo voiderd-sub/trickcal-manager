@@ -19,12 +19,14 @@ class Sylla(Hero):
         self.exclusive_weapon_name = "실라의 바람살"
 
         self.motion_time = {
-            MovementType.AutoAttackBasic: 1.0,
+            MovementType.AutoAttackBasic: [1.0, MAX_MOTION_TIME],  # 0: without exclusive weapon, 1: with exclusive weapon
             MovementType.LowerSkill: 2.5,
             MovementType.UpperSkill: 3.6,
         }
 
     def _setup_basic_attack_actions(self):
+        # Index 0: without exclusive weapon (single basic attack)
+        basic_template = []
         action = ProjectileAction(
             hero=self,
             damage_coeff=70,
@@ -32,10 +34,31 @@ class Sylla(Hero):
             source_movement=MovementType.AutoAttackBasic,
             damage_type=DamageType.AutoAttackBasic,
         )
-        return [(action, 0.45)]
+        basic_template.append((action, 0.45))
+        
+        # Index 1: with exclusive weapon (double basic attack)
+        enhanced_template = []
+        action1 = ProjectileAction(
+            hero=self,
+            damage_coeff=80,
+            hit_delay=0.5,
+            source_movement=MovementType.AutoAttackBasic,
+            damage_type=DamageType.AutoAttackBasic,
+        )
+        action2 = ProjectileAction(
+            hero=self,
+            damage_coeff=80,
+            hit_delay=0.6,
+            source_movement=MovementType.AutoAttackBasic,
+            damage_type=DamageType.AutoAttackBasic,
+        )
+        enhanced_template.append((action1, 0.45))
+        enhanced_template.append((action2, 0.80))
+        
+        return [basic_template, enhanced_template]
 
     def _setup_enhanced_attack_actions(self):
-        return []
+        return [[]]
 
     def _setup_lower_skill_actions(self):
         actions = []
@@ -52,7 +75,7 @@ class Sylla(Hero):
             )
             actions.append((damage_action, t_ratio))
 
-        return actions
+        return [actions]
 
     def _setup_upper_skill_actions(self):
         damage = self.upperskill_value[self.upperskill_level - 1]
@@ -63,7 +86,7 @@ class Sylla(Hero):
             source_movement=MovementType.UpperSkill,
             damage_type=DamageType.UpperSkill,
         )
-        return [(action, 0.59)]
+        return [[(action, 0.59)]]
 
     def _setup_aside_skill_l2(self):
         def whirlwind_on_hit():
@@ -79,26 +102,19 @@ class Sylla(Hero):
 
     def _initialize_aside_skill_l2(self):
         apply_stat_bonuses(self, {StatType.AttackSpeed: 40})
+    
+    def _initialize_aside_skill_l3(self):
+        # Increase critical mult resist and critical resist by 7.5% for all allies
+        for ally_idx in self.party.active_indices:
+            ally = self.party.character_list[ally_idx]
+            apply_stat_bonuses(ally, {StatType.CriticalMultResist: 7.5, StatType.CriticalResist: 7.5})
 
     def _setup_ew_l1(self):
-        self.motion_time[MovementType.AutoAttackBasic] = MAX_MOTION_TIME
-        
-        action1 = ProjectileAction(
-            hero=self,
-            damage_coeff=80,
-            hit_delay=0.5,
-            source_movement=MovementType.AutoAttackBasic,
-            damage_type=DamageType.AutoAttackBasic,
-        )
-        action2 = ProjectileAction(
-            hero=self,
-            damage_coeff=80,
-            hit_delay=0.6,
-            source_movement=MovementType.AutoAttackBasic,
-            damage_type=DamageType.AutoAttackBasic,
-        )
-        # This will be sorted in `_setup_all_movement_actions`
-        self._action_templates[MovementType.AutoAttackBasic] = [(action1, 0.45), (action2, 0.80)]
+        def choose_movement_template(movement_type):
+            if movement_type == MovementType.AutoAttackBasic:
+                return 1
+            return 0
+        self._choose_movement_template = choose_movement_template
     
     def _initialize_ew_l3(self):
         # additional attackspeed 12.5%
