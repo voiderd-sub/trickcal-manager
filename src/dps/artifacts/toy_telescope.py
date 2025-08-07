@@ -27,7 +27,6 @@ class ToyTelescope(Artifact):
 
         effect_value = self.effects[0]
         distance_factor_a = self.DISTANCE_FACTOR_MAP.get(hero.name_kr, 0)
-        print(f"Distance factor a for {hero.name_kr}: {distance_factor_a}")
         
         if distance_factor_a == 0:
             return
@@ -36,9 +35,6 @@ class ToyTelescope(Artifact):
         basic_attack_amp = 40 * distance_factor_a * effect_value
         enhanced_attack_amp = 10 * distance_factor_a * effect_value
 
-        print(f"Basic attack amp: {basic_attack_amp}")
-        print(f"Enhanced attack amp: {enhanced_attack_amp}")
-
         # Apply Eldain bonus: double the basic attack amplification
         if hero.is_eldain:
             basic_attack_amp *= 2
@@ -46,10 +42,6 @@ class ToyTelescope(Artifact):
         # Apply the amplification to the hero
         if basic_attack_amp > 0:
             hero.add_amplify(DamageType.AutoAttackBasic, basic_attack_amp)
-            print(f"Added basic attack amp: {basic_attack_amp}")
-            print(f"Hero amplify: {hero.get_amplify(DamageType.AutoAttackBasic)}")
         
         if enhanced_attack_amp > 0:
             hero.add_amplify(DamageType.AutoAttackEnhanced, enhanced_attack_amp) 
-            print(f"Added enhanced attack amp: {enhanced_attack_amp}")
-            print(f"Hero amplify: {hero.get_amplify(DamageType.AutoAttackEnhanced)}")

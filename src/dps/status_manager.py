@@ -136,7 +136,6 @@ class StatusManager:
         self.add_status_reserv(status)
 
     def _delete_status(self, status, current_time):
-        print(f"  └── DELETING status: {status.template.status_id} at {current_time}ms")
         for target_id in status.get_targets():
             status.delete_fn(target_id, current_time)
             

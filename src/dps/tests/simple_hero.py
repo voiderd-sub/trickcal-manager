@@ -22,6 +22,21 @@ class SimpleHero(Hero):
             "aside_level": 0,
             "upper_skill_cd": 30,
             "attack_type": AttackType.Physic,
+            "hero_class": Class.Dealer,  # 역할군 추가
+            "grade": 1,  # 학년 추가
+            "base_stat": {
+                StatType.Hp: 100,
+                StatType.AttackPhysic: 100,
+                StatType.AttackMagic: 100,
+                StatType.DefensePhysic: 100,
+                StatType.DefenseMagic: 100,
+                StatType.CriticalRate: 100,
+                StatType.CriticalMult: 100,
+                StatType.CriticalResist: 100,
+                StatType.CriticalMultResist: 100,
+            },  # 기본스탯 설정
+            "personal_stat": {},  # 개인스탯 (빈 딕셔너리)
+            "global_stat": {},  # 전체스탯 (빈 딕셔너리)
         }
         super().__init__(info)
         self.motion_time = {

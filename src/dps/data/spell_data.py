@@ -4,6 +4,16 @@
 from dps.enums import Grade, StatType
 
 SPELL_DATA = {
+    "깜짝 상자": {
+        "grade": Grade.LEGENDARY,
+        "cost": 14,
+        "description": r"""웨이브 시작 시 무작위 적 3명에게 ①초 동안 기절 상태를 부여하고, 최대 HP의 ②%만큼 피해를 입힌다.""",
+        "stat_types": [StatType.Hp, StatType.CriticalRate],
+        "stats": [[8.02, 5.96], [8.75, 6.5], [9.47, 7.04], None, None, None, None, None, None, None, None, None],
+        "effects": [[4.0, 7.0], [4.2, 7.2], [4.4, 7.4], None, None, None, None, None, None, None, None, None],
+        "stat_growth": [99, 100],
+        "effect_growth": [0.20000000000000018, 0.20000000000000018],
+    },
     "단체 월반": {
         "grade": Grade.LEGENDARY,
         "cost": 33,

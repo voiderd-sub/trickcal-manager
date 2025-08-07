@@ -34,6 +34,8 @@ class MovementType(StrEnum):
 
     @classmethod
     def movement_type_to_dmg_type(cls, movement_type):
+        if movement_type == None:
+            return DamageType.NONE
         return getattr(DamageType, movement_type.name)
 
 class ActionType(StrEnum):

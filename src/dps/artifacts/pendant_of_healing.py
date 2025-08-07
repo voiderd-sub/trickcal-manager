@@ -13,21 +13,22 @@ class PendantOfHealing(Artifact):
         - Adds a life steal effect to the hero's basic attack post-function subscribers.
         This is called once per run.
         """
-        def life_steal_effect():
-            current_time = hero.party.action_manager.current_time
-            last_proc_time = hero.artifact_counters.get('pendant_of_healing_last_proc', -self.cooldown)
+        # def life_steal_effect():
+        #     current_time = hero.party.action_manager.current_time
+        #     last_proc_time = hero.artifact_counters.get('pendant_of_healing_last_proc', -self.cooldown)
             
-            if current_time >= last_proc_time + self.cooldown:
-                hero.artifact_counters['pendant_of_healing_last_proc'] = current_time
+        #     if current_time >= last_proc_time + self.cooldown:
+        #         hero.artifact_counters['pendant_of_healing_last_proc'] = current_time
                 
-                # Placeholder for the healing effect.
-                # The actual healing logic would need access to the damage dealt by the auto-attack.
-                # effect_value = self.effects[0]
-                # heal_amount = damage_dealt * (effect_value / 100)
-                # hero.heal(heal_amount)
-                pass
+        #         # Placeholder for the healing effect.
+        #         # The actual healing logic would need access to the damage dealt by the auto-attack.
+        #         # effect_value = self.effects[0]
+        #         # heal_amount = damage_dealt * (effect_value / 100)
+        #         # hero.heal(heal_amount)
+        #         pass
 
-        hero.aa_post_fns.append(life_steal_effect)
+        # hero.aa_post_fns.append(life_steal_effect)
+        pass
 
     def apply_init_effect(self, hero):
         """

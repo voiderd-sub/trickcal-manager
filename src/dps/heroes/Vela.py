@@ -46,32 +46,6 @@ class Vela(Hero):
             MovementType.UpperSkill: 4.97,
         }
 
-    def _setup_basic_attack_actions(self):
-        action1 = InstantAction(
-            hero=self,
-            damage_coeff=60,
-            source_movement=MovementType.AutoAttackBasic,
-            damage_type=DamageType.AutoAttackBasic,
-        )
-        
-        action2 = InstantAction(
-            hero=self,
-            damage_coeff=60,
-            source_movement=MovementType.AutoAttackBasic,
-            damage_type=DamageType.AutoAttackBasic,
-        )
-        
-        return [(action1, 0.15), (action2, 0.47)]
-
-    def _setup_enhanced_attack_actions(self):
-        action = InstantAction(
-            hero=self,
-            damage_coeff=200,
-            source_movement=MovementType.AutoAttackEnhanced,
-            damage_type=DamageType.AutoAttackEnhanced,
-        )
-        
-        return [(action, 0.58)]
 
     def _setup_status_templates(self):
         name = self.get_unique_name()
@@ -108,6 +82,33 @@ class Vela(Hero):
             target_resolver_fn=target_all
         )
 
+    def _setup_basic_attack_actions(self):
+        action1 = InstantAction(
+            hero=self,
+            damage_coeff=60,
+            source_movement=MovementType.AutoAttackBasic,
+            damage_type=DamageType.AutoAttackBasic,
+        )
+        
+        action2 = InstantAction(
+            hero=self,
+            damage_coeff=60,
+            source_movement=MovementType.AutoAttackBasic,
+            damage_type=DamageType.AutoAttackBasic,
+        )
+        
+        return [[(action1, 0.15), (action2, 0.47)]]
+
+    def _setup_enhanced_attack_actions(self):
+        action = InstantAction(
+            hero=self,
+            damage_coeff=200,
+            source_movement=MovementType.AutoAttackEnhanced,
+            damage_type=DamageType.AutoAttackEnhanced,
+        )
+        
+        return [[(action, 0.58)]]
+
     def _setup_lower_skill_actions(self):
         damage, _ = self.lowerskill_value[self.lowerskill_level - 1]
         damage_action = InstantAction(
@@ -121,15 +122,17 @@ class Vela(Hero):
             hero=self,
             status_template=self.status_templates[f"{self.get_unique_name()}_존속"],
             source_movement=MovementType.LowerSkill,
+            damage_type=DamageType.NONE
         )
         
         persistence_buff = StatusAction(
             hero=self,
             status_template=self.status_templates[f"{self.get_unique_name()}_영속"],
             source_movement=MovementType.LowerSkill,
+            damage_type=DamageType.NONE
         )
         
-        return [(damage_action, 0.58), (endurance_buff, 0.58), (persistence_buff, 0.58)]
+        return [[(damage_action, 0.58), (endurance_buff, 0.58), (persistence_buff, 0.58)]]
 
     def _setup_upper_skill_actions(self):
         damage, hp_restore_all, hp_restore_self = self.upperskill_value[self.upperskill_level - 1]
@@ -142,7 +145,7 @@ class Vela(Hero):
         )
         
         # self heal at 71% (not implemented)
-        return [(damage_action, 0.09)]
+        return [[(damage_action, 0.09)]]
 
     def _setup_aside_skill_l2(self):
         # Apply damage reduction buff when 'Endurance' is triggered
@@ -151,9 +154,10 @@ class Vela(Hero):
             hero=self,
             status_template=self.status_templates[f"{self.get_unique_name()}_A2_존속_피해감소"],
             source_movement=MovementType.LowerSkill,
+            damage_type=DamageType.NONE
         )
         
-        self._action_templates[MovementType.LowerSkill].append((damage_reduction_buff, 0.61))
+        self._action_templates[MovementType.LowerSkill][0].append((damage_reduction_buff, 0.61))
         
         # Override the 'Persistence' template to 'BuffPersistenceGlobal'
         name = self.get_unique_name()

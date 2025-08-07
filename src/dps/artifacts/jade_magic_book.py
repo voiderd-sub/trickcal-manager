@@ -10,4 +10,4 @@ class JadeMagicBook(Artifact):
         Applies the skill damage increase effect.
         """
         effect_value = self.effects[0]
-        hero.add_amplify(DamageType.SKILL, effect_value) 
+        hero.add_amplify(DamageType.Skill, effect_value) 

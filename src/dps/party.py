@@ -139,6 +139,10 @@ class Party:
         # 7. Initialize exclusive weapon effects for all heroes
         for i in self.active_indices:
             self.character_list[i].initialize_exclusive_weapon_effects()
+        
+        # 8. Calculate final stats for all heroes
+        for i in self.active_indices:
+            self.character_list[i]._calculate_final_stats()
 
     def reset_acceleration(self):
         self.accel_start_time = 0
@@ -231,36 +235,93 @@ class Party:
 
     def run(self, max_t, num_simulation, priority=None, rules=None):
         self.init_run(priority, rules)
+        self.max_t = max_t
         
-        for _ in tqdm(range(num_simulation)):
+        simulation_results = []
+        first_simulation_done = False
+        
+        for _ in tqdm(range(num_simulation), desc="Running simulations"):
             self.init_simulation()
+            
+            # 첫 번째 시뮬레이션 초기화 후 히어로 정보 출력
+            if not first_simulation_done:
+                print("\n" + "="*80)
+                print("첫 번째 시뮬레이션 초기화 완료 - 히어로별 스탯 정보")
+                print("="*80)
+                
+                for idx in self.active_indices:
+                    hero = self.character_list[idx]
+                    if hero:
+                        print(f"\n[{hero.get_unique_name()}]")
+                        print("-" * 40)
+                        
+                        # Amplify 정보
+                        print("📈 Amplify 값:")
+                        amplify_values = []
+                        for damage_type in DamageType.leaf_types():
+                            amplify_value = hero.get_amplify(damage_type)
+                            if amplify_value != 1.0:
+                                amplify_values.append(f"{damage_type.name}: {amplify_value:.3f}")
+                        
+                        # 5개씩 출력
+                        for i in range(0, len(amplify_values), 5):
+                            chunk = amplify_values[i:i+5]
+                            print("  " + " | ".join(chunk))
+                        
+                        # Coefficient 정보
+                        print("📊 Coefficient 값:")
+                        coeff_values = []
+                        for stat_type in StatType:
+                            coeff_value = hero.get_coeff(stat_type)
+                            if coeff_value != 1.0:
+                                coeff_values.append(f"{stat_type.name}: {coeff_value:.3f}")
+                        
+                        # 5개씩 출력
+                        for i in range(0, len(coeff_values), 5):
+                            chunk = coeff_values[i:i+5]
+                            print("  " + " | ".join(chunk))
+                        
+                        # 기본 스탯 정보
+                        print("💪 기본 스탯:")
+                        for stat_type in StatType:
+                            if hasattr(hero, stat_type.value):
+                                stat_value = getattr(hero, stat_type.value)
+                                if stat_value != 0:
+                                    print(f"  {stat_type.name}: {stat_value:.1f}")
+                
+                print("\n" + "="*80)
+                first_simulation_done = True
+            
             prev_time = 0
             while self.current_time < int(max_t * SEC_TO_MS):
                 assert self.current_time >= prev_time, "time paradox!"
                 prev_time = self.current_time
                 self.step()
-        return
-        #     # Simulation terminated; extract results
-        #     for idx in range(9):
-        #         character = self.character_list[idx]
-        #         if character != None:
-        #             name = character.get_unique_name()
-        #             print(name, character.damage_records)
-        #             character.calculate_cumulative_damage(max_t)
-        #
-        #             total_dmg = 0
-        #             for dmg_type, value in character.damage_records.items():
-        #                 rows.append({
-        #                     "name": name,
-        #                     "dmg_type": dmg_type,
-        #                     "dmg": value
-        #                 })
-        #                 total_dmg += value
-        #             rows.append({
-        #                 "name": name,
-        #                 "dmg_type": "Total",
-        #                 "dmg": total_dmg
-        #             })
-        # df = pd.DataFrame(rows)
             
-        # return df
+            # Simulation terminated; extract results
+            simulation_result = {}
+            total_damage = 0
+            
+            for idx in range(9):
+                character = self.character_list[idx]
+                if character != None:
+                    name = character.get_unique_name()
+                    character.calculate_cumulative_damage(max_t)
+                    
+                    hero_damage = 0
+                    damage_by_type = {}
+                    
+                    for dmg_type, value in character.damage_records.items():
+                        damage_by_type[dmg_type] = value
+                        hero_damage += value
+                    
+                    simulation_result[name] = {
+                        'total_damage': hero_damage,
+                        'damage_by_type': damage_by_type
+                    }
+                    total_damage += hero_damage
+            
+            simulation_result['total_damage'] = total_damage
+            simulation_results.append(simulation_result)
+        
+        return simulation_results

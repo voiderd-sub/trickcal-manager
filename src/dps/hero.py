@@ -18,14 +18,26 @@ def find_valid_skill_level(L, i):
 
 
 class Hero:
+    grade_bonuses = {1: 0, 2: 6, 3: 17, 4: 31, 5: 47, 6: 65}
+
     def __init__(self, user_provided_info):
         self.name = self.__class__.__name__
         if self.name in HERO_DATA:
             for key, value in HERO_DATA[self.name].items():
-                setattr(self, key, value)
+                # 'class' is a reserved keyword in Python, so we use 'hero_class' instead
+                if key == "class":
+                    setattr(self, "hero_class", value)
+                else:
+                    setattr(self, key, value)
 
         for key, value in user_provided_info.items():
             setattr(self, key, value)
+        
+        self.grade = getattr(self, 'grade', 1)
+
+        self._base_stats = getattr(self, 'base_stat', {})
+        self._personal_stats = getattr(self, 'personal_stat', {})
+        self._global_stats = getattr(self, 'global_stat', {})
         
         self.artifacts = []
         # Action templates for each movement type
@@ -72,8 +84,6 @@ class Hero:
                 valid_level = find_valid_skill_level(skill_values, user_level)
                 if user_level != valid_level:
                     setattr(self, skill_type+"_level", valid_level)
-                    print(f"Data for {skill_type} level {user_level} is not exists.")
-                    print(f"Use data of level {valid_level} instead.")
 
         # Initialize movement triggers and upper skill rule
         self.upper_skill_rule = None
@@ -96,6 +106,8 @@ class Hero:
         self.amplify_modifiers = {}
         self.sp = self.init_sp
         self.sp_timer = 0
+        self.sp_recovery_fixed_bonus = 0
+        self.sp_recovery_percent_bonus = 0
         self.upper_skill_timer = round(self.upper_skill_cd * SEC_TO_MS * 0.5)
         self.aa_timer = 0
         self.last_updated = 0
@@ -129,6 +141,66 @@ class Hero:
         # SP recovery pause system
         self.sp_recovery_pause_end_time = 0
 
+
+    def _calculate_final_stats(self):
+        """Calculate final stats (base + personal + global + grade bonus)"""
+        
+        for stat_type in StatType:
+            if stat_type == StatType.AttackSpeed:
+                continue
+
+            base_value = self._base_stats.get(stat_type, 0)
+            personal_value = self._personal_stats.get(stat_type, 0)
+            global_value = self._global_stats.get(stat_type, 0)
+            
+            # Apply personal/global bonus to base stat
+            total_value = base_value + personal_value + global_value
+            
+            # Apply grade bonus (only for HP, Attack, Defense)
+            if stat_type in [StatType.Hp, StatType.AttackPhysic, StatType.AttackMagic, 
+                           StatType.DefensePhysic, StatType.DefenseMagic]:
+                bonus_percent = self._get_grade_bonus_percent()
+                if bonus_percent > 0:
+                    total_value *= (1 + bonus_percent / 100)
+            
+            # Set final stat
+            setattr(self, stat_type.value, total_value)
+        
+        # Apply special effect for grade 6
+        if self.grade == 6:
+            self._apply_role_special_effect()
+
+    def add_sp_recovery_fixed_bonus(self, value):
+        self.sp_recovery_fixed_bonus += value
+
+    def add_sp_recovery_percent_bonus(self, value):
+        self.sp_recovery_percent_bonus += value
+
+    def _get_grade_bonus_percent(self):
+        """Return stat bonus percent by grade"""
+        return self.grade_bonuses.get(self.grade, 0)
+
+    def _apply_role_special_effect(self):
+        """Apply special effect for grade 6 by role"""
+        if self.hero_class == Class.Dealer:
+            # 100% attack increase (instead of 65%)
+            if hasattr(self, 'attack_physic'):
+                self.attack_physic = self._base_stats[StatType.AttackPhysic] * 2.0
+            if hasattr(self, 'attack_magic'):
+                self.attack_magic = self._base_stats[StatType.AttackMagic] * 2.0
+        elif self.hero_class == Class.Tanker:
+            # 100% HP increase (instead of 65%)
+            if hasattr(self, 'max_hp'):
+                self.max_hp = self._base_stats[StatType.Hp] * 2.0
+        elif self.hero_class == Class.Supporter:
+            # 30% increase to base SP recovery rate (고정 수치로 변환)
+            # 기본 SP 회복량의 30%에 해당하는 고정 수치 증가
+            fixed_bonus = self.sp_recovery_rate * 0.3
+            self.add_sp_recovery_fixed_bonus(fixed_bonus)
+
+    def increase_grade(self, amount=1):
+        """Increase grade (for spell effects)"""
+        self.grade = min(6, self.grade + amount)  # Max grade is 6
 
     def _setup_all_movement_actions(self):
         """Pre-generates and sorts action templates for all movement types."""
@@ -207,7 +279,7 @@ class Hero:
                 self.sp_timer += dt            
                 if self.sp_timer >= SP_INTERVAL:
                     num_sp_recover, self.sp_timer = divmod(self.sp_timer, SP_INTERVAL)
-                    self.sp = min(self.max_sp, self.sp + self.sp_recovery_rate * num_sp_recover)
+                    self.sp = min(self.max_sp, self.sp + self.get_sp_recovery_rate() * num_sp_recover)
 
         # update aa cd
         self.aa_timer = max(0, self.aa_timer - dt)
@@ -385,6 +457,9 @@ class Hero:
 
     def _aa_sp_recovery(self):
         self.sp = min(self.max_sp, self.sp + self.sp_per_aa)
+
+    def get_sp_recovery_rate(self):
+        return (self.sp_recovery_rate + self.sp_recovery_fixed_bonus) * (1 + self.sp_recovery_percent_bonus / 100)
 
     def get_aa_cd(self):
         attack_speed_coeff = self.get_coeff(StatType.AttackSpeed)

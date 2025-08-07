@@ -4,6 +4,17 @@
 from dps.enums import Grade, StatType
 
 ARTIFACT_DATA = {
+    "30KG 케틀벨": {
+        "grade": Grade.LEGENDARY,
+        "cost": 29,
+        "is_stackable": False,
+        "description": r"""착용 사도의 스킬 피해량이 ①% 증가합니다.하지만 공격 속도가 30% 감소합니다. 해당 효과는 중첩되지 않습니다.""",
+        "stat_types": [StatType.AttackPhysic, StatType.CriticalMult],
+        "stats": [[22.47, 11.24], [24.52, 12.26], [26.56, 13.28], [28.6, 14.3], None, None, [34.73, 17.37], None, None, None, None, None],
+        "effects": [[52.0], [57.0], [62.0], [67.0], None, None, [81.0], None, None, None, None, None],
+        "stat_growth": [100, 100],
+        "effect_growth": [4.833333333333333],
+    },
     "날씨는 맑음 카드": {
         "grade": Grade.LEGENDARY,
         "cost": 22,
