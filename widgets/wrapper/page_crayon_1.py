@@ -75,7 +75,7 @@ QPushButton:pressed, QPushButton:checked{
         for i in range(rows):
             table.setRowHeight(i, 50)
 
-        self.last_hero_id = None
+        self.last_hero_name = None
 
         # setup hero select & currency_widget
         self.hero_select.currentIndexChanged.connect(self.updateCurrentBoardTable)
@@ -123,7 +123,11 @@ QPushButton:pressed, QPushButton:checked{
     def updateCurrentBoardTable(self):
         res = self.window().resource
         hero_name = self.hero_select.currentText()
-        hero_id = res.masterGet("HeroNameToId")[hero_name]
+        hero_name_to_id = res.masterGet("HeroNameToId")
+        if hero_name in hero_name_to_id:
+            hero_id = hero_name_to_id[hero_name]            # last hero name may be None
+        else:
+            hero_id = hero_name_to_id[self.last_hero_name]  # last hero name != None
         board_id, purple_crayon, gold_crayon = res.masterGet("HeroIdToBoardData")[hero_id]
         board_sequence = res.masterGet("BoardType")[board_id]["seq"]
         num_cols = len(board_sequence)
@@ -132,7 +136,7 @@ QPushButton:pressed, QPushButton:checked{
         user_board = res.userGet("UserBoard")
         board_cost = res.masterGet("BoardCost")
 
-        if self.last_hero_id is not None:
+        if self.last_hero_name is not None:
             self.updateBoundary()
 
         # Initialize cur_hero_board_data
@@ -220,7 +224,14 @@ QPushButton:pressed, QPushButton:checked{
                     crayon_indices[seq] += 1
 
         self.changeCostLabels()
-        self.last_hero_id = hero_id
+        
+        # 유효성 검사 및 last_hero_name 업데이트
+        current_hero_name = self.hero_select.currentText()
+        if current_hero_name in hero_name_to_id:
+            self.last_hero_name = current_hero_name
+        else:
+            # Invalid hero name detected; changing text to last hero name
+            self.hero_select.setCurrentText(self.last_hero_name)
 
 
     def keyPressEvent(self, event):
@@ -310,11 +321,12 @@ QPushButton:pressed, QPushButton:checked{
         res = self.window().resource
         table = self.board_table
         table_rows, table_cols = table.rowCount(), table.columnCount()
-        last_hero_board_id = res.masterGet("HeroIdToBoardData")[self.last_hero_id][0]
+        last_hero_id = res.masterGet("HeroNameToId")[self.last_hero_name]
+        last_hero_board_id = res.masterGet("HeroIdToBoardData")[last_hero_id][0]
         first_gate_coordinate = res.masterGet("BoardType")[last_hero_board_id]["gates"][0]
         user_board = res.userGet("UserBoard")
         boundary_coordinates = []
-        hero_name = res.masterGet("HeroIdToMetadata")[self.last_hero_id]["name_kr"]
+        hero_name = res.masterGet("HeroIdToMetadata")[last_hero_id]["name_kr"]
 
         def is_valid(x, y):
             return 0 <= x < table_rows and 0 <= y < table_cols and table.cellWidget(x, y) is not None
@@ -335,8 +347,8 @@ QPushButton:pressed, QPushButton:checked{
                             boundary_coordinates.append((j, 6-i))
                             break
 
-        user_board[self.last_hero_id][1].clear()
-        user_board[self.last_hero_id][1].extend(boundary_coordinates)
+        user_board[last_hero_id][1].clear()
+        user_board[last_hero_id][1].extend(boundary_coordinates)
 
 
 
@@ -345,12 +357,12 @@ QPushButton:pressed, QPushButton:checked{
             return
         
         if self.reload.get("master", False):
-            self.last_hero_id = None
+            self.last_hero_name = None
             self.updateHeroList()
             self.updateCurrentBoardTable()
 
         elif self.reload.get("account", False):
-            self.last_hero_id = None
+            self.last_hero_name = None
             self.updateCurrentBoardTable()
         
         self.reload = dict()
@@ -358,6 +370,15 @@ QPushButton:pressed, QPushButton:checked{
 
     def savePageData(self):
         # save current pages' boundary data
+
+        current_hero_name = self.hero_select.currentText()
+        hero_name_to_id = self.window().resource.masterGet("HeroNameToId")
+        
+        if current_hero_name in hero_name_to_id:
+            self.last_hero_name = current_hero_name
+        else:
+            # Invalid hero name detected; changing text to last hero name
+            self.hero_select.setCurrentText(self.last_hero_name)
 
         self.updateBoundary()
         

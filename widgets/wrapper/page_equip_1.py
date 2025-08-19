@@ -22,14 +22,8 @@ class PageEquip1(Ui_page_equip_1, QWidget):
 
     def setInitialState(self):
         self.reload = {"account": True}
-        main = self.window()
-        res = main.resource
-
-        # load hero_equip data from master db
-        max_rank = res.masterGet("MaxRank")
 
         # load user_equip data from user db
-        # self.user_equip_data_tmp = dict()
         self.last_hero_name = None
         self.last_goal_idx = 0
 
@@ -130,7 +124,11 @@ class PageEquip1(Ui_page_equip_1, QWidget):
         num_cols = table.columnCount()
 
         hero_name = self.hero_select.currentText()
-        hero_id = res.masterGet("HeroNameToId")[hero_name]
+        hero_name_to_id = res.masterGet("HeroNameToId")
+        if hero_name in hero_name_to_id:
+            hero_id = hero_name_to_id[hero_name]            # last hero name may be None
+        else:
+            hero_id = hero_name_to_id[self.last_hero_name]  # last hero name != None
         is_goal = self.radio_goal_mode.isChecked()
         cur_equip = res.userGet("CurEquip")
         goal_equip = res.userGet("GoalEquip")
@@ -265,87 +263,95 @@ class PageEquip1(Ui_page_equip_1, QWidget):
             last_hero_idx = res.masterGet("HeroNameToId")[self.last_hero_name]
             save_to[last_hero_idx] = (last_rank, last_equips)
 
-        self.last_hero_name = self.hero_select.currentText()
+        current_hero_name = self.hero_select.currentText()
+        hero_name_to_id = res.masterGet("HeroNameToId")
+        
+        if current_hero_name in hero_name_to_id:
+            self.last_hero_name = current_hero_name
+        else:
+            # Invalid hero name detected; changing text to last hero name
+            self.hero_select.setCurrentText(self.last_hero_name)
+
         self.last_mode = self.radio_cur_mode.isChecked()
         self.last_goal_idx = self.cur_goal.currentIndex()
 
 
-    def saveUserEquipAll(self):
-        self.last_hero_name = self.hero_select.currentText()
-        self.updateResourceLastUserEquip()
-        main = self.window()
-        res = main.resource
+    # def saveUserEquipAll(self):
+    #     self.last_hero_name = self.hero_select.currentText()
+    #     self.updateResourceLastUserEquip()
+    #     main = self.window()
+    #     res = main.resource
 
-        # transfer changed data from tmp to each dict
-        cur_equip = res.userGet("CurEquip")
-        cur_goal_idx = self.cur_goal.currentIndex() + 1
-        goal_equip = res.userGet("GoalEquip")[cur_goal_idx]
+    #     # transfer changed data from tmp to each dict
+    #     cur_equip = res.userGet("CurEquip")
+    #     cur_goal_idx = self.cur_goal.currentIndex() + 1
+    #     goal_equip = res.userGet("GoalEquip")[cur_goal_idx]
 
-        cur_equip.update(self.user_equip_data_tmp)
-        self.user_equip_data_tmp = dict()
-        goal_equip.update(self.hero_name_to_goal_data_tmp)
-        self.hero_name_to_goal_data_tmp = dict()
+    #     cur_equip.update(self.user_equip_data_tmp)
+    #     self.user_equip_data_tmp = dict()
+    #     goal_equip.update(self.hero_name_to_goal_data_tmp)
+    #     self.hero_name_to_goal_data_tmp = dict()
 
-        cur_user: sqlite3.Cursor = main.conn_user.cursor()
+    #     cur_user: sqlite3.Cursor = main.conn_user.cursor()
 
-        data = [(hero_id, rank, ",".join((str(i) for i in list(equips))) if len(equips)!=0 else None) for (hero_id, (rank, equips)) in cur_equip.items()]
-        cur_user.executemany("REPLACE INTO user_cur_equip VALUES (?, ?, ?)", data)
+    #     data = [(hero_id, rank, ",".join((str(i) for i in list(equips))) if len(equips)!=0 else None) for (hero_id, (rank, equips)) in cur_equip.items()]
+    #     cur_user.executemany("REPLACE INTO user_cur_equip VALUES (?, ?, ?)", data)
 
-        if self.cur_goal.count()!=0:
-            data = [(cur_goal_idx, hero_id, rank, ",".join((str(i) for i in list(equips))) if len(equips)!=0 else None) for (hero_id, (rank, equips)) in goal_equip.items()]
-            cur_user.executemany("REPLACE INTO user_goal_equip(goal_id, hero_id, rank, equips) VALUES (?, ?, ?, ?)", data)
+    #     if self.cur_goal.count()!=0:
+    #         data = [(cur_goal_idx, hero_id, rank, ",".join((str(i) for i in list(equips))) if len(equips)!=0 else None) for (hero_id, (rank, equips)) in goal_equip.items()]
+    #         cur_user.executemany("REPLACE INTO user_goal_equip(goal_id, hero_id, rank, equips) VALUES (?, ?, ?, ?)", data)
 
-        main.conn_user.commit()
-        main.changeEquipCascade()
+    #     main.conn_user.commit()
+    #     main.changeEquipCascade()
     
 
-    # undo all changes in tmp
-    def undoUserEquipAll(self):
-        self.user_equip_data_tmp = dict()
-        self.hero_name_to_goal_data_tmp = dict()
-        self.updateEquipTableAtInit()
+    # # undo all changes in tmp
+    # def undoUserEquipAll(self):
+    #     self.user_equip_data_tmp = dict()
+    #     self.hero_name_to_goal_data_tmp = dict()
+    #     self.updateEquipTableAtInit()
     
 
-    # save current page data into db, then delete it from user_equip_data_tmp
-    def saveUserEquipCur(self):
-        self.last_hero_name = self.hero_select.currentText()
-        self.updateResourceLastUserEquip()
-        main = self.window()
-        res = main.resource
-        cur_user: sqlite3.Cursor = main.conn_user.cursor()
+    # # save current page data into db, then delete it from user_equip_data_tmp
+    # def saveUserEquipCur(self):
+    #     self.last_hero_name = self.hero_select.currentText()
+    #     self.updateResourceLastUserEquip()
+    #     main = self.window()
+    #     res = main.resource
+    #     cur_user: sqlite3.Cursor = main.conn_user.cursor()
 
-        hero_id = res.masterGet("HeroNameToId")[self.last_hero_name]
+    #     hero_id = res.masterGet("HeroNameToId")[self.last_hero_name]
 
-        if hero_id in self.user_equip_data_tmp:
-            res.userGet("CurEquip")[hero_id] = self.user_equip_data_tmp[hero_id]
-            rank, equips = self.user_equip_data_tmp[hero_id]
-            equips = ",".join([str(i) for i in list(equips)]) if len(equips)!=0 else None
-            cur_user.execute("REPLACE INTO user_cur_equip VALUES (?, ?, ?)",
-                             (hero_id, rank, equips))
-            main.conn_user.commit()
-            del self.user_equip_data_tmp[hero_id]
+    #     if hero_id in self.user_equip_data_tmp:
+    #         res.userGet("CurEquip")[hero_id] = self.user_equip_data_tmp[hero_id]
+    #         rank, equips = self.user_equip_data_tmp[hero_id]
+    #         equips = ",".join([str(i) for i in list(equips)]) if len(equips)!=0 else None
+    #         cur_user.execute("REPLACE INTO user_cur_equip VALUES (?, ?, ?)",
+    #                          (hero_id, rank, equips))
+    #         main.conn_user.commit()
+    #         del self.user_equip_data_tmp[hero_id]
 
-        if hero_id in self.hero_name_to_goal_data_tmp:
-            goal_idx = self.cur_goal.currentIndex() + 1
-            res.userGet("GoalEquip")[goal_idx][hero_id] = self.hero_name_to_goal_data_tmp[hero_id]
-            rank, equips = self.hero_name_to_goal_data_tmp[hero_id]
-            equips = ",".join([str(i) for i in list(equips)]) if len(equips)!=0 else None
-            cur_user.execute("REPLACE INTO user_goal_equip VALUES (?, ?, ?, ?)",
-                             (goal_idx, hero_id, rank, equips))
-            main.conn_user.commit()
-            del self.hero_name_to_goal_data_tmp[hero_id]
+    #     if hero_id in self.hero_name_to_goal_data_tmp:
+    #         goal_idx = self.cur_goal.currentIndex() + 1
+    #         res.userGet("GoalEquip")[goal_idx][hero_id] = self.hero_name_to_goal_data_tmp[hero_id]
+    #         rank, equips = self.hero_name_to_goal_data_tmp[hero_id]
+    #         equips = ",".join([str(i) for i in list(equips)]) if len(equips)!=0 else None
+    #         cur_user.execute("REPLACE INTO user_goal_equip VALUES (?, ?, ?, ?)",
+    #                          (goal_idx, hero_id, rank, equips))
+    #         main.conn_user.commit()
+    #         del self.hero_name_to_goal_data_tmp[hero_id]
         
-        main.changeEquipCascade()
+    #     main.changeEquipCascade()
     
 
-    # undo tmp changes of current page
-    def undoUserEquipCur(self):
-        last_hero_id = self.window().resource.masterGet("HeroNameToId")[self.last_hero_name]
-        if self.radio_cur_mode.isChecked():
-            self.user_equip_data_tmp.pop(last_hero_id, None)
-        else:
-            self.hero_name_to_goal_data_tmp.pop(last_hero_id, None)
-        self.updateEquipTableAtInit()
+    # # undo tmp changes of current page
+    # def undoUserEquipCur(self):
+    #     last_hero_id = self.window().resource.masterGet("HeroNameToId")[self.last_hero_name]
+    #     if self.radio_cur_mode.isChecked():
+    #         self.user_equip_data_tmp.pop(last_hero_id, None)
+    #     else:
+    #         self.hero_name_to_goal_data_tmp.pop(last_hero_id, None)
+    #     self.updateEquipTableAtInit()
     
 
     def openGoalSettings(self):
