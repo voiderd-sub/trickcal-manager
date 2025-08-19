@@ -207,10 +207,13 @@ class ResourceManager:
     def masterInit(self):
         cur = self.main.conn_master.cursor()
 
-        # MaxRank
-        cur.execute("SELECT MAX(rank) FROM equipment")
-        max_rank = cur.fetchone()[0]
+        cur.execute("SELECT key, value FROM game_metadata")
+        game_metadata = {key: value for (key, value) in cur}
+        
+        max_rank = game_metadata.get('max_rank')
         self._resourceMaster["MaxRank"] = max_rank
+        max_lecture_level = game_metadata.get('max_lecture_level')
+        self._resourceMaster["MaxLectureLevel"] = max_lecture_level
 
         # HeroNameToId, HeroIdToMetadata
         hero_name_to_id = dict()
@@ -453,7 +456,6 @@ class ResourceManager:
         conn.close()
 
         self._resourceMaster["StageToDrop"] = stage_to_drop
-
 
 
 class UpdateDropTableDialog(QDialog):

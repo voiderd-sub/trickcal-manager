@@ -31,7 +31,11 @@ class PageEquip3(Ui_page_equip_3, QWidget):
 
         self.research_level.setValidator(QIntValidator(0, 10, self.research_level))
         self.candy_buying.setValidator(QIntValidator(0, 10, self.candy_buying))
-        self.lecture_level.setValidator(QIntValidator(0, 30, self.lecture_level))
+        
+        max_lecture_level = self.window().resource.masterGet("MaxLectureLevel")
+        self.lecture_level.setValidator(QIntValidator(0, max_lecture_level, self.lecture_level))
+        self.lecture_level.setPlaceholderText(f"0 ~ {max_lecture_level}")
+        
         self.cur_standard.setValidator(QIntValidator(0, 999999, self.cur_standard))
 
         self.update_btn.clicked.connect(self.window().updateDropTable)
