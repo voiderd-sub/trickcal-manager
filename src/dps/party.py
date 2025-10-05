@@ -238,60 +238,9 @@ class Party:
         self.max_t = max_t
         
         simulation_results = []
-        first_simulation_done = False
         
         for _ in tqdm(range(num_simulation), desc="Running simulations"):
             self.init_simulation()
-            
-            # 첫 번째 시뮬레이션 초기화 후 히어로 정보 출력
-            if not first_simulation_done:
-                print("\n" + "="*80)
-                print("첫 번째 시뮬레이션 초기화 완료 - 히어로별 스탯 정보")
-                print("="*80)
-                
-                for idx in self.active_indices:
-                    hero = self.character_list[idx]
-                    if hero:
-                        print(f"\n[{hero.get_unique_name()}]")
-                        print("-" * 40)
-                        
-                        # Amplify 정보
-                        print("📈 Amplify 값:")
-                        amplify_values = []
-                        for damage_type in DamageType.leaf_types():
-                            amplify_value = hero.get_amplify(damage_type)
-                            if amplify_value != 1.0:
-                                amplify_values.append(f"{damage_type.name}: {amplify_value:.3f}")
-                        
-                        # 5개씩 출력
-                        for i in range(0, len(amplify_values), 5):
-                            chunk = amplify_values[i:i+5]
-                            print("  " + " | ".join(chunk))
-                        
-                        # Coefficient 정보
-                        print("📊 Coefficient 값:")
-                        coeff_values = []
-                        for stat_type in StatType:
-                            coeff_value = hero.get_coeff(stat_type)
-                            if coeff_value != 1.0:
-                                coeff_values.append(f"{stat_type.name}: {coeff_value:.3f}")
-                        
-                        # 5개씩 출력
-                        for i in range(0, len(coeff_values), 5):
-                            chunk = coeff_values[i:i+5]
-                            print("  " + " | ".join(chunk))
-                        
-                        # 기본 스탯 정보
-                        print("💪 기본 스탯:")
-                        for stat_type in StatType:
-                            if hasattr(hero, stat_type.value):
-                                stat_value = getattr(hero, stat_type.value)
-                                if stat_value != 0:
-                                    print(f"  {stat_type.name}: {stat_value:.1f}")
-                
-                print("\n" + "="*80)
-                first_simulation_done = True
-            
             prev_time = 0
             while self.current_time < int(max_t * SEC_TO_MS):
                 assert self.current_time >= prev_time, "time paradox!"

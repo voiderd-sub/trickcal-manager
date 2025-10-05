@@ -8,9 +8,14 @@ version = "2025.07.22.dev"
 description = "Trickcal: Chibi Go Battle Simulator"
 requires-python = ">=3.12"
 dependencies = [
+  "matplotlib>=3.10.6",
   "numpy",
   "pandas",
-  "tqdm"
+  "pulp>=3.3.0",
+  "pyside6>=6.9.3",
+  "pyyaml>=6.0.3",
+  "requests>=2.32.5",
+  "tqdm",
 ]
 
 [project.urls]

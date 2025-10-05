@@ -53,6 +53,7 @@ class PageDps1(Ui_page_dps_1, QWidget):
         hero_name_to_id = res.masterGet("HeroNameToId")
         hero_id_to_meta = res.masterGet("HeroIdToMetadata")
         party = Party()
+        
         for pos_idx, position in enumerate(("Front", "Mid", "Back")):
             for idx in range(1, 4):
                 cell = getattr(self, f"HeroCell{position}{idx}")
@@ -62,15 +63,41 @@ class PageDps1(Ui_page_dps_1, QWidget):
                     hero_id = hero_name_to_id[hero_name]
                     hero_name_en = hero_id_to_meta[hero_id]["name_en"]
                     hero_cls = self.dynamic_import(f"src/dps/heroes/{hero_name_en}.py")
-                    hero = hero_cls({
+                    
+                    # Get hero settings from the cell
+                    hero_settings = cell.getHeroSettings()
+                    
+                    # Create hero info dictionary with settings
+                    hero_info = {
                         "aside_level": 0,
-                        "lowerskill_level": 13,
-                        "upperskill_level": 13,
-                        "attack": 100.,
-                    })
+                        "lowerskill_level": 1,
+                        "upperskill_level": 1,
+                        "attack": 1000.,
+                        "defense": 500.,
+                        "hp": 10000.,
+                        "attack_speed": 100.,
+                        "crit_rate": 5.,
+                        "crit_damage": 150.,
+                    }
+                    
+                    # Override with user settings if available
+                    if hero_settings:
+                        hero_info.update({
+                            "aside_level": hero_settings.get("aside_skill_level", 0),
+                            "lowerskill_level": hero_settings.get("lower_skill_level", 1),
+                            "upperskill_level": hero_settings.get("upper_skill_level", 1),
+                            "attack": float(hero_settings.get("attack", 1000)),
+                            "defense": float(hero_settings.get("defense", 500)),
+                            "hp": float(hero_settings.get("hp", 10000)),
+                            "attack_speed": float(hero_settings.get("attack_speed", 100)),
+                            "crit_rate": float(hero_settings.get("crit_rate", 5)),
+                            "crit_damage": float(hero_settings.get("crit_damage", 150)),
+                        })
+                    
+                    hero = hero_cls(hero_info)
                     party.add_hero(hero, pos_idx*3 + idx - 1)
-        hero_name_to_dmg = party.run(240, 1)
         
+        hero_name_to_dmg = party.run(240, 1)
         self.graph_window.showGraph(hero_name_to_dmg)
 
         return

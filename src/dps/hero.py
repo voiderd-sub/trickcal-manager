@@ -120,6 +120,17 @@ class Hero:
         # Initialize base stats and coefficients
         if not hasattr(self, "attack"):
             self.attack = 100
+        if not hasattr(self, "defense"):
+            self.defense = 500
+        if not hasattr(self, "hp"):
+            self.hp = 10000
+        if not hasattr(self, "attack_speed"):
+            self.attack_speed = 100
+        if not hasattr(self, "crit_rate"):
+            self.crit_rate = 5
+        if not hasattr(self, "crit_damage"):
+            self.crit_damage = 150
+            
         self.amplify_dict = {dt: 1.0 for dt in DamageType.leaf_types()}
         self.taken_amplify_dict = {dt: 1.0 for dt in DamageType.leaf_types()}
         for stat_type in StatType:
